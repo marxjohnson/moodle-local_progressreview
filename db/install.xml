@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/progressreview/db" VERSION="20110922" COMMENT="Core tables for progressreview"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="progressreview_blah" COMMENT="test" NEXT="progressreview">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="progressreview" COMMENT="Unique reviews for a student, on a course, by a teacher, in a review session." PREVIOUS="progressreview_blah" NEXT="progressreview_session">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="sessionid"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="teacherid"/>
+        <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="sessionid" NEXT="studentid"/>
+        <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="teacherid" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="studentid" NEXT="reviewtype"/>
+        <FIELD NAME="reviewtype" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="courseid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_progressreview_sessionid_index" UNIQUE="false" FIELDS="sessionid" NEXT="mdl_progressreview_studentid_index"/>
+        <INDEX NAME="mdl_progressreview_studentid_index" UNIQUE="false" FIELDS="studentid" PREVIOUS="mdl_progressreview_sessionid_index"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="progressreview_session" COMMENT="Settings shared by all reviews in a review session" PREVIOUS="progressreview" NEXT="progressreview_course">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="deadline_subject"/>
+        <FIELD NAME="deadline_subject" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="deadline_tutor"/>
+        <FIELD NAME="deadline_tutor" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="deadline_subject" NEXT="lockafterdeadline"/>
+        <FIELD NAME="lockafterdeadline" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="deadline_tutor" NEXT="scale_behaviour"/>
+        <FIELD NAME="scale_behaviour" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="lockafterdeadline" NEXT="scale_effort"/>
+        <FIELD NAME="scale_effort" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_behaviour" NEXT="scale_homework"/>
+        <FIELD NAME="scale_homework" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_effort" NEXT="template_subject"/>
+        <FIELD NAME="template_subject" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_homework" NEXT="template_tutor"/>
+        <FIELD NAME="template_tutor" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" PREVIOUS="template_subject" NEXT="snapshotdate"/>
+        <FIELD NAME="snapshotdate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="template_tutor" NEXT="previoussession"/>
+        <FIELD NAME="previoussession" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="snapshotdate" NEXT="inductionreview"/>
+        <FIELD NAME="inductionreview" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="previoussession"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="progressreview_course" COMMENT="Archive of course details needed for progress review" PREVIOUS="progressreview_session" NEXT="progressreview_teachers">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="originalid"/>
+        <FIELD NAME="originalid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="shortname"/>
+        <FIELD NAME="shortname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="originalid" NEXT="fullname"/>
+        <FIELD NAME="fullname" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="shortname"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_progressreview_course_originalid_index" UNIQUE="false" FIELDS="originalid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="progressreview_teachers" COMMENT="progressreview_teachers table retrofitted from MySQL" PREVIOUS="progressreview_course" NEXT="progressreview_activeplugins">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="originalid"/>
+        <FIELD NAME="originalid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="firstname"/>
+        <FIELD NAME="firstname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="originalid" NEXT="lastname"/>
+        <FIELD NAME="lastname" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="firstname"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_progressreview_teachers_originalid_index" UNIQUE="false" FIELDS="originalid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="progressreview_activeplugins" COMMENT="progressreview_activeplugins table retrofitted from MySQL" PREVIOUS="progressreview_teachers">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="plugin"/>
+        <FIELD NAME="plugin" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="sessionid"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="plugin" NEXT="cohortid"/>
+        <FIELD NAME="cohortid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="sessionid" NEXT="reviewtype"/>
+        <FIELD NAME="reviewtype" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="cohortid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_progressreview_activeplugins_sessionid_index" UNIQUE="false" FIELDS="sessionid" NEXT="mdl_progressreview_activeplugins_cohortid_index"/>
+        <INDEX NAME="mdl_progressreview_activeplugins_cohortid_index" UNIQUE="false" FIELDS="cohortid" PREVIOUS="mdl_progressreview_activeplugins_sessionid_index"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

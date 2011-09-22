@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/progressreview/plugins/subject/db" VERSION="20110922" COMMENT="Tables for the data stored by the subject progressreview plugin"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="progressreview_subject" COMMENT="Statistics and comments for subject review">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="reviewid"/>
+        <FIELD NAME="reviewid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="comments"/>
+        <FIELD NAME="comments" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="reviewid" NEXT="behaviour"/>
+        <FIELD NAME="behaviour" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="comments" NEXT="effort"/>
+        <FIELD NAME="effort" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="behaviour" NEXT="homeworkstandard"/>
+        <FIELD NAME="homeworkstandard" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="effort" NEXT="homeworkdone"/>
+        <FIELD NAME="homeworkdone" TYPE="int" LENGTH="3" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="homeworkstandard" NEXT="homeworktotal"/>
+        <FIELD NAME="homeworktotal" TYPE="int" LENGTH="3" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="homeworkdone" NEXT="attendance"/>
+        <FIELD NAME="attendance" TYPE="int" LENGTH="3" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="homeworktotal" NEXT="punctuality"/>
+        <FIELD NAME="punctuality" TYPE="int" LENGTH="3" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="attendance" NEXT="scaleid"/>
+        <FIELD NAME="scaleid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="punctuality" NEXT="targetgrade"/>
+        <FIELD NAME="targetgrade" TYPE="int" LENGTH="3" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="scaleid" NEXT="performancegrade"/>
+        <FIELD NAME="performancegrade" TYPE="int" LENGTH="3" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="targetgrade"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_progressreview_plugin_subject_reviewid_index" UNIQUE="false" FIELDS="reviewid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>

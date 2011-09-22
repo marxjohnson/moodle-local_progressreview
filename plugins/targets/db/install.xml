@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/progressreview/plugins/targets/db" VERSION="20110922" COMMENT="Tables for data stored by the progressreview_targets plugin"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="progressreview_targets" COMMENT="Link from progressreview to ilptarget_posts for targets set in a tutor review.">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="reviewid"/>
+        <FIELD NAME="reviewid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="targetid"/>
+        <FIELD NAME="targetid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="reviewid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_progressreview_plugin_targets_reviewid_index" UNIQUE="false" FIELDS="reviewid" NEXT="mdl_progressreview_plugin_targets_targetid_index"/>
+        <INDEX NAME="mdl_progressreview_plugin_targets_targetid_index" UNIQUE="true" FIELDS="targetid" PREVIOUS="mdl_progressreview_plugin_targets_reviewid_index"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
