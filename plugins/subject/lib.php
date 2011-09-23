@@ -217,11 +217,12 @@ abstract class progressreview_subject_template {
         $homework = $this->retrieve_homework;
         $skeleton['homeworkdone'] = $homework->done;
         $skeleton['homeworktotal'] = $homework->total;
-        $skeleton['attendance'] = $this->retrieve_attendance();
+        $attendance = $this->retrieve_attendance();
+        $skeleton['attendance'] = $attendance->attendance;
         if (100 <= $skeleton['attendance'] || $skeleton['attendance'] <= 0) {
             throw new coding_exception('retrieve_attandance implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
-        $skeleton['punctuality'] = $this->retrieve_punctuality();
+        $skeleton['punctuality'] = $attendance->punctuality;
         if (100 <= $skeleton['punctuality'] || $skeleton['punctuality'] <= 0) {
             thhttp://pastebin.com/y1VQQdsSrow new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
@@ -270,20 +271,6 @@ abstract class progressreview_subject_template {
      */
     private abstract function retrieve_attendance() {
     } // end of member function retrieve_attendance
-
-    /**
-     * Retrieves the % punctuality of the student on the current course
-     *
-     * Punctuality is calculated by taking non-late marks as a percentage of all
-     * non-absent marks
-     *
-     * Must be overridden in {@see progressreview_subject}
-     *
-     * @return
-     * @access private
-     */
-    private abstract function retrieve_punctuality( ) {
-    } // end of member function retrieve_punctuality
 
     /**
      * Retrieves the current total and completed homework stats for the current student
