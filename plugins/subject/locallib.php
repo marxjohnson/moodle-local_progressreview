@@ -18,17 +18,11 @@ class progressreview_subject extends progressreview_subject_template {
      * @todo Modify to use the attendance module by default
      */
     private function retrieve_attendance() {
-        return 0;
+        $attendance = new stdClass;
+        $attendance->attendance = 0;
+        $attendance->punctuality = 0;
+        return $attendance;
     }
-
-    /**
-     * Return the punctuality as a percentage.
-     *
-     * @todo Modify to use attendacne module by default.
-     */
-    private function retrieve_punctality() {
-        return 0;
-    } 
 
     private function retrieve_performancegrade() {
         return 0;
