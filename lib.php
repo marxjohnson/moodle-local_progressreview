@@ -1,7 +1,5 @@
 <?php
 
-namespace progressreview;
-
 /**
  * class progressreview
  * Controller for all operations on progressreview data
@@ -9,6 +7,9 @@ namespace progressreview;
  * Given a student, session, course and teacher, this will initialise an interface
  * to a progressreview via all associated plugins.
  */
+const PROGRESSREVIEW_TUTOR = 1;
+const PROGRESSREVIEW_SUBJECT = 2;
+
 class progressreview {
 
      /*** Attributes: ***/
@@ -17,19 +18,19 @@ class progressreview {
      * The ID of the record for this review in the progressreview table
      * @access public
      */
-    public $id;
+    private $id;
 
     /**
      * An array containing the object for each plugin active in this review's session
      * @access public
      */
-    public $plugins;
+    private $plugins;
 
     /**
      * The type of review this is - PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
      * @access public
      */
-    public $type;
+    private $type;
 
     /**
      * The record from the progressreview_session table for this review's session
@@ -75,7 +76,7 @@ class progressreview {
      * @return true
      * @access public
      */
-    public function __construct( $studentid,  $sessionid,  $courseid,  $teacherid ) {
+    public function __construct($studentid,  $sessionid,  $courseid,  $teacherid, $type = null) {
         global $DB;
 
         $this->session = $DB->get_record('progressreview_session', array('id' => 'sessionid'));
@@ -84,18 +85,38 @@ class progressreview {
         $this->course = $this->retrieve_course($courseid);
 
         $params = array('studentid' => $studentid, 'courseid' => $courseid, 'teacherid' => $teacherid, 'sessionid' => $sessionid);
-        if ($review = $DB->get_record('progressreview', $params) {
+        if ($review = $DB->get_record('progressreview', $params)) {
         	$this->id = $review->id;
         	$this->type = $review->reviewtype;
         } else {
-        	$review = (object)$params;
-        	$review->reviewtype = $this->type = $this->retrieve_type();
-        	$this->id = $DB->insert_record('progressreview', $review);
+            $review = (object)$params;
+            if ($type) {
+        	$review->reviewtype = $this->type = $type;
+                $this->id = $DB->insert_record('progressreview', $review);
+            } else {
+                throw new coding_exception('You must specify a type when creating a review');
+            }
         }
 
-        $this->get_plugins();
+        $this->init_plugins();
         return true;
     } // end of member function __construct
+
+    public function get_student() {
+        return $this->student;
+    }
+
+    public function get_teacher() {
+        return $this->teacher;
+    }
+
+    public function get_session() {
+        return $this->session;
+    }
+
+    public function get_course() {
+        return $this->course();
+    }
 
     /**
      * Transfers this review to allow a different teacher to write it
@@ -105,7 +126,7 @@ class progressreview {
      * @return bool indicating success
      * @access public
      */
-    public function transfer_to_teacher( $teacher ) {
+    public function transfer_to_teacher($teacher) {
         global $DB;
 
         $this->teacher = $this->retrieve_teacher($teacherid);
@@ -124,25 +145,18 @@ class progressreview {
      * @return true
      * @access private
      */
-    private function get_plugins( ) {
+    private function init_plugins() {
         global $DB;
 
         $activeplugins = $DB->get_records('progressreview_activeplugins', array('sessionid' => $this->session->id, 'reviewtype' => $this->type));
 
         foreach ($activeplugins as $activeplugin) {
-        	$this->plugins[$activeplugin->name] = new {$activeplugin->name};
+                $classname = $activeplugin->name;
+        	$this->plugins[$activeplugin->name] = new $classname;
         }
         return true;
     } // end of member function get_plugins
 
-    /**
-     * Returns the correct type constant for this review's course
-     *
-     * @return
-     * @access private
-     */
-    private function retrieve_type( ) {
-    } // end of member function retrieve_type
 
     /**
      * Returns the record in progressreview_teacher for the given user's id, creating
@@ -153,10 +167,10 @@ class progressreview {
      * @return object The teacher's record from progressreview_teacher
      * @access private
      */
-    private function retrieve_teacher( $id ) {
+    private function retrieve_teacher($id) {
         global $DB;
 
-        if (!$teacher = $DB->get_record('progressreview_teacher', array('originalid' => $id)) {
+        if (!$teacher = $DB->get_record('progressreview_teacher', array('originalid' => $id))) {
         	$teacher = $DB->get_record('user', array('id' => $id), 'id, firstname, lastname');
         	$teacher->originalid = $teacher->id;
         	unset($teacher->id);
@@ -175,10 +189,10 @@ class progressreview {
      * @return object the course's record from progressreview_course
      * @access private
      */
-    private function retrieve_course( $id ) {
+    private function retrieve_course($id) {
         global $DB;
 
-        if (!$course = $DB->get_record('progressreview_course', array('originalid' => $id)) {
+        if (!$course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
         	$course = $DB->get_record('course', array('id', $id), 'id, shortname, fullname');
         	$course->originalid = $course->id;
         	unset($course->id);
@@ -188,6 +202,133 @@ class progressreview {
         return $course;
     } // end of member function retrieve_course
 
-
-
 } // end of progressreview
+
+/**
+ * class progressreview_controller
+ *
+ */
+class progressreview_controller {
+
+    /**
+     * Returns an array of records for each session in the database
+     *
+     * @return
+     * @access public
+     */
+    public static function get_sessions() {
+        global $DB;
+        return $DB->get_records('progressreview_session');
+    } // end of member function get_sessions
+
+    /**
+     * Returns an array of all progressreview objects for the given conditions
+     *
+     * @param int sessionid
+     * @param int studentid
+     * @param int courseid
+     * @param int teacherid
+     * @param int type
+     * @return
+     * @access public
+     */
+    public static function get_reviews($sessionid = null,  $studentid = null,  $courseid = null,  $teacherid = null,  $type = PROGRESSREVIEW_SUBJECT) {
+        if (!$sessionid && !$studentid && !$courseid && !$teacherid) {
+            throw new coding_exception('get_reviews() must be called with at least one ID parameter');
+        }
+        if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
+            throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
+        }
+
+        global $DB;
+
+        $params = array_filter(
+            array_combine(
+                array('sessionid', 'studentid', 'courseid', 'teacherid', 'reviewtype'),
+                get_func_args()
+            )
+        );
+
+        $reviews = array();
+        if($review_records = $DB->get_records('progressreview', $params)) {
+            foreach ($review_records as $r) {
+                $reviews[$r->id] = new progressreview($r->studentid, $r->sessionid, $r->courseid, $r->teacherid);
+            }
+        }
+        return $reviews;
+
+    } // end of member function get_reviews
+
+    /**
+     * Creates reviews for each student and teacher in the given course and session
+     *
+     * This function is potentially expensive so use it sparingly
+     * Starts by checking if each student has a review for each teacher. If any are missing,
+     * a progressreview object is instantiated to generate the record for the review.
+     *
+     * @param int $courseid
+     * @param int $sessionid
+     * @return true;
+     **/
+    public static function generate_reviews_for_course($courseid, $sessionid) {
+        $coursecontext = get_context(CONTEXT_COURSE, $courseid);
+        $students = get_users_by_capability('local/progressreview:viewown', $coursecontext);
+        $teachers = get_users_by_capability('local/progressreview:write', $coursecontext);
+        foreach ($students as $student) {
+            foreach ($teachers as $teacher) {
+                $params = array(
+                    'studentid' => $student->id,
+                    'sessionid' => $sessionid,
+                    'courseid' => $courseid,
+                    'teacherid' => $teacher->id
+                );
+                if (!$DB->record_exists('progressreview', $params)) {
+                    $typeargs = array_combine(array('courseid', 'sessionid'), get_func_args());
+                    if ($reviews = $DB->get_records('progressreview', $typeargs)) {
+                        $params['type'] = current($reviews)->type;
+                    } else {
+                        $params['type'] = $this->retrieve_type($courseid);
+                    }
+                    $rc = new ReflectionClass('progressreview');
+                    $review = $fc->newInstanceArgs($params);
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Returns the correct type constant for this review's course
+     *
+     * This is currently specific to Taunton's College and should be changed
+     *
+     * @return
+     * @todo Allow to be easily overridden for specific use cases.
+     * @access private
+     */
+    private function retrieve_type($courseid) {
+        global $DB;
+        $course = $DB->get_record('course', array('id' => $courseid));
+        if (strpos($course->shortname, '/') === false) {
+            return PROGRESSREVIEW_TUTOR;
+        } else {
+            return PROGRESSREVIEW_SUBJECT;
+        }
+    } // end of member function retrieve_type
+
+    /**
+     * Snapshots current statistics for all subject reviews in the given session.
+     *
+     * Designed to be run by the cron job
+     *
+     * @param int sessionid
+     * @access public
+     */
+    public static function snapshot_data_for_session($sessionid) {
+        $reviews = $this->get_reviews($sessionid, null, null, null, PROGRESSREVIEW_SUBJECT);
+        foreach ($reviews as $review) {
+            $review->snapshot();
+        }
+    } // end of member function snapshot_data_for_session
+} // end of progressreview_controller
+
