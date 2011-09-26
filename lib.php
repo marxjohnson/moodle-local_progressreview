@@ -10,6 +10,9 @@
 const PROGRESSREVIEW_TUTOR = 1;
 const PROGRESSREVIEW_SUBJECT = 2;
 
+const PROGRESSREVIEW_TEACHER = 0;
+const PROGRESSREVIEW_STUDENT = 1;
+
 class progressreview {
 
      /*** Attributes: ***/
@@ -218,7 +221,7 @@ class progressreview_controller {
      */
     public static function get_sessions() {
         global $DB;
-        return $DB->get_records('progressreview_session');
+        return $DB->get_records('progressreview_session', array(), 'deadline_tutor DESC');
     } // end of member function get_sessions
 
     /**
@@ -259,6 +262,66 @@ class progressreview_controller {
 
     } // end of member function get_reviews
 
+
+    public static function get_course_summaries($sessionid, $type) {
+        if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
+            throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
+        }
+
+        global $DB;
+
+        if ($type == PROGRESSREVIEW_SUBJECT) {
+            $table = '{progressreview_subject}';
+        } else {
+            $table = '{progressreview_tutor}';
+        }
+
+        $total_select = 'SELECT COUNT(*) ';
+        $total_from = 'FROM '.$table.' ps1 ';
+        $total_where = 'WHERE p1.id = ps1.reviewid';
+        $total_sql = $total_select.$total_from.$total_where;
+
+        $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
+        $completed_from = 'FROM '.$table.' ps2 ';
+            $completed_where = 'WHERE p.id = ps2.reviewid
+             AND p.timemodified IS NOT NULL
+             AND LENGTH(ps2.comments) > 0 ';
+        if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
+            $completed_where = 'WHERE p.timemodified IS NOT NULL
+                AND ps.performancegrade IS NOT NULL';
+        }
+        $completed_sql = $total_select.$completed_from.$completed_where;
+
+        $teacher_concat = $DB->sql_concat('t.firstname', '" "', 't.lastname');
+        $select = 'SELECT DISTINCT c.fullname AS name, 
+            '.$teacher_concat.' AS teacher, 
+            ('.$total_sql.') AS total, 
+            ('.$completed_sql.') AS completed ';
+        $from = 'FROM {progressreview} p
+            JOIN {progressreview_course} c ON p.courseid = c.originalid
+            JOIN {progressreview_teacher} t ON p.teacherid = t.originalid ';
+        $where = 'p.sessionid = ?';
+        $order = 'ORDER BY c.fullname, teacher';
+        $params = array($sessionid);
+
+        return $DB->get_records_sql($select.$from.$where, $params);
+    }
+
+    public static function get_my_review_courses($sessionid) {
+        global $DB, $USER;
+        $courses = enrol_get_my_courses();
+        $courseids = array_keys($courses);
+        $params = array($sessionid, $USER->id, $USER->id);
+        list($in_sql, $in_params) = $DB->get_in_or_equal($courseids);
+        $select = 'SELECT pc.* ';
+        $from = 'FROM {progressreview} p
+            JOIN {progressreview_course} pc ON p.courseid = pc.originalid ';
+        $where = 'WHERE p.sessionid = ?
+            AND (p.teacherid = ? OR p.studentid = ?)
+            AND p.courseid '.$in_sql.' ';
+        $order = 'ORDER BY pc.shortname';
+        return $DB->get_records_sql($select.$from.$where.$order, array_merge($params, $in_params));
+    }
     /**
      * Creates reviews for each student and teacher in the given course and session
      *
