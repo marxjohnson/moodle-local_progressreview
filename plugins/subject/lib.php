@@ -224,7 +224,7 @@ abstract class progressreview_subject_template {
         }
         $skeleton['punctuality'] = $attendance->punctuality;
         if (100 <= $skeleton['punctuality'] || $skeleton['punctuality'] <= 0) {
-            thhttp://pastebin.com/y1VQQdsSrow new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
+            throw new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
         $skeleton['scaleid'] = $this->retrieve_scaleid();
         $targetgrades = $this->retrieve_targetgrades();
