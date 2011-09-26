@@ -46,12 +46,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
         foreach (array('subjectreviews' => $subjectsummaries, 'tutorreviews' => $tutorssummaries) as $type => $summaries) {
 
             $table = new html_table();
-            $table->head(array(
+            $table->head = array(
                 get_string('name', 'local_progressreview'),
                 get_string('teachers', 'local_progressreview'),
                 get_string('reviews', 'local_progressreview'),
                 get_string('outstandingreviews', 'local_progressreview')
-            ));
+            );
 
             foreach ($summaries as $summary) {
                 $courseurl = new moodle_url('/local/progresssummary/courseview.php', array('id' => $summary->courseid));
@@ -89,10 +89,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $output = $this->output->heading(get_string('courseswithreviews', 'local_progressreview'));
 
         $table = new html_table();
-        $table->head(array(
+        $table->head = array(
             get_string('reference', 'local_progressreview'),
             get_string('name', 'local_progressreview')
-        ));
+        );
 
         foreach ($courses as $course) {
             $url = new moodle_url('/local/progressreview/review.php', array('courseid' => $course->id));
