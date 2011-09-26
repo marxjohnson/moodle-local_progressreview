@@ -111,7 +111,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $sessionlinks = array();
         foreach($sessions as $session) {
             $url = new moodle_url($url, array('sessionid' => $session->id));
-            $sessionlinks = html_writer::link($url, $session->name);
+            $sessionlinks[] = html_writer::link($url, $session->name);
         }
         return html_writer::alist($sessionlinks);
     }
