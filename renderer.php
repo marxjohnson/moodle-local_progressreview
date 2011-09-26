@@ -97,8 +97,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
         foreach ($courses as $course) {
             $url = new moodle_url('/local/progressreview/review.php', array('courseid' => $course->id));
             $row = new html_table_row(array(
-                $this->output->link($url, $course->shortname),
-                $this->output->link($url, $course->fullname)
+                html_writer::link($url, $course->shortname),
+                html_writer::link($url, $course->fullname)
             ));
             $table->data[] = $row;
         }
@@ -111,7 +111,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $sessionlinks = array();
         foreach($sessions as $session) {
             $url = new moodle_url($url, array('sessionid' => $session->id));
-            $sessionlinks = $this->output->link($url, $session->name);
+            $sessionlinks = html_writer::link($url, $session->name);
         }
         return html_writer::alist($sessionlinks);
     }
