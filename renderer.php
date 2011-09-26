@@ -74,7 +74,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $table->data[] = $row;
             }
 
-            $output .= $this->output->header(get_string($type, 'local_progressreview'), 3);
+            $output .= $this->output->heading(get_string($type, 'local_progressreview'), 3);
             $output .= html_writer::table($table);
         }
 
@@ -86,7 +86,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
     }
 
     function courses_table($courses) {
-        $output = $this->output->heading(get_string('courseswithreviews', 'local_progressreview'));
+        $output = $this->output->heading(get_string('courseswithreviews', 'local_progressreview', 2));
 
         $table = new html_table();
         $table->head = array(
