@@ -278,17 +278,17 @@ class progressreview_controller {
 
         $total_select = 'SELECT COUNT(*) ';
         $total_from = 'FROM '.$table.' ps1 ';
-        $total_where = 'WHERE p1.id = ps1.reviewid';
+        $total_where = 'WHERE p.id = ps1.reviewid';
         $total_sql = $total_select.$total_from.$total_where;
 
         $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
         $completed_from = 'FROM '.$table.' ps2 ';
             $completed_where = 'WHERE p.id = ps2.reviewid
-             AND p.timemodified IS NOT NULL
+             AND p.datemodified IS NOT NULL
              AND LENGTH(ps2.comments) > 0 ';
         if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
-            $completed_where = 'WHERE p.timemodified IS NOT NULL
-                AND ps.performancegrade IS NOT NULL';
+            $completed_where = 'WHERE p.datemodified IS NOT NULL
+                AND ps2.performancegrade IS NOT NULL';
         }
         $completed_sql = $total_select.$completed_from.$completed_where;
 
@@ -299,8 +299,8 @@ class progressreview_controller {
             ('.$completed_sql.') AS completed ';
         $from = 'FROM {progressreview} p
             JOIN {progressreview_course} c ON p.courseid = c.originalid
-            JOIN {progressreview_teacher} t ON p.teacherid = t.originalid ';
-        $where = 'p.sessionid = ?';
+            JOIN {progressreview_teachers} t ON p.teacherid = t.originalid ';
+        $where = 'WHERE p.sessionid = ?';
         $order = 'ORDER BY c.fullname, teacher';
         $params = array($sessionid);
 
