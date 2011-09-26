@@ -43,7 +43,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
     function department_table($department, $subjectsummaries, $tutorsummaries) {
         $output = $this->output->heading(get_string('reviewsfordept', 'local_progressreview', $department->name), 2);
 
-        foreach (array('subjectreviews' => $subjectsummaries, 'tutorreviews' => $tutorssummaries) as $type => $summaries) {
+        foreach (array('subjectreviews' => $subjectsummaries, 'tutorreviews' => $tutorsummaries) as $type => $summaries) {
 
             $table = new html_table();
             $table->head = array(
