@@ -234,9 +234,6 @@ abstract class progressreview_subject_template {
         $skeleton['minimumgrade'] = $targetgrades->min;
         $skeleton['targetgrade'] = $targetgrades->target;
         $skeleton['performancegrade'] = $targetgrades->cpg;
-        if (!is_numeric($skeleton['performancegrade'])) {
-            throw new coding_exception('retrieve_performancegrade implemented incorrectly. It must return a number.');
-        }
         $this->update($skeleton);
 
     } // end of member function skeleton_review
