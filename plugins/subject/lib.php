@@ -165,7 +165,7 @@ abstract class progressreview_subject_template {
     public function update($data) {
         global $DB;
         $valid_properties = array(
-            'progressreview',
+            'reviewid',
             'comment',
             'behaviour',
             'effort',
@@ -174,7 +174,7 @@ abstract class progressreview_subject_template {
             'homeworktotal',
             'attendance',
             'punctuality',
-            'scale',
+            'scaleid',
             'minimumgrade',
             'targetgrade',
             'performancegrade'
@@ -246,7 +246,7 @@ abstract class progressreview_subject_template {
      */
     private function retrieve_review() {
         global $DB;
-        if ($subjectreview = $DB->get_record('progressreview_subject', array('reviewid', $this->review->id) {
+        if ($subjectreview = $DB->get_record('progressreview_subject', array('reviewid' => $this->progressreview->id))) {
             foreach ((array)$subjectreview as $property => $value) {
                 if ($property != 'reviewid') {
                     $this->$property = $value;
