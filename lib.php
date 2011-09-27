@@ -254,9 +254,12 @@ class progressreview_controller {
         global $DB;
 
         $params = array_filter(
-            array_combine(
-                array('sessionid', 'studentid', 'courseid', 'teacherid', 'reviewtype'),
-                get_func_args()
+            array(
+                'sessionid' => $sessionid,
+                'studentid' => $studentid,
+                'courseid' => $courseid,
+                'teacherid' => $teacherid,
+                'reviewtype' => $type
             )
         );
 
