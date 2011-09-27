@@ -18,7 +18,7 @@ abstract class progressreview_subject_template {
      * belongs to.
      * @access private
      */
-    private $progressreview;
+    protected $progressreview;
 
     /**
      * The comments entered for this review
