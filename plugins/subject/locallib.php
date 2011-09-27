@@ -84,5 +84,14 @@ class progressreview_subject extends progressreview_subject_template {
         }
     }
 
+    protected function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
+        global $DB;
+        $grades = (array)parent::retrieve_targetgrades($items);
+        $studentid = $this->progressreview->get_student()->id;
+        if($avgcse = $DB->get_record('user_info_data', array('fieldid' => 1, 'userid' => $studentid))) {
+            $grades['min'] = $avgcse->data;
+        }
+        return (object)$grades;
+    } // end of member function retrieve_targetgrade
 
 }
