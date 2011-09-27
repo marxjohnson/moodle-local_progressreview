@@ -57,7 +57,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $courseurl = new moodle_url('/local/progresssummary/courseview.php', array('id' => $summary->courseid));
 
                 $row = new html_table_row(array(
-                    html_writer::link($courseurl, $course->name),
+                    html_writer::link($courseurl, $summary->name),
                     $summary->teacher,
                     $summary->total,
                     $summary->completed
