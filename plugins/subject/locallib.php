@@ -1,6 +1,5 @@
 <?php
 require_once($CFG->dirroot.'/local/intranet/locallib.php');
-$UDB = unite_connect();
 /**
  * Child of progressreview_subject_template, allowing methods to be customised
  *
@@ -61,7 +60,8 @@ class progressreview_subject extends progressreview_subject_template {
             'termstart' => '1-Sep-2011',
             'studentidnum' => $this->progressreview->get_student()->idnumber);
 
-        $marks = $UDB->get_records_sql($sql, $params);
+        $UDB = unite_connect();
+        $marks = $UDB->get_record_sql($sql, $params);
         $attendance = new stdClass;
         $attendance->attendance = $marks->totalpresent / $marks->totalpossible * 100;
         $attendance->punctuality = $marks->present / ($marks->present-$marks->late) * 100;
