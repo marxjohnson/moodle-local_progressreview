@@ -333,7 +333,7 @@ class progressreview_controller {
      * @param int $sessionid
      * @return true;
      **/
-    public static function generate_reviews_for_course($courseid, $sessionid) {
+    public static function generate_reviews_for_course($courseid, $sessionid, $reviewtype = null) {
         $coursecontext = get_context(CONTEXT_COURSE, $courseid);
         $students = get_users_by_capability('local/progressreview:viewown', $coursecontext);
         $teachers = get_users_by_capability('local/progressreview:write', $coursecontext);
