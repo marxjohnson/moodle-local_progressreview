@@ -1,0 +1,11 @@
+#page-local-progressreview-subjectreview input.homework {
+    width: 3em;
+}
+
+#page-local-progressreview-subjectreview .changescale {
+    width: 10em;
+    margin-left: auto;
+    margin-right: 8em;
+    margin-top:1em;
+    margin-bottom: 1em;
+}
