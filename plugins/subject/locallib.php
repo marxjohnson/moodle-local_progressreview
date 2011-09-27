@@ -64,7 +64,7 @@ class progressreview_subject extends progressreview_subject_template {
         $marks = $UDB->get_record_sql($sql, $params);
         $attendance = new stdClass;
         $attendance->attendance = $marks->totalpresent / $marks->totalpossible * 100;
-        $attendance->punctuality = $marks->present / ($marks->present-$marks->late) * 100;
+        $attendance->punctuality = $marks->present / ($marks->present+$marks->late) * 100;
         return $attendance;
     }
 
