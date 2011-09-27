@@ -26,9 +26,8 @@ if (has_capability('moodle/local_progressreview:write', $coursecontext)) {
 
 require_login($course);
 $PAGE->set_url('/local/progressreview/subjectreview.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
-$PAGE->navbar->add($course->shortname, new moodle_url('/course/view.php', array('id' => $course->id)));
 $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'));
-$PAGE->navbar->add(get_string('writereviews', 'local_progressreview'));
+$PAGE->navbar->add($session->name);
 
 $output = $PAGE->get_renderer('local_progressreview');
 $content = '';
