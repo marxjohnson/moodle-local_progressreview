@@ -82,7 +82,7 @@ class progressreview {
     public function __construct($studentid,  $sessionid,  $courseid,  $teacherid, $type = null) {
         global $DB;
 
-        $this->session = $DB->get_record('progressreview_session', array('id' => 'sessionid'));
+        $this->session = $DB->get_record('progressreview_session', array('id' => $sessionid));
         $this->teacher = $this->retrieve_teacher($teacherid);
         $this->student = $DB->get_record('user', array('id' => $studentid));
         $this->course = $this->retrieve_course($courseid);
