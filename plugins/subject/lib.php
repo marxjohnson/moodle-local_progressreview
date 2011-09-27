@@ -221,11 +221,11 @@ abstract class progressreview_subject_template {
         $skeleton['homeworktotal'] = $homework->total;
         $attendance = $this->retrieve_attendance();
         $skeleton['attendance'] = $attendance->attendance;
-        if (100 <= $skeleton['attendance'] || $skeleton['attendance'] <= 0) {
+        if (100 < $skeleton['attendance'] || $skeleton['attendance'] < 0) {
             throw new coding_exception('retrieve_attandance implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
         $skeleton['punctuality'] = $attendance->punctuality;
-        if (100 <= $skeleton['punctuality'] || $skeleton['punctuality'] <= 0) {
+        if (100 < $skeleton['punctuality'] || $skeleton['punctuality'] < 0) {
             throw new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
         $skeleton['scaleid'] = $this->retrieve_scaleid();
