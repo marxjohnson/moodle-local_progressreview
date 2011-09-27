@@ -9,7 +9,8 @@ require_login($SITE);
 $id = optional_param('id', null, PARAM_INT);
 $editid = optional_param('editid', null, PARAM_INT);
 
-$PAGE->set_url('/local/progressreview/session.php');
+$params = array_filter(array('id' => $id, 'editid' => $editid));
+$PAGE->set_url('/local/progressreview/session.php', $params);
 $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'), '/local/progressreview');
 $PAGE->navbar->add(get_string('sessions', 'local_progressreview'));
 
@@ -19,7 +20,7 @@ if (!$id) {
 
     if ($data = $form->get_data()) {
         $sessionid = $form->process($data);
-        redirect($PAGE->url->out(array('id' => $sessionid)), get_string('sessioncreated', 'local_progressreview'));
+        redirect($PAGE->url->out(true, array('id' => $sessionid)), get_string('sessioncreated', 'local_progressreview'));
         exit();
     }
 
