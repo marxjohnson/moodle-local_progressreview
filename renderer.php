@@ -139,6 +139,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
     /**
      * @todo Make option for non-induction review, and allow avgcse to be configured
+     * @todo Make pluggable
      */
     function subject_review_table($reviews, $form = true) {
         if (!$form) {
@@ -154,30 +155,28 @@ class local_progressreview_renderer extends plugin_renderer_base {
             get_string('homework', 'local_progressreview'),
             get_string('behaviour', 'local_progressreview'),
             get_string('effort', 'local_progressreview'),
-            get_string('averagegcse', 'local_progressreview'),
+            get_string('minimumgrade', 'local_progressreview'),
             get_string('targetgrade', 'local_progressreview'),
             get_string('performancegrade', 'local_progressreview'),
         );
 
-        foreach ($reviews as $review) {var_dump($review);
+        foreach ($reviews as $review) {
             $student = $review->progressreview->get_student();
             $session = $review->progressreview->get_session();
             $picture = $this->output->user_picture($student);
             $name = fullname($student);
-            $attendance = $review->attendance.'%';
-            $punctuality = $review->punctuality.'%';
+            $attendance = number_format($review->attendance, 0).'%';
+            $punctuality = number_format($review->punctuality, 0).'%';
             $fieldarray = 'review['.$review->id.']';
-            $homework = html_writer::empty_tag('input', array('name' => $fieldarray.'[homeworkdone]', 'value' => $review->homeworkdone));
+            $homework = html_writer::empty_tag('input', array('class' => 'homework', 'name' => $fieldarray.'[homeworkdone]', 'value' => $review->homeworkdone));
             $homework .= ' / ';
-            $homework .= html_writer::empty_tag('input', array('name' => $fieldarray.'[homeworktotal]', 'value' => $review->homeworktotal));
-            array_unshift($session->scale_homework, get_string('choosedots'));
+            $homework .= html_writer::empty_tag('input', array('class' => 'homework', 'name' => $fieldarray.'[homeworktotal]', 'value' => $review->homeworktotal));
             $behaviour = html_writer::select($session->scale_behaviour, $fieldarray.'[behaviour]', $review->behaviour);
-            array_unshift($session->scale_effort, get_string('choosedots'));
             $effort = html_writer::select($session->scale_effort, $fieldarray.'[effort]', $review->effort);
-            array_unshift($review->scale, get_string('choosedots'));
-            $mintarget = $review->scale[$review->minimumgrade];
+            //            $mintarget = $review->scale[$review->minimumgrade];
+            $mintarget = $review->minimumgrade;
             $targetgrade = html_writer::select($review->scale, $fieldarray.'[targetgrade]', $review->targetgrade);
-            $targetgrade = html_writer::select($review->scale, $fieldarray.'[performancegrade]', $review->performancegrade);
+            $performancegrade = html_writer::select($review->scale, $fieldarray.'[performancegrade]', $review->performancegrade);
 
             $row = new html_table_row(array(
                 $picture,
@@ -199,7 +198,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('form', array('action' => $this->page->url->out_omit_querystring(), 'method' => 'post'));
         $output .= html_writer::input_hidden_params($this->page->url);
         $output .= html_writer::table($table);
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('save')));
+        $output .= html_writer::empty_tag('input', array('name' => 'submit', 'type' => 'submit', 'value' => get_string('savechanges')));
         return $output;
 
     }
