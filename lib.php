@@ -328,6 +328,16 @@ class progressreview_controller {
         $order = 'ORDER BY pc.shortname';
         return $DB->get_records_sql($select.$from.$where.$order, array_merge($params, $in_params));
     }
+
+    public static function get_plugins_for_session($sessionid, $type = null) {
+        global $DB;
+        $params = array('sessionid' => $sessionid);
+        if ($type) {
+            array('reviewtype' => $type);
+        }
+        return $DB->get_records('progressreview_activeplugins', $params);
+    }
+
     /**
      * Creates reviews for each student and teacher in the given course and session
      *
