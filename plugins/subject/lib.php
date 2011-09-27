@@ -331,10 +331,10 @@ abstract class progressreview_subject_template {
                 }
                 if($item = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$item))) {
                     $grade = $DB->get_record('grade_grades', array('itemid' => $item->id, 'userid' => $studentid));
+                    $grades[$item] = $grade->finalgrade;
                 } else {
-                    $grade = false;
+                    $grades[$item] = false;
                 }
-                $grades[$item] = $grade->finalgrade;
             }
         }
         return (object)$grades;
