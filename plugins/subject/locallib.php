@@ -24,7 +24,5 @@ class progressreview_subject extends progressreview_subject_template {
         return $attendance;
     }
 
-    private function retrieve_performancegrade() {
-        return 0;
-    }
+
 }
