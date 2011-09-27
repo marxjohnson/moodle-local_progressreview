@@ -321,7 +321,7 @@ abstract class progressreview_subject_template {
      */
     protected function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
         global $DB;
-        $grades = array('target' => 0, 'min' => 0, 'cpg' => 0);
+        $grades = array('target' => null, 'min' => null, 'cpg' => null);
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
             $courseid = $this->progressreview->get_course()->originalid;
             $studentid = $this->progressreview->get_student()->id;
@@ -333,7 +333,7 @@ abstract class progressreview_subject_template {
                     $grade = $DB->get_record('grade_grades', array('itemid' => $item->id, 'userid' => $studentid));
                     $grades[$item] = $grade->finalgrade;
                 } else {
-                    $grades[$item] = false;
+                    $grades[$item] = null;
                 }
             }
         }
