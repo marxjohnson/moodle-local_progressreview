@@ -165,7 +165,7 @@ abstract class progressreview_subject_template {
     public function update($data) {
         global $DB;
         $valid_properties = array(
-            'progressreview',
+            'reviewid',
             'comment',
             'behaviour',
             'effort',
@@ -174,7 +174,7 @@ abstract class progressreview_subject_template {
             'homeworktotal',
             'attendance',
             'punctuality',
-            'scale',
+            'scaleid',
             'minimumgrade',
             'targetgrade',
             'performancegrade'
@@ -185,7 +185,7 @@ abstract class progressreview_subject_template {
         }
 
         foreach ($data as $field => $datum) {
-            if(in_array($field, $valid_properties) {
+            if(in_array($field, $valid_properties)) {
                 $this->$field = $datum;
             } else {
                 $data[$field] = false;
@@ -194,7 +194,9 @@ abstract class progressreview_subject_template {
 
         $data['minimumgrade'] = false;
 
-        $data = (object)array_filter($data);
+        $data = (object)array_filter($data, function($datum) {
+            return $datum !== false;
+        });
         if (!empty($this->id)) {
             $data->id = $this->id;
             $DB->update_record('progressreview_subject', $data);
@@ -214,25 +216,26 @@ abstract class progressreview_subject_template {
      */
     private function skeleton_review() {
         $skeleton = array();
-        $homework = $this->retrieve_homework;
+        $skeleton['reviewid'] = $this->progressreview->id;
+        $homework = $this->retrieve_homework();
         $skeleton['homeworkdone'] = $homework->done;
         $skeleton['homeworktotal'] = $homework->total;
         $attendance = $this->retrieve_attendance();
         $skeleton['attendance'] = $attendance->attendance;
-        if (100 <= $skeleton['attendance'] || $skeleton['attendance'] <= 0) {
+        if (100 < $skeleton['attendance'] || $skeleton['attendance'] < 0) {
             throw new coding_exception('retrieve_attandance implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
         $skeleton['punctuality'] = $attendance->punctuality;
-        if (100 <= $skeleton['punctuality'] || $skeleton['punctuality'] <= 0) {
-            thhttp://pastebin.com/y1VQQdsSrow new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
+        if (100 < $skeleton['punctuality'] || $skeleton['punctuality'] < 0) {
+            throw new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
         $skeleton['scaleid'] = $this->retrieve_scaleid();
         $targetgrades = $this->retrieve_targetgrades();
         $skeleton['minimumgrade'] = $targetgrades->min;
         $skeleton['targetgrade'] = $targetgrades->target;
         $skeleton['performancegrade'] = $targetgrades->cpg;
-        if (!is_numeric($skeleton['performancegrade']) {
-            throw new coding_exception('retrieve_performancegrade implemented incorrectly. It must return a number.';
+        if (!is_numeric($skeleton['performancegrade'])) {
+            throw new coding_exception('retrieve_performancegrade implemented incorrectly. It must return a number.');
         }
         $this->update($skeleton);
 
@@ -246,7 +249,7 @@ abstract class progressreview_subject_template {
      */
     private function retrieve_review() {
         global $DB;
-        if ($subjectreview = $DB->get_record('progressreview_subject', array('reviewid', $this->review->id) {
+        if ($subjectreview = $DB->get_record('progressreview_subject', array('reviewid' => $this->progressreview->id))) {
             foreach ((array)$subjectreview as $property => $value) {
                 if ($property != 'reviewid') {
                     $this->$property = $value;
@@ -258,7 +261,7 @@ abstract class progressreview_subject_template {
             $this->skeleton_review();
         }
         $scalerecord = $DB->get_record('scale', array('id' => $this->scaleid));
-        $this->scale = explode(',' $scalerecord->scale);
+        $this->scale = explode(',', $scalerecord->scale);
     } // end of member function retrieve_review
 
     /**
@@ -269,8 +272,7 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private abstract function retrieve_attendance() {
-    } // end of member function retrieve_attendance
+    protected abstract function retrieve_attendance(); // end of member function retrieve_attendance
 
     /**
      * Retrieves the current total and completed homework stats for the current student
@@ -282,7 +284,7 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private function retrieve_homework() {
+    protected function retrieve_homework() {
         global $DB;
         $homework = new stdClass;
         $sql = 'SELECT COUNT(*)
@@ -318,10 +320,10 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
+    protected function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
         global $DB;
-        $grades = array('target' => null, 'min' => null, 'cpg' => null);
-        if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version')) {
+        $grades = array('target' => 0, 'min' => 0, 'cpg' => 0);
+        if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
             $courseid = $this->progressreview->get_course()->id;
             $studentid = $this->progressreview->get_student()->id;
             foreach ($items as $item) {
@@ -330,10 +332,10 @@ abstract class progressreview_subject_template {
                 }
                 if($item = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$item))) {
                     $grade = $DB->get_record('grade_grades', array('itemid' => $item->id, 'userid' => $studentid));
+                    $grades[$item] = $grade->finalgrade;
                 } else {
-                    $grade = false;
+                    $grades[$item] = false;
                 }
-                $grades[$item] = $grade->finalgrade;
             }
         }
         return (object)$grades;
@@ -348,8 +350,9 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private function retrieve_scaleid() {
-        if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version')) {
+    protected function retrieve_scaleid() {
+        global $DB;
+        if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
             $courseid = $this->progressreview->get_course()->id;
             if ($scaleitems = $DB->get_records('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_target'))) {
                 return current($scaleitems)->scaleid;
@@ -363,10 +366,12 @@ abstract class progressreview_subject_template {
         $data = array(
             'homeworkdone' => $homework->done,
             'homeworktotal' => $homework->total,
-            'attendance' => $this->retrieve_attendance()
+            'attendance' => $this->retrieve_attendance(),
             'punctuality' => $this->retrieve_punctuality()
         );
         return $this->update($data);
     }
 
 } // end of progressreview_subject
+
+require_once($CFG->dirroot.'/local/progressreview/plugins/subject/locallib.php');

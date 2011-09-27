@@ -18,7 +18,7 @@ class progressreview_subject extends progressreview_subject_template {
      *
      * @todo Modify to use the attendance module by default
      */
-    private function retrieve_attendance() {
+    protected function retrieve_attendance() {
         global $UDB;
         $sql = "SELECT DISTINCT
                 m.m_id AS \"id\",
@@ -69,7 +69,5 @@ class progressreview_subject extends progressreview_subject_template {
         return $attendance;
     }
 
-    private function retrieve_performancegrade() {
-        return 0;
-    }
+
 }

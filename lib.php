@@ -10,6 +10,9 @@
 const PROGRESSREVIEW_TUTOR = 1;
 const PROGRESSREVIEW_SUBJECT = 2;
 
+const PROGRESSREVIEW_TEACHER = 0;
+const PROGRESSREVIEW_STUDENT = 1;
+
 class progressreview {
 
      /*** Attributes: ***/
@@ -18,7 +21,7 @@ class progressreview {
      * The ID of the record for this review in the progressreview table
      * @access public
      */
-    private $id;
+    public $id;
 
     /**
      * An array containing the object for each plugin active in this review's session
@@ -79,7 +82,7 @@ class progressreview {
     public function __construct($studentid,  $sessionid,  $courseid,  $teacherid, $type = null) {
         global $DB;
 
-        $this->session = $DB->get_record('progressreview_session', array('id' => 'sessionid'));
+        $this->session = $DB->get_record('progressreview_session', array('id' => $sessionid));
         $this->teacher = $this->retrieve_teacher($teacherid);
         $this->student = $DB->get_record('user', array('id' => $studentid));
         $this->course = $this->retrieve_course($courseid);
@@ -115,7 +118,7 @@ class progressreview {
     }
 
     public function get_course() {
-        return $this->course();
+        return $this->course;
     }
 
     /**
@@ -146,13 +149,13 @@ class progressreview {
      * @access private
      */
     private function init_plugins() {
-        global $DB;
-
+        global $DB, $CFG;
         $activeplugins = $DB->get_records('progressreview_activeplugins', array('sessionid' => $this->session->id, 'reviewtype' => $this->type));
 
         foreach ($activeplugins as $activeplugin) {
-                $classname = $activeplugin->name;
-        	$this->plugins[$activeplugin->name] = new $classname;
+                require_once($CFG->dirroot.'/local/progressreview/plugins/'.$activeplugin->plugin.'/lib.php');
+                $classname = 'progressreview_'.$activeplugin->plugin;
+        	$this->plugins[$activeplugin->plugin] = new $classname($this);
         }
         return true;
     } // end of member function get_plugins
@@ -170,11 +173,11 @@ class progressreview {
     private function retrieve_teacher($id) {
         global $DB;
 
-        if (!$teacher = $DB->get_record('progressreview_teacher', array('originalid' => $id))) {
+        if (!$teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
         	$teacher = $DB->get_record('user', array('id' => $id), 'id, firstname, lastname');
         	$teacher->originalid = $teacher->id;
         	unset($teacher->id);
-        	$teacher->id = $DB->insert_record('progressreview_teacher', $teacher);
+        	$teacher->id = $DB->insert_record('progressreview_teachers', $teacher);
         }
 
         return $teacher;
@@ -193,7 +196,7 @@ class progressreview {
         global $DB;
 
         if (!$course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
-        	$course = $DB->get_record('course', array('id', $id), 'id, shortname, fullname');
+        	$course = $DB->get_record('course', array('id' => $id), 'id, shortname, fullname');
         	$course->originalid = $course->id;
         	unset($course->id);
         	$course->id = $DB->insert_record('progressreview_course', $course);
@@ -218,7 +221,7 @@ class progressreview_controller {
      */
     public static function get_sessions() {
         global $DB;
-        return $DB->get_records('progressreview_session');
+        return $DB->get_records('progressreview_session', array(), 'deadline_tutor DESC');
     } // end of member function get_sessions
 
     /**
@@ -259,6 +262,67 @@ class progressreview_controller {
 
     } // end of member function get_reviews
 
+
+    public static function get_course_summaries($sessionid, $type) {
+        if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
+            throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
+        }
+
+        global $DB;
+
+        if ($type == PROGRESSREVIEW_SUBJECT) {
+            $table = '{progressreview_subject}';
+        } else {
+            $table = '{progressreview_tutor}';
+        }
+
+        $total_select = 'SELECT COUNT(*) ';
+        $total_from = 'FROM '.$table.' ps1 ';
+        $total_where = 'WHERE p.id = ps1.reviewid';
+        $total_sql = $total_select.$total_from.$total_where;
+
+        $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
+        $completed_from = 'FROM '.$table.' ps2 ';
+            $completed_where = 'WHERE p.id = ps2.reviewid
+             AND p.datemodified IS NOT NULL
+             AND LENGTH(ps2.comments) > 0 ';
+        if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
+            $completed_where = 'WHERE p.datemodified IS NOT NULL
+                AND ps2.performancegrade IS NOT NULL';
+        }
+        $completed_sql = $total_select.$completed_from.$completed_where;
+
+        $teacher_concat = $DB->sql_concat('t.firstname', '" "', 't.lastname');
+        $select = 'SELECT DISTINCT c.id as courseid, 
+            c.fullname AS name, 
+            '.$teacher_concat.' AS teacher, 
+            ('.$total_sql.') AS total, 
+            ('.$completed_sql.') AS completed ';
+        $from = 'FROM {progressreview} p
+            JOIN {progressreview_course} c ON p.courseid = c.originalid
+            JOIN {progressreview_teachers} t ON p.teacherid = t.originalid ';
+        $where = 'WHERE p.sessionid = ?';
+        $order = 'ORDER BY c.fullname, teacher';
+        $params = array($sessionid);
+
+        return $DB->get_records_sql($select.$from.$where, $params);
+    }
+
+    public static function get_my_review_courses($sessionid) {
+        global $DB, $USER;
+        $courses = enrol_get_my_courses();
+        $courseids = array_keys($courses);
+        $params = array($sessionid, $USER->id, $USER->id);
+        list($in_sql, $in_params) = $DB->get_in_or_equal($courseids);
+        $select = 'SELECT pc.* ';
+        $from = 'FROM {progressreview} p
+            JOIN {progressreview_course} pc ON p.courseid = pc.originalid ';
+        $where = 'WHERE p.sessionid = ?
+            AND (p.teacherid = ? OR p.studentid = ?)
+            AND p.courseid '.$in_sql.' ';
+        $order = 'ORDER BY pc.shortname';
+        return $DB->get_records_sql($select.$from.$where.$order, array_merge($params, $in_params));
+    }
     /**
      * Creates reviews for each student and teacher in the given course and session
      *
@@ -270,10 +334,11 @@ class progressreview_controller {
      * @param int $sessionid
      * @return true;
      **/
-    public static function generate_reviews_for_course($courseid, $sessionid) {
-        $coursecontext = get_context(CONTEXT_COURSE, $courseid);
-        $students = get_users_by_capability('local/progressreview:viewown', $coursecontext);
-        $teachers = get_users_by_capability('local/progressreview:write', $coursecontext);
+    public static function generate_reviews_for_course($courseid, $sessionid, $reviewtype = null) {
+        global $DB;
+        $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
+        $students = get_users_by_capability($coursecontext, 'moodle/local_progressreview:viewown');
+        $teachers = get_users_by_capability($coursecontext, 'moodle/local_progressreview:write');
         foreach ($students as $student) {
             foreach ($teachers as $teacher) {
                 $params = array(
@@ -283,14 +348,18 @@ class progressreview_controller {
                     'teacherid' => $teacher->id
                 );
                 if (!$DB->record_exists('progressreview', $params)) {
-                    $typeargs = array_combine(array('courseid', 'sessionid'), get_func_args());
-                    if ($reviews = $DB->get_records('progressreview', $typeargs)) {
-                        $params['type'] = current($reviews)->type;
+                    if ($reviewtype) {
+                        $params['type'] = $reviewtype;
                     } else {
-                        $params['type'] = $this->retrieve_type($courseid);
+                        $typeargs = array_combine(array('courseid', 'sessionid'), func_get_args());
+                        if ($reviews = $DB->get_records('progressreview', $typeargs)) {
+                            $params['type'] = current($reviews)->type;
+                        } else {
+                            $params['type'] = self::retrieve_type($courseid);
+                        }
                     }
                     $rc = new ReflectionClass('progressreview');
-                    $review = $fc->newInstanceArgs($params);
+                    $review = $rc->newInstanceArgs($params);
                 }
             }
         }

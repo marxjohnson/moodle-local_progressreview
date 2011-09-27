@@ -1,25 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/progressreview/db" VERSION="20110922" COMMENT="Core tables for progressreview"
+<XMLDB PATH="local/progressreview/db" VERSION="20110926" COMMENT="Core tables for progressreview"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="progressreview_blah" COMMENT="test" NEXT="progressreview">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-    </TABLE>
-    <TABLE NAME="progressreview" COMMENT="Unique reviews for a student, on a course, by a teacher, in a review session." PREVIOUS="progressreview_blah" NEXT="progressreview_session">
+    <TABLE NAME="progressreview" COMMENT="Unique reviews for a student, on a course, by a teacher, in a review session." NEXT="progressreview_session">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="sessionid"/>
         <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="teacherid"/>
         <FIELD NAME="teacherid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="sessionid" NEXT="studentid"/>
         <FIELD NAME="studentid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="teacherid" NEXT="courseid"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="studentid" NEXT="reviewtype"/>
-        <FIELD NAME="reviewtype" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="courseid"/>
+        <FIELD NAME="reviewtype" TYPE="int" LENGTH="11" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="courseid" NEXT="datecreated"/>
+        <FIELD NAME="datecreated" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="reviewtype" NEXT="datemodified"/>
+        <FIELD NAME="datemodified" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" PREVIOUS="datecreated"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
@@ -31,15 +25,16 @@
     </TABLE>
     <TABLE NAME="progressreview_session" COMMENT="Settings shared by all reviews in a review session" PREVIOUS="progressreview" NEXT="progressreview_course">
       <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="deadline_subject"/>
-        <FIELD NAME="deadline_subject" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="deadline_tutor"/>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="deadline_subject"/>
+        <FIELD NAME="deadline_subject" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="name" NEXT="deadline_tutor"/>
         <FIELD NAME="deadline_tutor" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="deadline_subject" NEXT="lockafterdeadline"/>
         <FIELD NAME="lockafterdeadline" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="deadline_tutor" NEXT="scale_behaviour"/>
         <FIELD NAME="scale_behaviour" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="lockafterdeadline" NEXT="scale_effort"/>
         <FIELD NAME="scale_effort" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_behaviour" NEXT="scale_homework"/>
         <FIELD NAME="scale_homework" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_effort" NEXT="template_subject"/>
-        <FIELD NAME="template_subject" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_homework" NEXT="template_tutor"/>
-        <FIELD NAME="template_tutor" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" PREVIOUS="template_subject" NEXT="snapshotdate"/>
+        <FIELD NAME="template_subject" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="scale_homework" NEXT="template_tutor"/>
+        <FIELD NAME="template_tutor" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="template_subject" NEXT="snapshotdate"/>
         <FIELD NAME="snapshotdate" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="template_tutor" NEXT="previoussession"/>
         <FIELD NAME="previoussession" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" PREVIOUS="snapshotdate" NEXT="inductionreview"/>
         <FIELD NAME="inductionreview" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="previoussession"/>
