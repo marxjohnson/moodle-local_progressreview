@@ -293,7 +293,7 @@ class progressreview_controller {
         $completed_sql = $total_select.$completed_from.$completed_where;
 
         $teacher_concat = $DB->sql_concat('t.firstname', '" "', 't.lastname');
-        $select = 'SELECT DISTINCT c.id as courseid, 
+        $select = 'SELECT p.id, c.id as courseid, 
             c.fullname AS name, 
             '.$teacher_concat.' AS teacher, 
             ('.$total_sql.') AS total, 
@@ -301,11 +301,12 @@ class progressreview_controller {
         $from = 'FROM {progressreview} p
             JOIN {progressreview_course} c ON p.courseid = c.originalid
             JOIN {progressreview_teachers} t ON p.teacherid = t.originalid ';
-        $where = 'WHERE p.sessionid = ?';
+        $where = 'WHERE p.sessionid = ? '; 
+        $group = 'GROUP BY courseid, teacher ';
         $order = 'ORDER BY c.fullname, teacher';
         $params = array($sessionid);
 
-        return $DB->get_records_sql($select.$from.$where, $params);
+        return $DB->get_records_sql($select.$from.$where.$group.$order, $params);
     }
 
     public static function get_my_review_courses($sessionid) {
