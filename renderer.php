@@ -137,6 +137,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
     }
 
+    function changescale_button($sessionid, $courseid) {
+        $url = new moodle_url('/local/progressreview/changescale.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
+        $button = $this->output->single_button($url, get_string('changescale', 'local_progressreview'), 'get');
+        return $this->output->container($button, array('changescale'));
+    }
+
     /**
      * @todo Make option for non-induction review, and allow avgcse to be configured
      * @todo Make pluggable

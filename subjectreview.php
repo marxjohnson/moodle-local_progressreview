@@ -8,7 +8,7 @@ $courseid = required_param('courseid', PARAM_INT);
 $submitted = optional_param('submit', false, PARAM_BOOL);
 $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
 
-if (!$DB->record_exists('progressreview_session', array('id' => $sessionid))) {
+if (!$session = $DB->get_record('progressreview_session', array('id' => $sessionid))) {
     print_error('invalidsession', 'local_progressreview');
 }
 
@@ -31,6 +31,7 @@ $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'));
 $PAGE->navbar->add(get_string('writereviews', 'local_progressreview'));
 
 $output = $PAGE->get_renderer('local_progressreview');
+$content = '';
 
 if ($mode == PROGRESSREVIEW_TEACHER) {
     $reviews = array();
@@ -55,7 +56,8 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
         $reviewdata[] = $subjectreview->get_review();
     }
 
-    $content = $output->subject_review_table($reviewdata, true);
+    $content .= $output->changescale_button($sessionid, $courseid);
+    $content .= $output->subject_review_table($reviewdata, true);
 }
 
 echo $OUTPUT->header();
