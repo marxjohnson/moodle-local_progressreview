@@ -118,7 +118,7 @@ class progressreview {
     }
 
     public function get_course() {
-        return $this->course();
+        return $this->course;
     }
 
     /**
