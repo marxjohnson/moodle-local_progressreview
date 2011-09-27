@@ -21,7 +21,7 @@ class progressreview {
      * The ID of the record for this review in the progressreview table
      * @access public
      */
-    private $id;
+    public $id;
 
     /**
      * An array containing the object for each plugin active in this review's session
