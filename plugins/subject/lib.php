@@ -216,7 +216,8 @@ abstract class progressreview_subject_template {
      */
     private function skeleton_review() {
         $skeleton = array();
-        $homework = $this->retrieve_homework;
+        $skeleton['reviewid'] = $this->progressreview->id;
+        $homework = $this->retrieve_homework();
         $skeleton['homeworkdone'] = $homework->done;
         $skeleton['homeworktotal'] = $homework->total;
         $attendance = $this->retrieve_attendance();
