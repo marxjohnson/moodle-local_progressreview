@@ -121,6 +121,10 @@ class progressreview {
         return $this->course;
     }
 
+    public function get_plugin($name) {
+        return $this->plugins[$name];
+    }
+
     /**
      * Transfers this review to allow a different teacher to write it
      *
