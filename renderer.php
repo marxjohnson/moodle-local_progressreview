@@ -115,5 +115,26 @@ class local_progressreview_renderer extends plugin_renderer_base {
         }
         return html_writer::alist($sessionlinks);
     }
+
+    function course_selector_form($potential_selector, $distributed_selector, $sessionid) {
+
+        $output = '';
+        $table = new html_table('course_selector');
+        $row = new html_table_row();
+        $row->cells[] = $distributed_selector->display(true);
+        $cell = html_writer::empty_tag('input', array('id' => 'course_selector_button', 'name' => 'generate', 'type' => 'submit', 'value' => $this->output->larrow().' '.get_string('createreviews', 'local_progressreview')));
+        $row->cells[] = $cell;
+        $row->cells[] = $potential_selector->display(true);
+        $table->data[] = $row;
+
+        $output = html_writer::start_tag('form', array('action' => $this->page->url->out(), 'method' => 'post'));
+        $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $sessionid));
+        $output .= html_writer::table($table);
+        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'regenerate', 'value' => get_string('regenerate', 'local_progressreviews')));
+        $output .= html_writer::end_tag('form');
+
+        return $output;
+
+    }
 }
 
