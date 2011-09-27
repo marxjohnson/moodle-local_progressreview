@@ -296,7 +296,7 @@ abstract class progressreview_subject_template {
                          FROM {grade_grades} AS g
                          WHERE g.itemid = i.id) > ?)
                     AND a.timedue < ?';
-        $params = array($this->progressreview->get_course()->id, 'assignment', 0, 0, time());
+        $params = array($this->progressreview->get_course()->originalid, 'assignment', 0, 0, time());
         $homework->total = $DB->count_records_sql($sql, $params);
 
         $sql = 'SELECT COUNT(*)
@@ -307,7 +307,7 @@ abstract class progressreview_subject_template {
                     AND i.courseid = ?
                     AND g.finalgrade > ?
                     AND a.timedue < ?';
-        $params = array('mod', $this->progressreview->get_student()->id, $this->progressreview->get_course()->id, 1, time());
+        $params = array('mod', $this->progressreview->get_student()->id, $this->progressreview->get_course()->originalid, 1, time());
         $homework->done = $DB->count_records_sql($sql, $params);
         return $homework;
     } // end of member function retrieve_homework
@@ -323,7 +323,7 @@ abstract class progressreview_subject_template {
         global $DB;
         $grades = array('target' => 0, 'min' => 0, 'cpg' => 0);
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
-            $courseid = $this->progressreview->get_course()->id;
+            $courseid = $this->progressreview->get_course()->originalid;
             $studentid = $this->progressreview->get_student()->id;
             foreach ($items as $item) {
                 if (!in_array($item, array('target', 'min', 'cpg'))) {
@@ -352,7 +352,7 @@ abstract class progressreview_subject_template {
     protected function retrieve_scaleid() {
         global $DB;
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
-            $courseid = $this->progressreview->get_course()->id;
+            $courseid = $this->progressreview->get_course()->originalid;
             if ($scaleitems = $DB->get_records('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_target'))) {
                 return current($scaleitems)->scaleid;
             }
