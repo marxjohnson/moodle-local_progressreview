@@ -1,6 +1,7 @@
 <?php
 require_once('../../config.php');
 require_once($CFG->dirroot.'/local/progressreview/lib.php');
+require_once($CFG->dirroot.'/local/progressreview/course_selector.php');
 require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 require_once($CFG->dirroot.'/local/progressreview/sessions_form.php');
 
