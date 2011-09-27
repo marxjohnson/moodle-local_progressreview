@@ -24,7 +24,16 @@ class progressreview_session_form extends moodleform {
         if ($data->id) {
             return $DB->update_record('progressreview_session', $data);
         } else {
-            return $DB->insert_record('progressreview_session', $data);
+            $id = $DB->insert_record('progressreview_session', $data);
+            $plugins = array(
+                (object)array('plugin' => 'subject', 'sessionid' => $id, 'reviewtype' => PROGRESSREVIEW_SUBJECT),
+                (object)array('plugin' => 'tutor', 'sessionid' => $id, 'reviewtype' => PROGRESSREVIEW_TUTOR),
+                (object)array('plugin' => 'targets', 'sessionid' => $id, 'reviewtype' => PROGRESSREVIEW_TUTOR)
+            );
+            foreach ($plugins as $plugin) {
+                $DB->insert_record('progressreview_activeplugins', $plugin);
+            }
+            return $id;
         }
     }
 }
