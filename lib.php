@@ -87,6 +87,10 @@ class progressreview {
         $this->student = $DB->get_record('user', array('id' => $studentid));
         $this->course = $this->retrieve_course($courseid);
 
+        $this->session->scale_behaviour = explode(',', $this->session->scale_behaviour);
+        $this->session->scale_homework = explode(',', $this->session->scale_homework);
+        $this->session->scale_effort = explode(',', $this->session->scale_effort);
+
         $params = array('studentid' => $studentid, 'courseid' => $courseid, 'teacherid' => $teacherid, 'sessionid' => $sessionid);
         if ($review = $DB->get_record('progressreview', $params)) {
         	$this->id = $review->id;

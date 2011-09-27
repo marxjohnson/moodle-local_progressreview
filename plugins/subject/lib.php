@@ -260,8 +260,10 @@ abstract class progressreview_subject_template {
         } else {
             $this->skeleton_review();
         }
-        $scalerecord = $DB->get_record('scale', array('id' => $this->scaleid));
-        $this->scale = explode(',', $scalerecord->scale);
+        if ($this->scaleid) {
+            $scalerecord = $DB->get_record('scale', array('id' => $this->scaleid));
+            $this->scale = explode(',', $scalerecord->scale);
+        }
     } // end of member function retrieve_review
 
     /**
