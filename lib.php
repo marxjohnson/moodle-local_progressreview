@@ -304,15 +304,15 @@ class progressreview_controller {
         $completed_sql = $total_select.$completed_from.$completed_where;
 
         $teacher_concat = $DB->sql_concat('t.firstname', '" "', 't.lastname');
-        $select = 'SELECT p.id, c.id as courseid, 
-            c.fullname AS name, 
-            '.$teacher_concat.' AS teacher, 
-            ('.$total_sql.') AS total, 
+        $select = 'SELECT p.id, c.id as courseid,
+            c.fullname AS name,
+            '.$teacher_concat.' AS teacher,
+            ('.$total_sql.') AS total,
             ('.$completed_sql.') AS completed ';
         $from = 'FROM {progressreview} p
             JOIN {progressreview_course} c ON p.courseid = c.originalid
             JOIN {progressreview_teachers} t ON p.teacherid = t.originalid ';
-        $where = 'WHERE p.sessionid = ? '; 
+        $where = 'WHERE p.sessionid = ? ';
         $group = 'GROUP BY courseid, teacher ';
         $order = 'ORDER BY c.fullname, teacher';
         $params = array($sessionid);
