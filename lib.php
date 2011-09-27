@@ -357,7 +357,7 @@ class progressreview_controller {
                         $params['type'] = $this->retrieve_type($courseid);
                     }
                     $rc = new ReflectionClass('progressreview');
-                    $review = $fc->newInstanceArgs($params);
+                    $review = $rc->newInstanceArgs($params);
                 }
             }
         }
