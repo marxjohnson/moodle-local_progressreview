@@ -149,13 +149,13 @@ class progressreview {
      * @access private
      */
     private function init_plugins() {
-        global $DB;
-
+        global $DB, $CFG;
         $activeplugins = $DB->get_records('progressreview_activeplugins', array('sessionid' => $this->session->id, 'reviewtype' => $this->type));
 
         foreach ($activeplugins as $activeplugin) {
-                $classname = $activeplugin->name;
-        	$this->plugins[$activeplugin->name] = new $classname;
+                require_once($CFG->dirroot.'/local/progressreview/plugins/'.$activeplugin->plugin.'/lib.php');
+                $classname = 'progressreview_'.$activeplugin->plugin;
+        	$this->plugins[$activeplugin->plugin] = new $classname($this);
         }
         return true;
     } // end of member function get_plugins
