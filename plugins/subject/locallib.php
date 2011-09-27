@@ -68,5 +68,21 @@ class progressreview_subject extends progressreview_subject_template {
         return $attendance;
     }
 
+    protected function retrieve_scaleid() {
+        global $DB;
+        if ($scaleid = parent::retrieve_scaleid()) {
+            return $scaleid;
+        }
+
+        $courseid = $this->progressreview->get_course()->originalid;
+        if ($targetitems = $DB->get_records('grade_items', array('idnumber' => 'targetgrades_target', 'courseid' => $courseid))) {
+            return current($targetitems)->scaleid;
+        } else if ($formalitems = $DB->get_records('grade_items', array('formal' => 1, 'courseid' => $courseid))) {
+            return current($formalitems)->scaleid;
+        } else {
+            return 41;
+        }
+    }
+
 
 }
