@@ -351,6 +351,7 @@ abstract class progressreview_subject_template {
      * @access private
      */
     private function retrieve_scaleid() {
+        global $DB;
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
             $courseid = $this->progressreview->get_course()->id;
             if ($scaleitems = $DB->get_records('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_target'))) {
