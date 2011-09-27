@@ -17,7 +17,7 @@ class progressreview_subject extends progressreview_subject_template {
      *
      * @todo Modify to use the attendance module by default
      */
-    private function retrieve_attendance() {
+    protected function retrieve_attendance() {
         $attendance = new stdClass;
         $attendance->attendance = 0;
         $attendance->punctuality = 0;
