@@ -87,6 +87,10 @@ class progressreview {
         $this->student = $DB->get_record('user', array('id' => $studentid));
         $this->course = $this->retrieve_course($courseid);
 
+        $this->session->scale_behaviour = explode(',', $this->session->scale_behaviour);
+        $this->session->scale_homework = explode(',', $this->session->scale_homework);
+        $this->session->scale_effort = explode(',', $this->session->scale_effort);
+
         $params = array('studentid' => $studentid, 'courseid' => $courseid, 'teacherid' => $teacherid, 'sessionid' => $sessionid);
         if ($review = $DB->get_record('progressreview', $params)) {
         	$this->id = $review->id;
@@ -119,6 +123,10 @@ class progressreview {
 
     public function get_course() {
         return $this->course;
+    }
+
+    public function get_plugin($name) {
+        return $this->plugins[$name];
     }
 
     /**
@@ -293,7 +301,7 @@ class progressreview_controller {
         $completed_sql = $total_select.$completed_from.$completed_where;
 
         $teacher_concat = $DB->sql_concat('t.firstname', '" "', 't.lastname');
-        $select = 'SELECT DISTINCT c.id as courseid, 
+        $select = 'SELECT p.id, c.id as courseid, 
             c.fullname AS name, 
             '.$teacher_concat.' AS teacher, 
             ('.$total_sql.') AS total, 
@@ -301,11 +309,12 @@ class progressreview_controller {
         $from = 'FROM {progressreview} p
             JOIN {progressreview_course} c ON p.courseid = c.originalid
             JOIN {progressreview_teachers} t ON p.teacherid = t.originalid ';
-        $where = 'WHERE p.sessionid = ?';
+        $where = 'WHERE p.sessionid = ? '; 
+        $group = 'GROUP BY courseid, teacher ';
         $order = 'ORDER BY c.fullname, teacher';
         $params = array($sessionid);
 
-        return $DB->get_records_sql($select.$from.$where, $params);
+        return $DB->get_records_sql($select.$from.$where.$group.$order, $params);
     }
 
     public static function get_my_review_courses($sessionid) {
@@ -323,6 +332,16 @@ class progressreview_controller {
         $order = 'ORDER BY pc.shortname';
         return $DB->get_records_sql($select.$from.$where.$order, array_merge($params, $in_params));
     }
+
+    public static function get_plugins_for_session($sessionid, $type = null) {
+        global $DB;
+        $params = array('sessionid' => $sessionid);
+        if ($type) {
+            array('reviewtype' => $type);
+        }
+        return $DB->get_records('progressreview_activeplugins', $params);
+    }
+
     /**
      * Creates reviews for each student and teacher in the given course and session
      *

@@ -35,9 +35,12 @@ if (!$id) {
     $session = $DB->get_record('progressreview_session', array('id' => $id));
 
     $potential_subject_selector = new progressreview_potential_course_selector('potential_subjects');
-    $distributed_subject_selector = new progressreview_distributed_course_selector('distributed_subjects', '', $session->id);
+    $distributed_subject_selector = new progressreview_distributed_course_selector('distributed_subjects', $session->id);
 
-    //$potential_subject_selector->exclude(array_keys(current($distributed_subject_selector->find_users())));
+    $excludes = $distributed_subject_selector->find_users();
+    foreach ($excludes as $exclude) {
+        $potential_subject_selector->exclude(array_keys($exclude));
+    }
 
     $subjects = array();
 

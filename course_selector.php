@@ -53,14 +53,13 @@ class progressreview_distributed_course_selector extends progressreview_potentia
 
         public function find_users($search = '') {
             global $DB;
-            $options = array(get_string('results') => array());
+            $options = array(get_string('courseswithreviews', 'local_progressreview') => array());
             $reviewcourses = $DB->get_records_sql('SELECT DISTINCT courseid FROM {progressreview} WHERE sessionid = ?', array($this->sessionid));
             foreach($reviewcourses as $reviewcourse) {
-                $concat_sql = $DB->sql_concat('shortname', '"-"', 'fullname');
                 $select = 'SELECT c.id, c.shortname AS lastname, "" AS firstname, c.fullname AS email, cc.name AS category ';
                 $from = 'FROM {course} c JOIN {course_categories} cc on c.category = cc.id ';
                 $where = 'WHERE c.id = ?';
-                $params = array($reviewcourse->id);
+                $params = array($reviewcourse->courseid);
                 if (!empty($search)) {
                     $shortnamelike = $DB->sql_like('shortname', '?');
                     $fullnamelike = $DB->sql_like('fullname', '?');

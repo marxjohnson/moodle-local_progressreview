@@ -260,8 +260,10 @@ abstract class progressreview_subject_template {
         } else {
             $this->skeleton_review();
         }
-        $scalerecord = $DB->get_record('scale', array('id' => $this->scaleid));
-        $this->scale = explode(',', $scalerecord->scale);
+        if ($this->scaleid) {
+            $scalerecord = $DB->get_record('scale', array('id' => $this->scaleid));
+            $this->scale = explode(',', $scalerecord->scale);
+        }
     } // end of member function retrieve_review
 
     /**
@@ -358,7 +360,7 @@ abstract class progressreview_subject_template {
                 return current($scaleitems)->scaleid;
             }
         }
-        return false;
+        return 0;
     } // end of member function retrieve_scaleid
 
     public function snapshot() {
