@@ -196,7 +196,7 @@ class progressreview {
         global $DB;
 
         if (!$course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
-        	$course = $DB->get_record('course', array('id', $id), 'id, shortname, fullname');
+        	$course = $DB->get_record('course', array('id' => $id), 'id, shortname, fullname');
         	$course->originalid = $course->id;
         	unset($course->id);
         	$course->id = $DB->insert_record('progressreview_course', $course);
