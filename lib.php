@@ -350,11 +350,15 @@ class progressreview_controller {
                     'teacherid' => $teacher->id
                 );
                 if (!$DB->record_exists('progressreview', $params)) {
-                    $typeargs = array_combine(array('courseid', 'sessionid'), get_func_args());
-                    if ($reviews = $DB->get_records('progressreview', $typeargs)) {
-                        $params['type'] = current($reviews)->type;
+                    if ($reviewtype) {
+                        $params['type'] = $reviewtype;
                     } else {
-                        $params['type'] = $this->retrieve_type($courseid);
+                        $typeargs = array_combine(array('courseid', 'sessionid'), func_get_args());
+                        if ($reviews = $DB->get_records('progressreview', $typeargs)) {
+                            $params['type'] = current($reviews)->type;
+                        } else {
+                            $params['type'] = self::retrieve_type($courseid);
+                        }
                     }
                     $rc = new ReflectionClass('progressreview');
                     $review = $rc->newInstanceArgs($params);
