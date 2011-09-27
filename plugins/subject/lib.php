@@ -376,6 +376,10 @@ abstract class progressreview_subject_template {
         return $this->update($data);
     }
 
+    public function get_scaleid() {
+        return $this->scaleid;
+    }
+
 } // end of progressreview_subject
 
 require_once($CFG->dirroot.'/local/progressreview/plugins/subject/locallib.php');
