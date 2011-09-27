@@ -271,8 +271,7 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private abstract function retrieve_attendance() {
-    } // end of member function retrieve_attendance
+    protected abstract function retrieve_attendance(); // end of member function retrieve_attendance
 
     /**
      * Retrieves the current total and completed homework stats for the current student
@@ -284,7 +283,7 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private function retrieve_homework() {
+    protected function retrieve_homework() {
         global $DB;
         $homework = new stdClass;
         $sql = 'SELECT COUNT(*)
@@ -320,7 +319,7 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
+    protected function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
         global $DB;
         $grades = array('target' => 0, 'min' => 0, 'cpg' => 0);
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
@@ -350,7 +349,7 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private function retrieve_scaleid() {
+    protected function retrieve_scaleid() {
         global $DB;
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
             $courseid = $this->progressreview->get_course()->id;
