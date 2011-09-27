@@ -194,7 +194,9 @@ abstract class progressreview_subject_template {
 
         $data['minimumgrade'] = false;
 
-        $data = (object)array_filter($data);
+        $data = (object)array_filter($data, function($datum) {
+            return $datum !== false;
+        });
         if (!empty($this->id)) {
             $data->id = $this->id;
             $DB->update_record('progressreview_subject', $data);
