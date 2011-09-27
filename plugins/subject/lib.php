@@ -358,7 +358,7 @@ abstract class progressreview_subject_template {
                 return current($scaleitems)->scaleid;
             }
         }
-        return false;
+        return 0;
     } // end of member function retrieve_scaleid
 
     public function snapshot() {
