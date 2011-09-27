@@ -173,11 +173,11 @@ class progressreview {
     private function retrieve_teacher($id) {
         global $DB;
 
-        if (!$teacher = $DB->get_record('progressreview_teacher', array('originalid' => $id))) {
+        if (!$teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
         	$teacher = $DB->get_record('user', array('id' => $id), 'id, firstname, lastname');
         	$teacher->originalid = $teacher->id;
         	unset($teacher->id);
-        	$teacher->id = $DB->insert_record('progressreview_teacher', $teacher);
+        	$teacher->id = $DB->insert_record('progressreview_teachers', $teacher);
         }
 
         return $teacher;
