@@ -337,6 +337,8 @@ class progressreview_controller {
         $coursecontext = get_context(CONTEXT_COURSE, $courseid);
         $students = get_users_by_capability('local/progressreview:viewown', $coursecontext);
         $teachers = get_users_by_capability('local/progressreview:write', $coursecontext);
+        $students = get_users_by_capability($coursecontext, 'moodle/local_progressreview:viewown');
+        $teachers = get_users_by_capability($coursecontext, 'moodle/local_progressreview:write');
         foreach ($students as $student) {
             foreach ($teachers as $teacher) {
                 $params = array(
