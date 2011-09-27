@@ -55,8 +55,7 @@ class progressreview_subject extends progressreview_subject_template {
                     me1.e_start,
                     me1.e_name,
                     me1.e_reference,
-                    me1.e_id
-            ORDER BY 1,2,14";
+                    me1.e_id";
 
         $params = array('coursecode' => $this->progressreview->get_course()->shortname,
             'termstart' => '1-Sep-2011',
