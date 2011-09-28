@@ -75,7 +75,7 @@ class progressreview_distributed_course_selector extends progressreview_potentia
                 if (!isset($options[$course->category])) {
                     $options[$course->category] = array();
                 }
-                $options[$course->category][] = $course;
+                $options[$course->category][$course->id] = $course;
             }
             return $options;
         }
