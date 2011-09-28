@@ -5,9 +5,10 @@ require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 
 $sessionid = required_param('sessionid', PARAM_INT);
 $courseid = required_param('courseid', PARAM_INT);
+$submitted = optional_param('submit', false, PARAM_BOOL);
 $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
 
-if (!$DB->record_exists('progressreview_session', array('id' => $sessionid))) {
+if (!$session = $DB->get_record('progressreview_session', array('id' => $sessionid))) {
     print_error('invalidsession', 'local_progressreview');
 }
 
@@ -25,11 +26,11 @@ if (has_capability('moodle/local_progressreview:write', $coursecontext)) {
 
 require_login($course);
 $PAGE->set_url('/local/progressreview/subjectreview.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
-$PAGE->navbar->add($course->shortname, new moodle_url('/course/view.php', array('id' => $course->id)));
 $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'));
-$PAGE->navbar->add(get_string('writereviews', 'local_progressreview'));
+$PAGE->navbar->add($session->name);
 
 $output = $PAGE->get_renderer('local_progressreview');
+$content = '';
 
 if ($mode == PROGRESSREVIEW_TEACHER) {
     $reviews = array();
@@ -37,10 +38,25 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
     $students = get_users_by_capability($coursecontext, 'moodle/local_progressreview:viewown', '', 'lastname, firstname');
     foreach ($students as $student) {
         $reviews[$student->id] = new progressreview($student->id, $sessionid, $courseid, $USER->id, PROGRESSREVIEW_SUBJECT);
-        $reviewdata[] = $reviews[$student->id]->get_plugin('subject')->get_review();
+        $subjectreview = $reviews[$student->id]->get_plugin('subject');
+        if ($submitted) {
+            $submittedreview = $_POST['review'][$subjectreview->id];
+            $newdata = array(
+                'homeworkdone' => clean_param($submittedreview['homeworkdone'], PARAM_INT),
+                'homeworktotal' => clean_param($submittedreview['homeworktotal'], PARAM_INT),
+                'behaviour' => clean_param($submittedreview['behaviour'], PARAM_INT),
+                'effort' => clean_param($submittedreview['effort'], PARAM_INT),
+                'targetgrade' => clean_param($submittedreview['targetgrade'], PARAM_INT),
+                'performancegrade' => clean_param($submittedreview['performancegrade'], PARAM_INT)
+            );
+            $subjectreview->update($newdata);
+            $content = $OUTPUT->notification(get_string('changessaved'));
+        }
+        $reviewdata[] = $subjectreview->get_review();
     }
 
-    $content = $output->subject_review_table($reviewdata, true);
+    $content .= $output->changescale_button($sessionid, $courseid);
+    $content .= $output->subject_review_table($reviewdata, true);
 }
 
 echo $OUTPUT->header();

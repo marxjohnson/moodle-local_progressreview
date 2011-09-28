@@ -18,7 +18,7 @@ abstract class progressreview_subject_template {
      * belongs to.
      * @access private
      */
-    private $progressreview;
+    protected $progressreview;
 
     /**
      * The comments entered for this review
@@ -234,9 +234,6 @@ abstract class progressreview_subject_template {
         $skeleton['minimumgrade'] = $targetgrades->min;
         $skeleton['targetgrade'] = $targetgrades->target;
         $skeleton['performancegrade'] = $targetgrades->cpg;
-        if (!is_numeric($skeleton['performancegrade'])) {
-            throw new coding_exception('retrieve_performancegrade implemented incorrectly. It must return a number.');
-        }
         $this->update($skeleton);
 
     } // end of member function skeleton_review
@@ -260,9 +257,14 @@ abstract class progressreview_subject_template {
         } else {
             $this->skeleton_review();
         }
+        if (!$this->scaleid) {
+            $this->scaleid = $this->retrieve_scaleid();
+        }
         if ($this->scaleid) {
             $scalerecord = $DB->get_record('scale', array('id' => $this->scaleid));
             $this->scale = explode(',', $scalerecord->scale);
+        } else {
+            $this->scale = array();
         }
     } // end of member function retrieve_review
 
@@ -299,7 +301,7 @@ abstract class progressreview_subject_template {
                          FROM {grade_grades} AS g
                          WHERE g.itemid = i.id) > ?)
                     AND a.timedue < ?';
-        $params = array($this->progressreview->get_course()->id, 'assignment', 0, 0, time());
+        $params = array($this->progressreview->get_course()->originalid, 'assignment', 0, 0, time());
         $homework->total = $DB->count_records_sql($sql, $params);
 
         $sql = 'SELECT COUNT(*)
@@ -310,7 +312,7 @@ abstract class progressreview_subject_template {
                     AND i.courseid = ?
                     AND g.finalgrade > ?
                     AND a.timedue < ?';
-        $params = array('mod', $this->progressreview->get_student()->id, $this->progressreview->get_course()->id, 1, time());
+        $params = array('mod', $this->progressreview->get_student()->id, $this->progressreview->get_course()->originalid, 1, time());
         $homework->done = $DB->count_records_sql($sql, $params);
         return $homework;
     } // end of member function retrieve_homework
@@ -324,9 +326,9 @@ abstract class progressreview_subject_template {
      */
     protected function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
         global $DB;
-        $grades = array('target' => 0, 'min' => 0, 'cpg' => 0);
+        $grades = array('target' => null, 'min' => null, 'cpg' => null);
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
-            $courseid = $this->progressreview->get_course()->id;
+            $courseid = $this->progressreview->get_course()->originalid;
             $studentid = $this->progressreview->get_student()->id;
             foreach ($items as $item) {
                 if (!in_array($item, array('target', 'min', 'cpg'))) {
@@ -336,7 +338,7 @@ abstract class progressreview_subject_template {
                     $grade = $DB->get_record('grade_grades', array('itemid' => $item->id, 'userid' => $studentid));
                     $grades[$item] = $grade->finalgrade;
                 } else {
-                    $grades[$item] = false;
+                    $grades[$item] = null;
                 }
             }
         }
@@ -355,7 +357,7 @@ abstract class progressreview_subject_template {
     protected function retrieve_scaleid() {
         global $DB;
         if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
-            $courseid = $this->progressreview->get_course()->id;
+            $courseid = $this->progressreview->get_course()->originalid;
             if ($scaleitems = $DB->get_records('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_target'))) {
                 return current($scaleitems)->scaleid;
             }
@@ -372,6 +374,10 @@ abstract class progressreview_subject_template {
             'punctuality' => $this->retrieve_punctuality()
         );
         return $this->update($data);
+    }
+
+    public function get_scaleid() {
+        return $this->scaleid;
     }
 
 } // end of progressreview_subject
