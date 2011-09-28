@@ -21,6 +21,7 @@ $string['punctuality'] = 'Punctuality';
 $string['reference'] = 'Reference';
 $string['reviews'] = 'Reviews';
 $string['reviewsfordept'] = 'Reviews For {$a}';
+$string['savefirst'] = '(Don\'t forget to save first!)';
 $string['scale_behaviour'] = 'Behaviour Scale';
 $string['scale_effort'] = 'Effort Scale';
 $string['scale_homework'] = 'Scale Homework';
