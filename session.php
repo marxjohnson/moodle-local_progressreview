@@ -6,6 +6,7 @@ require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 require_once($CFG->dirroot.'/local/progressreview/sessions_form.php');
 
 require_login($SITE);
+require_capability('moodle/local_progressreview:manage');
 
 $id = optional_param('id', null, PARAM_INT);
 $editid = optional_param('editid', null, PARAM_INT);
