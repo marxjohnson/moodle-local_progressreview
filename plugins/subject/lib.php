@@ -366,12 +366,10 @@ abstract class progressreview_subject_template {
     } // end of member function retrieve_scaleid
 
     public function snapshot() {
-        $homework = $this->retrieve_homework;
+        $attendance = $this->retrieve_attendance();
         $data = array(
-            'homeworkdone' => $homework->done,
-            'homeworktotal' => $homework->total,
-            'attendance' => $this->retrieve_attendance(),
-            'punctuality' => $this->retrieve_punctuality()
+            'attendance' => $attendance->attendance,
+            'punctuality' => $attendance->punctuality
         );
         return $this->update($data);
     }
