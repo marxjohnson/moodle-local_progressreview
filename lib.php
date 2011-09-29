@@ -274,7 +274,7 @@ class progressreview_controller {
     } // end of member function get_reviews
 
 
-    public static function get_course_summaries($sessionid, $type) {
+    public static function get_course_summaries($sessionid, $type, $categoryid = null) {
         if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
             throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
         }
@@ -286,36 +286,41 @@ class progressreview_controller {
         } else {
             $table = '{progressreview_tutor}';
         }
-
-        $total_select = 'SELECT COUNT(*) ';
-        $total_from = 'FROM '.$table.' ps1 ';
-        $total_where = 'WHERE p.id = ps1.reviewid';
-        $total_sql = $total_select.$total_from.$total_where;
-
+        $completed_select = 'SELECT COUNT(*) ';
+        $completed_from = 'FROM
+            {progressreview} p1
+            JOIN {progressreview_subject} ps ON p1.id = ps.reviewid ';
+        $completed_where = 'WHERE p1.courseid = c.id
+        		AND p1.teacherid = t.originalid';
         $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
-        $completed_from = 'FROM '.$table.' ps2 ';
-            $completed_where = 'WHERE p.id = ps2.reviewid
-             AND p.datemodified IS NOT NULL
-             AND LENGTH(ps2.comments) > 0 ';
         if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
-            $completed_where = 'WHERE p.datemodified IS NOT NULL
-                AND ps2.performancegrade IS NOT NULL';
+            $completed_where .= ' AND p.datemodified IS NOT NULL
+                AND ps.performancegrade IS NOT NULL';
         }
-        $completed_sql = $total_select.$completed_from.$completed_where;
 
-        $teacher_concat = $DB->sql_concat('t.firstname', '" "', 't.lastname');
-        $select = 'SELECT p.id, c.id as courseid,
-            c.fullname AS name,
-            '.$teacher_concat.' AS teacher,
-            ('.$total_sql.') AS total,
-            ('.$completed_sql.') AS completed ';
-        $from = 'FROM {progressreview} p
-            JOIN {progressreview_course} c ON p.courseid = c.originalid
-            JOIN {progressreview_teachers} t ON p.teacherid = t.originalid ';
-        $where = 'WHERE p.sessionid = ? ';
-        $group = 'GROUP BY courseid, teacher ';
-        $order = 'ORDER BY c.fullname, teacher';
+        $concat_sql = $DB->sql_concat('t.firstname', '" "', 't.lastname');
+        $select = 'SELECT
+                    p.id,
+                    c.id as courseid,
+                    c.fullname AS name,
+	            '.$concat_sql.' AS teacher,
+                    COUNT(*) AS total,
+    	            ('.$completed_select.$completed_from.$completed_where.') AS completed ';
+        $from = 'FROM
+                    {progressreview} p
+                    JOIN {course} c ON c.id = p.courseid
+                    JOIN {progressreview_teachers} t ON t.originalid = p.teacherid ';
+        $where = 'WHERE
+            p.sessionid = ? ';
         $params = array($sessionid);
+
+        if ($categoryid) {
+            $where .= 'AND c.category = ? ';
+        }
+        $params[] = $categoryid;
+
+        $group = 'GROUP BY name, teacher ';
+        $order = 'ORDER BY name, teacher ';
 
         return $DB->get_records_sql($select.$from.$where.$group.$order, $params);
     }

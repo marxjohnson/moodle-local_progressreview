@@ -45,37 +45,40 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
         foreach (array('subjectreviews' => $subjectsummaries, 'tutorreviews' => $tutorsummaries) as $type => $summaries) {
 
-            $table = new html_table();
-            $table->head = array(
-                get_string('name', 'local_progressreview'),
-                get_string('teachers', 'local_progressreview'),
-                get_string('reviews', 'local_progressreview'),
-                get_string('outstandingreviews', 'local_progressreview')
-            );
+            if ($summaries) {
+                $table = new html_table();
+                $table->head = array(
+                    get_string('name', 'local_progressreview'),
+                    get_string('teachers', 'local_progressreview'),
+                    get_string('reviews', 'local_progressreview'),
+                    get_string('outstandingreviews', 'local_progressreview')
+                );
 
-            foreach ($summaries as $summary) {
-                $courseurl = new moodle_url('/local/progresssummary/courseview.php', array('id' => $summary->courseid));
+                foreach ($summaries as $summary) {
+    //                $courseurl = new moodle_url('/local/progresssummary/courseview.php', array('id' => $summary->courseid));
 
-                $row = new html_table_row(array(
-                    html_writer::link($courseurl, $summary->name),
-                    $summary->teacher,
-                    $summary->total,
-                    $summary->completed
-                ));
+                    $row = new html_table_row(array(
+                        // html_writer::link($courseurl, $summary->name),
+                        $summary->name,
+                        $summary->teacher,
+                        $summary->total,
+                        $summary->completed
+                    ));
 
-                $row->attributes['class'] = 'incomplete';
-                if ($summary->completed == 0) {
-                    $row->attributes['class'] = 'empty';
+                    $row->attributes['class'] = 'incomplete';
+                    if ($summary->completed == 0) {
+                        $row->attributes['class'] = 'empty';
+                    }
+                    if ($summary->completed == $summary->total) {
+                        $row->attributes['class'] = 'completed';
+                    }
+
+                    $table->data[] = $row;
                 }
-                if ($summary->completed == $summary->total) {
-                    $row->attributes['class'] = 'completed';
-                }
 
-                $table->data[] = $row;
+                $output .= $this->output->heading(get_string($type, 'local_progressreview'), 3);
+                $output .= html_writer::table($table);
             }
-
-            $output .= $this->output->heading(get_string($type, 'local_progressreview'), 3);
-            $output .= html_writer::table($table);
         }
 
         return $output;

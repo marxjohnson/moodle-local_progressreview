@@ -66,10 +66,13 @@ if (isset($permissions['manager'])) {
         }
         foreach ($permissions['manager'] as $categoryid) {
             $category = $DB->get_record('course_categories', array('id' => $categoryid));
-            $subjectsummaries = progressreview_controller::get_course_summaries($sessionid, PROGRESSREVIEW_SUBJECT);
-            $tutorsummaries = progressreview_controller::get_course_summaries($sessionid, PROGRESSREVIEW_TUTOR);
-            $department_table = $output->department_table($category, $subjectsummaries, $tutorsummaries);
-            $content .= $department_table;
+            $subjectsummaries = progressreview_controller::get_course_summaries($sessionid, PROGRESSREVIEW_SUBJECT, $category->id);
+//            $tutorsummaries = progressreview_controller::get_course_summaries($sessionid, PROGRESSREVIEW_TUTOR, $category->id);
+            $tutorsummaries = array();
+            if ($subjectsummaries || $tutorsummaries) {
+                $department_table = $output->department_table($category, $subjectsummaries, $tutorsummaries);
+                $content .= $department_table;
+            }
         }
     } else {
         $content .= $OUTPUT->box($OUTPUT->error_text(get_string('nosessions', 'local_progressreview')));
