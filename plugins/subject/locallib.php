@@ -18,50 +18,11 @@ class progressreview_subject extends progressreview_subject_template {
      * @todo Modify to use the attendance module by default
      */
     protected function retrieve_attendance() {
-        global $UDB;
-        $sql = "SELECT DISTINCT
-                m.m_id AS \"id\",
-                (count(rm.rm_id)-(sum(decode(rm.rm_mark,to_char(' '),1,0))+(sum(decode(rm.rm_mark,'N',1,0))+sum(decode(rm.rm_mark,to_char('X'),1,0))))) AS \"totalpossible\",
-                (sum(decode(rm.rm_mark,to_char('/'),1,0))+sum(decode(rm.rm_mark,to_char('T'),1,0))+sum(decode(rm.rm_mark,to_char('W'),1,0))+sum(decode(rm.rm_mark,to_char('E'),1,0))+sum(decode(rm.rm_mark,to_char('L'),1,0))) AS \"totalpresent\",
-                sum(decode(rm.rm_mark,to_char('/'),1,0)) AS \"present\",
-                sum(decode(rm.rm_mark,to_char('L'),1,0)) AS \"late\",
-                m.m_reference AS \"classcode\"
-            FROM
-                {person} p
-                JOIN {student} s ON s.s_id = p.p_id
-                JOIN {studentregister} sr ON sr.sr_student = p.p_id
-                JOIN capa_registermarks rm ON rm.rm_studentregister = sr.sr_id
-                JOIN {register} r ON rm.rm_register = r.r_id
-                JOIN {activity} a ON a.a_register = r.r_id
-                JOIN {moduleactivity} ma ON ma.ma_activity = a.a_id
-                JOIN {staffactivity} sa ON sa.sa_activity = a.a_id
-                JOIN {moduleenrolment} me ON s.s_studenttutorgroup = me.e_id
-                JOIN {module} m ON ma.ma_activitymodule=m.m_id
-                JOIN {moduleenrolment} me1 ON me1.e_module = m.m_id AND me1.e_student = p.p_id
-            WHERE
-                rm.rm_date <= sysdate
-                and me1.e_status = to_char(1)
-                and me1.e_reference = :coursecode
-                and rm.rm_date >= :termstart
-                and s.s_id = :studentidnum
-             GROUP BY p.p_surname,
-                    p.p_forenames,
-                    p.p_id,
-                    m.m_id,
-                    m.m_name,
-                    m.m_reference,
-                    me.e_name,
-                    me1.e_start,
-                    me1.e_name,
-                    me1.e_reference,
-                    me1.e_id";
+        ini_set('memory_limit','512M');
+        $coursecode = $this->progressreview->get_course()->shortname;
+        $studentidnum = $this->progressreview->get_student()->idnumber;
 
-        $params = array('coursecode' => $this->progressreview->get_course()->shortname,
-            'termstart' => '1-Sep-2011',
-            'studentidnum' => $this->progressreview->get_student()->idnumber);
-
-        $UDB = unite_connect();
-        $marks = $UDB->get_record_sql($sql, $params);
+        $marks = progressreview_attendance_helper::attendance_for_student_in_class($coursecode, $studentidnum);
         $attendance = new stdClass;
         $attendance->attendance = $marks->totalpresent / $marks->totalpossible * 100;
         $attendance->punctuality = $marks->present / ($marks->present+$marks->late) * 100;
@@ -94,4 +55,73 @@ class progressreview_subject extends progressreview_subject_template {
         return (object)$grades;
     } // end of member function retrieve_targetgrade
 
+}
+
+
+class progressreview_attendance_helper {
+
+    static $attendance;
+
+    static public function attendance_for_student_in_class($classcode, $studentidnum) {
+
+        if (empty(self::$attendance)) {
+            self::$attendance = array();
+        }
+
+        if (!isset(self::$attendance[$classcode])) {
+            self::attendance_for_class($classcode);
+        }
+
+        return self::$attendance[$classcode][$studentidnum];
+    }
+
+    private function attendance_for_class($coursecode) {
+
+        $select = "SELECT DISTINCT
+            t3.sr_id,
+            t3.sr_weekpattern AS \"allmarks\",
+            replace(replace(replace(replace(replace(t3.sr_weekpattern,' '),'P'),'H'),'O'),'A') AS \"totalpresent\",
+            replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(t3.sr_weekpattern,' '),'X'),'P'),'H'),'O'),'A'),'T'),'E'),'W'),'L') AS \"present\",
+            replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(t3.sr_weekpattern,' '),'X'),'P'),'H'),'O'),'A'),'T'),'E'),'W'),'/') AS \"late\",
+            replace(t3.sr_weekpattern,' ') AS \"totalpossible\",
+            t1.p_id AS \"studentid\" ";
+        $from = "FROM {activity} t2,
+            {register} t4,
+            {moduleactivity} t7,
+            {studentregister} t3,
+            {moduleenrolment} t5,
+            {module} t6,
+            {person} t1 ";
+        $where = "WHERE (t3.sr_student=t1.p_id)
+            and (t5.e_status=to_char(1))
+            and (t5.e_student=t1.p_id(+))
+            and (t5.e_module=t6.m_id(+))
+            and (t7.ma_activitymodule=t6.m_id)
+            and (t7.ma_activity=t2.a_id)
+            and (t3.sr_activity=t2.a_id(+))
+            and (t3.sr_register=t4.r_id(+))
+            and (t4.r_reference = :coursecode)";
+
+        $params = array('coursecode' => $coursecode);
+        $UDB = unite_connect();
+        $studentmarks = $UDB->get_records_sql($select.$from.$where, $params);
+        $UDB->dispose();
+
+        self::$attendance[$coursecode] = array();
+        foreach ($studentmarks as $studentmark) {
+            if (!isset(self::$attendance[$coursecode][$studentmark->studentid])) {
+                $marks = new stdClass();
+                $marks->totalpresent = strlen($studentmark->totalpresent);
+                $marks->totalpossible = strlen($studentmark->totalpossible);
+                $marks->present = strlen($studentmark->present);
+                $marks->late = strlen($studentmark->late);
+                self::$attendance[$coursecode][$studentmark->studentid] = $marks;
+            } else {
+                self::$attendance[$coursecode][$studentmark->studentid]->totalpresent += strlen($studentmark->totalpresent);
+                self::$attendance[$coursecode][$studentmark->studentid]->totalpossible += strlen($studentmark->totalpossible);
+                self::$attendance[$coursecode][$studentmark->studentid]->present += strlen($studentmark->present);
+                self::$attendance[$coursecode][$studentmark->studentid]->late += strlen($studentmark->late);
+            }
+        }
+    }
 }
