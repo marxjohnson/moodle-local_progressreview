@@ -130,8 +130,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $output = html_writer::start_tag('form', array('action' => $this->page->url->out(), 'method' => 'post'));
         $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $sessionid));
         $output .= html_writer::table($table);
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'regenerate', 'value' => get_string('regenerate', 'local_progressreviews')));
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'snapshot', 'value' => get_string('snapshot', 'local_progressreviews')));
+        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'regenerate', 'value' => get_string('regenerate', 'local_progressreview')));
+        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'snapshot', 'value' => get_string('snapshot', 'local_progressreview')));
         $output .= html_writer::end_tag('form');
 
         return $output;
