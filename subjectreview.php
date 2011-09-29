@@ -42,12 +42,12 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
         if ($submitted) {
             $submittedreview = $_POST['review'][$subjectreview->id];
             $newdata = array(
-                'homeworkdone' => clean_param($submittedreview['homeworkdone'], PARAM_INT),
-                'homeworktotal' => clean_param($submittedreview['homeworktotal'], PARAM_INT),
-                'behaviour' => clean_param($submittedreview['behaviour'], PARAM_INT),
-                'effort' => clean_param($submittedreview['effort'], PARAM_INT),
-                'targetgrade' => clean_param($submittedreview['targetgrade'], PARAM_INT),
-                'performancegrade' => clean_param($submittedreview['performancegrade'], PARAM_INT)
+                'homeworkdone' => $submittedreview['homeworkdone'] == '' ? null : clean_param($submittedreview['homeworkdone'], PARAM_INT),
+                'homeworktotal' => $submittedreview['homeworktotal'] == '' ? null : clean_param($submittedreview['homeworktotal'], PARAM_INT),
+                'behaviour' => $submittedreview['behaviour'] == '' ? null : clean_param($submittedreview['behaviour'], PARAM_INT),
+                'effort' => $submittedreview['effort'] == '' ? null : clean_param($submittedreview['effort'], PARAM_INT),
+                'targetgrade' => $submittedreview['targetgrade'] == '' ? null : clean_param($submittedreview['targetgrade'], PARAM_INT),
+                'performancegrade' => $submittedreview['performancegrade'] == '' ? null : clean_param($submittedreview['performancegrade'], PARAM_INT)
             );
             $subjectreview->update($newdata);
             $content = $OUTPUT->notification(get_string('changessaved'));
