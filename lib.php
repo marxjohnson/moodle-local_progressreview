@@ -415,10 +415,10 @@ class progressreview_controller {
      * @param int sessionid
      * @access public
      */
-    public static function snapshot_data_for_session($sessionid) {
-        $reviews = $this->get_reviews($sessionid, null, null, null, PROGRESSREVIEW_SUBJECT);
+    public static function snapshot_data($sessionid, $courseid = null) {
+        $reviews = self::get_reviews($sessionid, null, $courseid, null, PROGRESSREVIEW_SUBJECT);
         foreach ($reviews as $review) {
-            $review->snapshot();
+            $review->get_plugin('subject')->snapshot();
         }
     } // end of member function snapshot_data_for_session
 } // end of progressreview_controller

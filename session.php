@@ -9,6 +9,9 @@ require_login($SITE);
 
 $id = optional_param('id', null, PARAM_INT);
 $editid = optional_param('editid', null, PARAM_INT);
+$generate = optional_param('generate', false, PARAM_TEXT);
+$regenerate = optional_param('regenerate', false, PARAM_TEXT);
+$snapshot = optional_param('snapshot', false, PARAM_TEXT);
 
 $params = array_filter(array('id' => $id, 'editid' => $editid));
 $PAGE->set_url('/local/progressreview/session.php', $params);
@@ -44,10 +47,17 @@ if (!$id) {
 
     $subjects = array();
 
-    if (optional_param('generate', false, PARAM_TEXT)) {
+    if ($generate) {
         $subjects = $potential_subject_selector->get_selected_users(); 
-    } else if (optional_param('regenerate', false, PARAM_TEXT)) {
-        $subjects = current($distributed_subject_selector->find_users());
+    } else if ($regenerate || $snapshot) {
+        $subjects = $distributed_subject_selector->get_selected_users();
+        if ($snapshot) {
+            foreach ($subjects as $subject) {
+                progressreview_controller::snapshot_data($session->id, $subject->id);
+            }
+            redirect($PAGE->url->out(), get_string('snapshotted', 'local_progressreview'));
+            exit();
+        }
     }
 
     if ($subjects) {
