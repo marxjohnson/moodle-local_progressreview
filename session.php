@@ -6,13 +6,15 @@ require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 require_once($CFG->dirroot.'/local/progressreview/sessions_form.php');
 
 require_login($SITE);
-require_capability('moodle/local_progressreview:manage');
+require_capability('moodle/local_progressreview:manage', $PAGE->context);
 
 $id = optional_param('id', null, PARAM_INT);
 $editid = optional_param('editid', null, PARAM_INT);
-$generate = optional_param('generate', false, PARAM_TEXT);
-$regenerate = optional_param('regenerate', false, PARAM_TEXT);
+$generate_subject = optional_param('generate_subject', false, PARAM_TEXT);
+$regenerate_subject = optional_param('regenerate_subject', false, PARAM_TEXT);
 $snapshot = optional_param('snapshot', false, PARAM_TEXT);
+$generate_tutor = optional_param('generate_tutor', false, PARAM_TEXT);
+$regenerate_tutor = optional_param('regenerate_tutor', false, PARAM_TEXT);
 
 $params = array_filter(array('id' => $id, 'editid' => $editid));
 $PAGE->set_url('/local/progressreview/session.php', $params);
@@ -48,9 +50,9 @@ if (!$id) {
 
     $subjects = array();
 
-    if ($generate) {
-        $subjects = $potential_subject_selector->get_selected_users(); 
-    } else if ($regenerate || $snapshot) {
+    if ($generate_subject) {
+        $subjects = $potential_subject_selector->get_selected_users();
+    } else if ($regenerate_subject || $snapshot) {
         $subjects = $distributed_subject_selector->get_selected_users();
         if ($snapshot) {
             foreach ($subjects as $subject) {
@@ -70,7 +72,37 @@ if (!$id) {
     }
 
     $subject_selector = $output->course_selector_form($potential_subject_selector, $distributed_subject_selector, $session->id);
-    $content = $subject_selector;
+    $content = $OUTPUT->heading(get_string('subjectreviews', 'local_progressreview'), 2);
+    $content .= $subject_selector;
+
+    // Tutor group selector
+    $potential_tutor_selector = new progressreview_potential_course_selector('potential_tutors');
+    $distributed_tutor_selector = new progressreview_distributed_course_selector('distributed_tutors', $session->id, PROGRESSREVIEW_TUTOR);
+
+    $excludes = $distributed_tutor_selector->find_users();
+    foreach ($excludes as $exclude) {
+        $potential_tutor_selector->exclude(array_keys($exclude));
+    }
+
+    $tutors = array();
+
+    if ($generate_tutor) {
+        $tutors = $potential_tutor_selector->get_selected_users();
+    } else if ($regenerate_tutor) {
+        $tutors = $distributed_tutor_selector->get_selected_users();
+    }
+
+    if ($tutors) {
+        foreach ($tutors as $tutor) {
+            progressreview_controller::generate_reviews_for_course($tutor->id, $session->id, PROGRESSREVIEW_TUTOR);
+        }
+        redirect($PAGE->url->out(), get_string('reviewsgenerated', 'local_progressreview'));
+        exit();
+    }
+
+    $tutor_selector = $output->course_selector_form($potential_tutor_selector, $distributed_tutor_selector, $session->id, PROGRESSREVIEW_TUTOR);
+    $content .= $OUTPUT->heading(get_string('tutorreviews', 'local_progressreview'), 2);
+    $content .= $tutor_selector;
 }
 
 echo $OUTPUT->header();
