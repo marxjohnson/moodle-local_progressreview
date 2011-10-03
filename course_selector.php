@@ -12,7 +12,7 @@ class progressreview_potential_course_selector extends user_selector_base {
         ### @export "pcs_get_options"
         protected function get_options() {
             $options = parent::get_options();
-            $options['file'] = 'local/progressreviews/course_selector.php';
+            $options['file'] = 'local/progressreview/course_selector.php';
             return $options;
         }
 
