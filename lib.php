@@ -428,3 +428,86 @@ class progressreview_controller {
     } // end of member function snapshot_data_for_session
 } // end of progressreview_controller
 
+abstract class progressreview_plugin {
+
+    /**
+     * The name of the plugin, the same as the folder it lives in 
+     */
+    protected $name;
+
+    /**
+     * The type of progressreview plugin this is
+     * either PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
+     */
+    protected $type;
+
+    /**
+     * The progressreview object for the review this instance
+     * belongs to
+     */
+    protected $progressreview;
+
+    /**
+     * Array of property name that will be handled by the update()
+     * method, all others will be ignored.
+     */
+    protected $valid_properties;
+
+    public function __construct(&$review) {
+        $this->progressreview = $review;
+        $this->retrieve_review();
+    }
+
+    /**
+     * Updates the object's properties and the record for this plugin instance with the given data
+     */
+    public function update($data) {
+        global $DB;
+        if (is_object($data)) {
+            $data = (array)$data;
+        }
+
+        foreach ($data as $field => $datum) {
+            if(in_array($field, $this->valid_properties)) {
+                $this->$field = $datum;
+            } else {
+                $data[$field] = false;
+            }
+        }
+
+        $data = (object)array_filter($data, function($datum) {
+            return $datum !== false;
+        });
+
+        if (!empty($this->id)) {
+            $data->id = $this->id;
+            $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
+            return $DB->update_record('progressreview_'.$this->name, $data);
+        } else {
+            $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
+            $this->id = $DB->insert_record('progressreview_'.$this->name, $data);
+            return $this->id;
+        }
+    } // end of member function update
+
+    /**
+     * Retrieves this plugin's data for the current review and stores in the the object
+     */
+    abstract protected function retrieve_review();
+
+    /**
+     * Returns an object containing the data required for rendering this plugin's widgets
+     */
+    abstract function get_review();
+
+    /**
+     * Adds the fields this plugin needs to the review form
+     */
+    abstract function add_form_fields(&$form);
+
+    /**
+     * Processes the data for this plugin returned from the form
+     */
+    abstract function process_form_fields($data);
+
+}
