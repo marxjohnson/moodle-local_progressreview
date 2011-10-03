@@ -159,7 +159,6 @@ class progressreview {
     private function init_plugins() {
         global $DB, $CFG;
         $activeplugins = $DB->get_records('progressreview_activeplugins', array('sessionid' => $this->session->id, 'reviewtype' => $this->type));
-
         foreach ($activeplugins as $activeplugin) {
                 require_once($CFG->dirroot.'/local/progressreview/plugins/'.$activeplugin->plugin.'/lib.php');
                 $classname = 'progressreview_'.$activeplugin->plugin;
@@ -289,13 +288,17 @@ class progressreview_controller {
         $completed_select = 'SELECT COUNT(*) ';
         $completed_from = 'FROM
             {progressreview} p1
-            JOIN {progressreview_subject} ps ON p1.id = ps.reviewid ';
+            JOIN '.$table.' ps ON p1.id = ps.reviewid ';
         $completed_where = 'WHERE p1.courseid = c.id
         		AND p1.teacherid = t.originalid';
         $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
         if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
             $completed_where .= ' AND p.datemodified IS NOT NULL
                 AND ps.performancegrade IS NOT NULL';
+            $completed_params = array();
+        } else {
+            $completed_where = ' AND comments IS NOT NULL AND comments != ?';
+            $completed_params = array($DB->sql_empty());
         }
 
         $concat_sql = $DB->sql_concat('t.firstname', '" "', 't.lastname');
@@ -311,8 +314,9 @@ class progressreview_controller {
                     JOIN {course} c ON c.id = p.courseid
                     JOIN {progressreview_teachers} t ON t.originalid = p.teacherid ';
         $where = 'WHERE
-            p.sessionid = ? ';
-        $params = array($sessionid);
+            p.sessionid = ?
+            AND p.reviewtype = ? ';
+        $params = array_merge($completed_params, array($sessionid, $type));
 
         if ($categoryid) {
             $where .= 'AND c.category = ? ';
