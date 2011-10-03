@@ -140,7 +140,7 @@ abstract class progressreview_subject_template {
         return (object)array(
             'id' => $this->id,
             'progressreview' => $this->progressreview,
-            'comment' => $this->comments,
+            'comments' => $this->comments,
             'behaviour' => $this->behaviour,
             'effort' => $this->effort,
             'homeworkstandard' => $this->homeworkstandard,
@@ -166,7 +166,7 @@ abstract class progressreview_subject_template {
         global $DB;
         $valid_properties = array(
             'reviewid',
-            'comment',
+            'comments',
             'behaviour',
             'effort',
             'homeworkstandard',
