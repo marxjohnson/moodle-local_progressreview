@@ -119,13 +119,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return html_writer::alist($sessionlinks);
     }
 
-    function course_selector_form($potential_selector, $distributed_selector, $sessionid) {
+    function course_selector_form($potential_selector, $distributed_selector, $sessionid, $type = PROGRESSREVIEW_SUBJECT) {
 
+        $buttonsuffix = ($type == PROGRESSREVIEW_SUBJECT) ? '_subject' : '_tutor';
         $output = '';
         $table = new html_table('course_selector');
         $row = new html_table_row();
         $row->cells[] = $distributed_selector->display(true);
-        $cell = html_writer::empty_tag('input', array('id' => 'course_selector_button', 'name' => 'generate', 'type' => 'submit', 'value' => $this->output->larrow().' '.get_string('createreviews', 'local_progressreview')));
+        $cell = html_writer::empty_tag('input', array('class' => 'course_selector_button', 'name' => 'generate'.$buttonsuffix, 'type' => 'submit', 'value' => $this->output->larrow().' '.get_string('createreviews', 'local_progressreview')));
         $row->cells[] = $cell;
         $row->cells[] = $potential_selector->display(true);
         $table->data[] = $row;
@@ -133,8 +134,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $output = html_writer::start_tag('form', array('action' => $this->page->url->out(), 'method' => 'post'));
         $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $sessionid));
         $output .= html_writer::table($table);
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'regenerate', 'value' => get_string('regenerate', 'local_progressreview')));
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'snapshot', 'value' => get_string('snapshot', 'local_progressreview')));
+        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'regenerate'.$buttonsuffix, 'value' => get_string('regenerate', 'local_progressreview')));
+        if ($type == PROGRESSREVIEW_SUBJECT) {
+            $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'snapshot', 'value' => get_string('snapshot', 'local_progressreview')));
+        }
         $output .= html_writer::end_tag('form');
 
         return $output;

@@ -45,16 +45,18 @@ class progressreview_potential_course_selector extends user_selector_base {
 class progressreview_distributed_course_selector extends progressreview_potential_course_selector {
 
         private $sessionid;
+        private $reviewtype;
 
-        public function __construct($name, $sessionid, $extraoptions = array()) {
+        public function __construct($name, $sessionid, $reviewtype = PROGRESSREVIEW_SUBJECT, $extraoptions = array()) {
             parent::__construct($name, $extraoptions);
             $this->sessionid = $sessionid;
+            $this->reviewtype = $reviewtype;
         }
 
         public function find_users($search = '') {
             global $DB;
             $options = array(get_string('courseswithreviews', 'local_progressreview') => array());
-            $reviewcourses = $DB->get_records_sql('SELECT DISTINCT courseid FROM {progressreview} WHERE sessionid = ?', array($this->sessionid));
+            $reviewcourses = $DB->get_records_sql('SELECT DISTINCT courseid FROM {progressreview} WHERE sessionid = ? AND reviewtype = ?', array($this->sessionid, $this->reviewtype));
             foreach($reviewcourses as $reviewcourse) {
                 $select = 'SELECT c.id, c.shortname AS lastname, "" AS firstname, c.fullname AS email, cc.name AS category ';
                 $from = 'FROM {course} c JOIN {course_categories} cc on c.category = cc.id ';
