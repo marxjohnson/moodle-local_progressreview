@@ -43,7 +43,7 @@ class progressreview_tutor extends progressreview_plugin {
      */
     public function __construct($review) {
         $this->progressreview = $review;
-        $this->retrieve_review();
+        var_dump($this->retrieve_review());
     } // end of member function __construct
 
     /**
