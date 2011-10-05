@@ -372,9 +372,9 @@ abstract class progressreview_subject_template {
         $homework = $this->retrieve_homework();
         $data = array(
             'attendance' => $attendance->attendance,
-            'punctuality' => $attendance->punctuality
-            'homeworktotal' => $homework->total;
-            'homeworkdone' => $homework->done;
+            'punctuality' => $attendance->punctuality,
+            'homeworktotal' => $homework->total,
+            'homeworkdone' => $homework->done
         );
         return $this->update($data);
     }
