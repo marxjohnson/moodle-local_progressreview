@@ -30,9 +30,9 @@ class progressreview_tutor extends progressreview_plugin {
      * The tutor's comments
      * @access private
      */
-    private $comments;
+    protected $comments;
 
-
+    protected $valid_properties = array('reviewid', 'comments');
     /**
      * Stores a reference to the progressreview object
      *
