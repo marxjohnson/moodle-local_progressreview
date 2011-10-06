@@ -51,6 +51,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                     get_string('name', 'local_progressreview'),
                     get_string('teachers', 'local_progressreview'),
                     get_string('reviews', 'local_progressreview'),
+                    get_string('completedreviews', 'local_progressreview'),
                     get_string('outstandingreviews', 'local_progressreview')
                 );
 
@@ -62,7 +63,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
                         $summary->name,
                         $summary->teacher,
                         $summary->total,
-                        $summary->completed
+                        $summary->completed,
+                        ($summary->total)-($summary->completed)
                     ));
 
                     $row->attributes['class'] = 'incomplete';

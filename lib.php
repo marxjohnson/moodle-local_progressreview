@@ -297,11 +297,10 @@ class progressreview_controller {
         		AND p1.teacherid = t.originalid';
         $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
         if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
-            $completed_where .= ' AND p.datemodified IS NOT NULL
-                AND ps.performancegrade IS NOT NULL';
+            $completed_where .= ' AND ps.performancegrade IS NOT NULL';
             $completed_params = array();
         } else {
-            $completed_where = ' AND comments IS NOT NULL AND comments != ?';
+            $completed_where .= ' AND comments IS NOT NULL AND comments != ?';
             $completed_params = array($DB->sql_empty());
         }
 

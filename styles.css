@@ -9,3 +9,11 @@
     margin-top:1em;
     margin-bottom: 1em;
 }
+
+#page-local-progressreview-index .completed td {
+    background-color: #B3FFB3;
+}
+
+#page-local-progressreview-index .empty td {
+    background-color: #FFB3B3;
+}
