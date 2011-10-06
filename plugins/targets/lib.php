@@ -18,8 +18,8 @@ class progressreview_targets extends progressreview_plugin {
         'name',
         'targetset',
         'deadline',
-        'datecreated',
-        'datemodified',
+        'timecreated',
+        'timemodified',
         'setforuserid',
         'setbyuserid'
     );
@@ -35,35 +35,40 @@ class progressreview_targets extends progressreview_plugin {
      * @return
      * @access public
      */
-    public function update($data) {
+    public function update($targets) {
         global $DB;
-        if (is_object($data)) {
-            $data = (array)$data;
-        }
+        foreach ($targets as $number => $target) {
+            if (is_object($target)) {
+                $target = (array)$target;
+            }
 
-        foreach ($data as $field => $datum) {
-            if(!in_array($field, $this->valid_properties)) {
-                $data[$field] = false;
+            foreach ($target as $field => $datum) {
+                if(!in_array($field, $this->valid_properties)) {
+                    $target[$field] = false;
+                }
+            }
+
+            $target = (object)array_filter($target, function($datum) {
+                return $datum !== false;
+            });
+
+            if (!empty($target->id)) {
+                $DB->update_record('ilptarget_posts', $target);
+                $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
+            } else {
+                $target->data1 = $DB->sql_empty();
+                $target->data2 = $DB->sql_empty();
+                $target->id = $DB->insert_record('ilptarget_posts', $target);
+
+                if ($target->id) {
+                    $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
+                    $DB->insert_record('progressreview_targets', (object)array('targetid' => $target->id, 'reviewid' => $this->progressreview->id));
+                }
+            }
+            foreach ((array)$target as $field => $datum) {
+                $this->target[$number]->$field = $datum;
             }
         }
-
-        $data = (object)array_filter($data, function($datum) {
-            return $datum !== false;
-        });
-
-        if (!empty($data->id)) {
-            $result = $DB->update_record('ilptarget', $data);
-            $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
-        } else {
-            $result = $DB->insert_record('ilptarget', $data);
-            $data->id = $result;
-            $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
-            $DB->inset_record('progressreview_targets', (object)array('targetid' => $data->id, 'reviewid' => $this->progressreview->id));
-        }
-        foreach ((array)$data as $field => $datum) {
-            $this->target[$data->id]->$field = $datum;
-        }
-        return $result;
     } // end of member function update
 
     public function get_review() {
