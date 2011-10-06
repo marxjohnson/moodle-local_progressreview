@@ -3,8 +3,10 @@
 $string['attendance'] = 'Attendance';
 $string['behaviour'] = 'Behaviour';
 $string['changescale'] = 'Change Grade Scale';
+$string['changesnotsaved'] = 'Changes Not Saved';
 $string['comments'] = 'Comments';
 $string['commentswritten'] = 'Comments Written?';
+$string['completedreviews'] = 'Completed Reviews';
 $string['courseswithreviews'] = 'Your courses with Reviews';
 $string['createsession'] = 'Create Session';
 $string['createreviews'] = 'Generate Reviews';

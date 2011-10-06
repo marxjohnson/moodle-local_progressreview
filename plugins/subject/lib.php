@@ -199,12 +199,13 @@ abstract class progressreview_subject_template {
         });
         if (!empty($this->id)) {
             $data->id = $this->id;
-            $DB->update_record('progressreview_subject', $data);
+            $result = $DB->update_record('progressreview_subject', $data);
             $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
         } else {
-            $this->id = $DB->insert_record('progressreview_subject', $data);
+            $result = $this->id = $DB->insert_record('progressreview_subject', $data);
             $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
         }
+        return $result;
     } // end of member function update
 
 

@@ -49,8 +49,11 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                 'targetgrade' => $submittedreview['targetgrade'] == '' ? null : clean_param($submittedreview['targetgrade'], PARAM_INT),
                 'performancegrade' => $submittedreview['performancegrade'] == '' ? null : clean_param($submittedreview['performancegrade'], PARAM_INT)
             );
-            $subjectreview->update($newdata);
-            $content = $OUTPUT->notification(get_string('changessaved'));
+            if ($subjectreview->update($newdata)) {
+                $content = $OUTPUT->notification(get_string('changessaved'));
+            } else {
+                $content = $OUTPUT->error_text(get_string('changesnotsaved', 'local_progressreview'));
+            }
         }
         $reviewdata[] = $subjectreview->get_review();
     }
