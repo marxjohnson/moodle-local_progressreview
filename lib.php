@@ -128,6 +128,10 @@ class progressreview {
     public function get_plugin($name) {
         return $this->plugins[$name];
     }
+    
+    public function get_plugins() {
+        return $this->plugins;
+    }
 
     /**
      * Transfers this review to allow a different teacher to write it
