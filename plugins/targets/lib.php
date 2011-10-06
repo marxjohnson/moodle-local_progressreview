@@ -79,47 +79,76 @@ class progressreview_targets extends progressreview_plugin {
         $this->targets = $DB->get_records_sql($select.$from.$where, array($this->progressreview->id));
     }
 
-    public function add_form_fields(&$form) {
-        $mform =& $form->_form;
+    public function add_form_fields(&$mform) {
         $count = 0;
-        foreach($this->targets as $target) {
-            $count++;
-            $mform->addElement('textarea', 'targets['.$target->id.']', get_string('target', 'ilptarget').' '.$count);
-            $mform->addElement('date_selector', 'deadlines['.$target->id.']', get_string('deadline', 'ilptarget').' '.$count);
-        }
         while ($count < 3) {
             $count++;
-            $mform->addElement('textarea', 'targets[]', get_string('target', 'ilptarget').' '.$count);
-            $mform->addElement('date_selector', 'deadlines[]', get_string('target', 'ilptarget').' '.$count);
+            $mform->addElement('textarea', 'targets['.($count-1).']', get_string('name', 'ilptarget').' '.$count, array('rows' => 3, 'cols' => 50));
+            $years = array(
+                'startyear' => date('Y'),
+                'stopyear' => date('Y', strtotime('next year'))
+            );
+            $mform->addElement('date_selector', 'deadlines['.($count-1).']', get_string('deadline', 'ilptarget').' '.$count, $years);
+            $mform->setDefault('deadlines['.($count-1).']', strtotime('3 weeks'));
         }
     }
 
     public function process_form_fields($data) {
-        foreach ($data->targets as $id => $target) {
-            if (array_key_exists($id, $this->targets)) {
+        $targets = array();
+
+        $data->deadlines = array();
+        for ($i=0,$j=3; $i<$j; $i++) {
+            $fieldname = 'deadlines['.$i.']';
+            $data->deadlines[$i] = $data->$fieldname;
+            unset($data->$fieldname);
+        }
+
+        foreach ($data->targets as $number => $target) {
+            if (!empty($this->targets[$number])) {
                 $update = (object)array(
-                    'id' => $id,
+                    'id' => $this->targets[$number]->id,
                     'targetset' => $target,
-                    'deadline' => $data->deadlines[$id],
+                    'deadline' => $data->deadlines[$number],
                     'timemodified' => time(),
                     'setforuserid' => $this->progressreview->get_student()->id,
                     'setbyuserid' => $this->progressreview->get_teacher()->originalid
                 );
-                $this->update($update);
+                $targets[$number] = $update;
             } else {
-                $newtarget = (object)array(
-                    'targetset' => $target,
-                    'deadline' => $data->deadlines[$id],
-                    'timecreated' => time(),
-                    'timemodified' => time(),
-                    'setforuserid' => $this->progressreview->get_student()->id,
-                    'setbyuserid' => $this->progressreview->get_teacher()->originalid
-                );
-                $this->update($newtarget);
+                if (!empty($target)) {
+                    $newtarget = (object)array(
+                        'targetset' => $target,
+                        'deadline' => $data->deadlines[$number],
+                        'timecreated' => time(),
+                        'timemodified' => time(),
+                        'setforuserid' => $this->progressreview->get_student()->id,
+                        'setbyuserid' => $this->progressreview->get_teacher()->originalid
+                    );
+                    $targets[$number] = $newtarget;
+                }
             }
         }
+        $this->update($targets);
     }
 
+    public function add_form_data($data) {
+        $targets = array();
+        $deadlines = array();
+        foreach ($this->targets as $number => $target) {
+            $targets[$number] = $target->targetset;
+            $fieldname = 'deadlines['.$number.']';
+            $$fieldname = array(
+                'day' => date('d', $target->deadline),
+                'month' => date('m', $target->deadline),
+                'year' => date('Y', $target->deadline)
+            );
+            $$fieldname = $target->deadline;
+            $data->$fieldname = $$fieldname;
+        }
+        $data->deadlines = $deadlines;
+        $data->targets = $targets;
+        return $data;
+    }
 
 
 } // end of progressreview_targets

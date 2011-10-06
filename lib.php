@@ -507,11 +507,16 @@ abstract class progressreview_plugin {
     /**
      * Adds the fields this plugin needs to the review form
      */
-    abstract function add_form_fields(&$form);
+    abstract function add_form_fields(&$mform);
 
     /**
      * Processes the data for this plugin returned from the form
      */
     abstract function process_form_fields($data);
+
+    /**
+     * Add data for fields to $data
+     */
+    abstract function add_form_data($data);
 
 }
