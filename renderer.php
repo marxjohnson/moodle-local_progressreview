@@ -155,9 +155,6 @@ class local_progressreview_renderer extends plugin_renderer_base {
      * @todo Make pluggable
      */
     function subject_review_table($reviews, $form = true) {
-        if (!$form) {
-            throw new coding_exception('Read-only review table not implemented yet!');
-        }
 
         $table = new html_table();
         $table->head = array(
@@ -170,26 +167,43 @@ class local_progressreview_renderer extends plugin_renderer_base {
             get_string('effort', 'local_progressreview'),
             get_string('minimumgrade', 'local_progressreview'),
             get_string('targetgrade', 'local_progressreview'),
-            get_string('performancegrade', 'local_progressreview'),
+            get_string('performancegrade', 'local_progressreview')
         );
+        if (!$form) {
+            $table->head[0] = get_string('course');
+            $table->head[1] = get_string('teacher', 'local_progressreview');
+        }
 
         foreach ($reviews as $review) {
             $student = $review->progressreview->get_student();
             $session = $review->progressreview->get_session();
-            $picture = $this->output->user_picture($student);
-            $name = fullname($student);
+            if ($form) {
+                $picture = $this->output->user_picture($student);
+                $name = fullname($student);
+            } else {
+                $picture = $review->progressreview->get_course()->fullname;
+                $name = fullname($review->progressreview->get_teacher());
+            }
             $attendance = number_format($review->attendance, 0).'%';
             $punctuality = number_format($review->punctuality, 0).'%';
             $fieldarray = 'review['.$review->id.']';
-            $homework = html_writer::empty_tag('input', array('class' => 'homework', 'name' => $fieldarray.'[homeworkdone]', 'value' => $review->homeworkdone));
-            $homework .= ' / ';
-            $homework .= html_writer::empty_tag('input', array('class' => 'homework', 'name' => $fieldarray.'[homeworktotal]', 'value' => $review->homeworktotal));
-            $behaviour = html_writer::select($session->scale_behaviour, $fieldarray.'[behaviour]', $review->behaviour);
-            $effort = html_writer::select($session->scale_effort, $fieldarray.'[effort]', $review->effort);
-            //            $mintarget = $review->scale[$review->minimumgrade];
+            if ($form) {
+                $homework = html_writer::empty_tag('input', array('class' => 'homework', 'name' => $fieldarray.'[homeworkdone]', 'value' => $review->homeworkdone));
+                $homework .= ' / ';
+                $homework .= html_writer::empty_tag('input', array('class' => 'homework', 'name' => $fieldarray.'[homeworktotal]', 'value' => $review->homeworktotal));
+                $behaviour = html_writer::select($session->scale_behaviour, $fieldarray.'[behaviour]', $review->behaviour);
+                $effort = html_writer::select($session->scale_effort, $fieldarray.'[effort]', $review->effort);
+                //            $mintarget = $review->scale[$review->minimumgrade];
+                $targetgrade = html_writer::select($review->scale, $fieldarray.'[targetgrade]', $review->targetgrade);
+                $performancegrade = html_writer::select($review->scale, $fieldarray.'[performancegrade]', $review->performancegrade);
+            } else {
+                $homework = $review->homeworkdone.'/'.$review->homeworktotal;
+                $behaviour = @$session->scale_behaviour[$review->behaviour];
+                $effort = @$session->scale_effort[$review->effort];
+                $targetgrade = @$review->scale[$review->targetgrade];
+                $performancegrade = @$review->scale[$review->performancegrade];
+            }
             $mintarget = $review->minimumgrade;
-            $targetgrade = html_writer::select($review->scale, $fieldarray.'[targetgrade]', $review->targetgrade);
-            $performancegrade = html_writer::select($review->scale, $fieldarray.'[performancegrade]', $review->performancegrade);
 
             $row = new html_table_row(array(
                 $picture,
@@ -211,9 +225,40 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $output .= html_writer::start_tag('form', array('action' => $this->page->url->out_omit_querystring(), 'method' => 'post'));
         $output .= html_writer::input_hidden_params($this->page->url);
         $output .= html_writer::table($table);
-        $output .= html_writer::empty_tag('input', array('name' => 'submit', 'type' => 'submit', 'value' => get_string('savechanges')));
+        if ($form) {
+            $output .= html_writer::empty_tag('input', array('name' => 'submit', 'type' => 'submit', 'value' => get_string('savechanges')));
+        }
         return $output;
 
+    }
+
+    public function tutorgroup_list($progressreviews) {
+        $output = '';
+        $table = new html_table();
+        $table->head = array(get_string('student', 'local_progressreview'), get_string('commentswritten', 'local_progressreview'));
+        foreach($progressreviews as $progressreview) {
+
+            $review = $progressreview->get_plugin('tutor')->get_review();
+            $student = $progressreview->get_student();
+            $name = fullname($student);
+            if(empty($review->comments)) {
+                $completed = get_string('no');
+            } else {
+                $completed = get_string('yes');
+            }
+
+            $params = array(
+                'courseid' => $progressreview->get_course()->originalid,
+                'studentid' => $student->id,
+                'sessionid' => $progressreview->get_session()->id
+            );
+            $reviewurl = new moodle_url('/local/progressreview/tutorreview.php', $params);
+            $link = html_writer::link($reviewurl, $name);
+            $row = array($link, $completed);
+            $table->data[] = $row;
+        }
+        $output = html_writer::table($table);
+        return $output;
     }
 }
 
