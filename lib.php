@@ -462,6 +462,9 @@ abstract class progressreview_plugin {
         $this->retrieve_review();
     }
 
+    public function get_name() {
+        return $this->name;
+    }
     /**
      * Updates the object's properties and the record for this plugin instance with the given data
      */
