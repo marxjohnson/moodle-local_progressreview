@@ -128,6 +128,10 @@ class progressreview {
     public function get_plugin($name) {
         return $this->plugins[$name];
     }
+    
+    public function get_plugins() {
+        return $this->plugins;
+    }
 
     /**
      * Transfers this review to allow a different teacher to write it
@@ -462,6 +466,9 @@ abstract class progressreview_plugin {
         $this->retrieve_review();
     }
 
+    public function get_name() {
+        return $this->name;
+    }
     /**
      * Updates the object's properties and the record for this plugin instance with the given data
      */
@@ -507,11 +514,16 @@ abstract class progressreview_plugin {
     /**
      * Adds the fields this plugin needs to the review form
      */
-    abstract function add_form_fields(&$form);
+    abstract function add_form_fields(&$mform);
 
     /**
      * Processes the data for this plugin returned from the form
      */
     abstract function process_form_fields($data);
+
+    /**
+     * Add data for fields to $data
+     */
+    abstract function add_form_data($data);
 
 }

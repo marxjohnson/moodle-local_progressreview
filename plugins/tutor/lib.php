@@ -30,9 +30,9 @@ class progressreview_tutor extends progressreview_plugin {
      * The tutor's comments
      * @access private
      */
-    private $comments;
+    protected $comments;
 
-
+    protected $valid_properties = array('reviewid', 'comments');
     /**
      * Stores a reference to the progressreview object
      *
@@ -71,6 +71,7 @@ class progressreview_tutor extends progressreview_plugin {
         global $DB;
 
         if ($review = $DB->get_record('progressreview_tutor', array('reviewid' => $this->progressreview->id))) {
+            $this->id = $review->id;
             $this->comments = $review->comments;
             return $review;
         } else {
@@ -78,19 +79,22 @@ class progressreview_tutor extends progressreview_plugin {
         }
     } // end of member function retrieve_review
 
-    public function add_form_fields(&$form) {
-        $mform =& $form->_form;
-
-        $mform->addElement('textarea', 'comments', get_string('comments', 'local_progressreview'));
+    public function add_form_fields(&$mform) {
+        $mform->addElement('textarea', 'comments', get_string('comments', 'local_progressreview'), array('rows' => 5, 'cols' => 50));
 
     }
 
     public function process_form_fields($data) {
         $review = (object)array(
             'comments' => $data->comments,
-            'reviewid' => $data->progressreview->id
+            'reviewid' => $data->reviewid
         );
         return $this->update($review);
+    }
+
+    public function add_form_data($data) {
+        $data->comments = $this->comments;
+        return $data;
     }
 
 } // end of progressreview_tutor
