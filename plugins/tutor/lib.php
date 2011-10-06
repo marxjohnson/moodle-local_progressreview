@@ -71,6 +71,7 @@ class progressreview_tutor extends progressreview_plugin {
         global $DB;
 
         if ($review = $DB->get_record('progressreview_tutor', array('reviewid' => $this->progressreview->id))) {
+            $this->id = $review->id;
             $this->comments = $review->comments;
             return $review;
         } else {
