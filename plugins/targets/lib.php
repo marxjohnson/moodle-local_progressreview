@@ -76,7 +76,7 @@ class progressreview_targets extends progressreview_plugin {
         $from = 'FROM {ilptarget_posts} ip
         	JOIN {progressreview_targets} pt ON ip.id = pt.targetid ';
         $where = 'WHERE pt.reviewid = ?';
-        $this->targets = $DB->get_records_sql($select.$from.$where, array($this->progressreview->id));
+        $this->targets = array_merge($DB->get_records_sql($select.$from.$where, array($this->progressreview->id)));
     }
 
     public function add_form_fields(&$mform) {
