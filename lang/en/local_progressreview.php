@@ -3,6 +3,7 @@
 $string['attendance'] = 'Attendance';
 $string['behaviour'] = 'Behaviour';
 $string['changescale'] = 'Change Grade Scale';
+$string['changesnotsaved'] = 'Changes Not Saved';
 $string['comments'] = 'Comments';
 $string['commentswritten'] = 'Comments Written?';
 $string['completedreviews'] = 'Completed Reviews';
