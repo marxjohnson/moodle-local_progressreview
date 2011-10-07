@@ -70,7 +70,8 @@ class progressreview_tutor_form extends moodleform {
             }
         }
 
-        $mform->closeHeaderBefore('buttons');
+        $mform->closeHeaderBefore('saveand');
+        $mform->addElement('static', 'saveand', '<strong>'.get_string('saveand', 'local_progressreview').'</strong>');
         $buttongroup = array();
         if ($prev) {
             $prevstudent = $prev->get_student();

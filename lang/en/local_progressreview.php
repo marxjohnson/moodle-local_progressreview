@@ -30,6 +30,7 @@ $string['returntolist'] = 'Return to List';
 $string['reviews'] = 'Reviews';
 $string['reviewsfordept'] = 'Reviews For {$a}';
 $string['reviewsgenerated'] = 'Reviews Generated';
+$string['saveand'] = 'Save and...';
 $string['savefirst'] = '(Don\'t forget to save first!)';
 $string['savedreviewfor'] = 'Saved Review For {$a}';
 $string['scale_behaviour'] = 'Behaviour Scale';
