@@ -56,8 +56,8 @@ foreach ($tutorplugins as $plugin) {
 
 $content = '';
 
-$content .= $output->user_session_links($user, $sessions);
 
+    $content .= $output->user_session_links($user, $sessions, $sessionid);
 $content .= $output->subject_review_table($subjectdata, false);
 
 $content .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);

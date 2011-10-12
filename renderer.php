@@ -270,12 +270,16 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return html_writer::table($table);
     }
 
-    public function user_session_links($user, $sessions) {
+    public function user_session_links($user, $sessions, $currentid) {
         $links = array();
         foreach ($sessions as $session) {
             $params = array('sessionid' => $session->id, 'userid' => $user->id);
             $url = new moodle_url('/local/progressreview/user.php', $params);
-            $links[] = html_writer::link($url, $session->name);
+            $link = html_writer::link($url, $session->name);
+            if ($session->id = $currentid) {
+                $link = html_writer::tag('strong', $link);
+            }
+            $links[] = $link;
         }
         return html_writer::alist($links);
     }
