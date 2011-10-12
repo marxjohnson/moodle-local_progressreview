@@ -15,6 +15,10 @@ $string['deadline_tutor'] = 'Tutor Review Deadline';
 $string['effort'] = 'Effort';
 $string['endofgroup'] = 'End of Group';
 $string['homework'] = 'Homework Completion';
+$string['invalidcourse'] = 'There is no course with the ID {$a}.';
+$string['invalidsession'] = 'There is no session with the ID {$a}.';
+$string['invalidstudent'] = 'There is no student with the ID {$a}.';
+$string['invalidteacher'] = 'There is no teacher with the ID {$a}.';
 $string['inductionreview'] = 'Induction Review?';
 $string['lockafterdeadline'] = 'Lock reviews after deadline?';
 $string['minimumgrade'] = 'Average GCSE';
@@ -46,5 +50,6 @@ $string['student'] = 'Student';
 $string['targetgrade'] = 'Target Grade';
 $string['teacher'] = 'Teacher';
 $string['teachers'] = 'Teachers';
+$string['tutor'] = 'Tutor';
 $string['tutorreviews'] = 'Tutor Reviews';
 

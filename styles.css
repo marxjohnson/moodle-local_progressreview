@@ -17,3 +17,9 @@
 #page-local-progressreview-index .empty td {
     background-color: #FFB3B3;
 }
+
+#tutorreviews h3,
+#tutorreviews h4,
+#tutorreviews h5 {
+    text-align: left;
+}

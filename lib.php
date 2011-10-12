@@ -128,7 +128,7 @@ class progressreview {
     public function get_plugin($name) {
         return $this->plugins[$name];
     }
-    
+
     public function get_plugins() {
         return $this->plugins;
     }
@@ -224,6 +224,46 @@ class progressreview {
  */
 class progressreview_controller {
 
+    public static function validate_session($id) {
+        global $DB;
+        if ($session = $DB->get_record('progressreview_session', array('id' => $id))) {
+            return $session;
+        } else {
+            throw new moodle_exception('invalidsession', 'local_progressreview', '', $id);
+        }
+    }
+
+    public static function validate_course($id) {
+        global $DB;
+        if ($course = $DB->get_record('course', array('id' => $id))) {
+            return $course;
+        } else if ($course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
+            return $course;
+        } else {
+            throw new moodle_exception('invalidcourse', 'local_progressreview', '', $id);
+        }
+    }
+
+    public static function validate_student($id) {
+        global $DB;
+        if ($student = $DB->get_record('user', array('id' => $id))) {
+            return $student;
+        } else {
+            throw new moodle_exception('invalidstudent', 'local_progressreview', '', $id);
+        }
+    }
+
+    public static function validate_teacher($id) {
+        global $DB;
+        if ($teacher = $DB->get_record('user', array('id' => $id))) {
+            return $teacher;
+        } else if ($teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
+            return $teacher;
+        } else {
+            throw new moodle_exception('invalidteacher', 'local_progressreview', '', $id);
+        }
+    }
+
     /**
      * Returns an array of records for each session in the database
      *
@@ -234,6 +274,18 @@ class progressreview_controller {
         global $DB;
         return $DB->get_records('progressreview_session', array(), 'deadline_tutor DESC');
     } // end of member function get_sessions
+
+    /**
+     * Get just the sessions where $student has reviews
+     */
+    public static function get_sessions_for_student($student) {
+        global $DB;
+        $select = 'SELECT DISTINCT ps.* ';
+        $from = 'FROM {progressreview_session} ps
+            JOIN {progressreview} p ON p.sessionid = ps.id ';
+        $where = 'WHERE p.studentid = ?';
+        return $DB->get_records_sql($select.$from.$where, array($student->id));
+    }
 
     /**
      * Returns an array of all progressreview objects for the given conditions
@@ -438,7 +490,7 @@ class progressreview_controller {
 abstract class progressreview_plugin {
 
     /**
-     * The name of the plugin, the same as the folder it lives in 
+     * The name of the plugin, the same as the folder it lives in
      */
     protected $name;
 
