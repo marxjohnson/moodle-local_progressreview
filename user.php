@@ -22,10 +22,7 @@ if ($user->id == $USER->id) {
     require_capability('moodle/local_progressreview:view', $PAGE->context);
 }
 
-$params = array(
-    'sessionid' => $sessionid,
-    'userid' => $userid
-);
+$params = array('userid' => $userid);
 $PAGE->set_url('/local/progressreview/user.php', $params);
 $PAGE->set_pagelayout('mydashboard');
 $PAGE->set_pagetype('user-profile');
