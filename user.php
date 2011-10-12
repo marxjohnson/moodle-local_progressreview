@@ -5,9 +5,12 @@ require_once($CFG->dirroot.'/local/progressreview/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 
 require_login($SITE);
-$sessionid = required_param('sessionid', PARAM_INT);
+$sessionid = optional_param('sessionid', false, PARAM_INT);
 $userid = required_param('userid', PARAM_INT);
 
+if (!$sessionid) {
+    $sessionid = current(progressreview_controller::get_sessions())->id;
+}
 $session = progressreview_controller::validate_session($sessionid);
 $user = progressreview_controller::validate_student($userid);
 
