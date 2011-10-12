@@ -5,8 +5,8 @@ require_once($CFG->dirroot.'/local/progressreview/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 require_once($CFG->dirroot.'/local/progressreview/tutor_form.php');
 
-$sessionid = required_param('sessionid', param_int);
-$courseid = required_param('courseid', param_int);
+$sessionid = required_param('sessionid', PARAM_INT);
+$courseid = required_param('courseid', PARAM_INT);
 $studentid = optional_param('studentid', false, PARAM_INT);
 $buttons = optional_param('buttons', false, PARAM_CLEAN);
 if (!$studentid) {
