@@ -24,6 +24,7 @@ $string['lockafterdeadline'] = 'Lock reviews after deadline?';
 $string['minimumgrade'] = 'Average GCSE';
 $string['name'] = 'Name';
 $string['nosessions'] = 'There are currently no Review Sessions';
+$string['noreviews'] = 'This user has no reviews';
 $string['outstandingreviews'] = 'Outstanding Reviews';
 $string['performancegrade'] = 'Performance Grade';
 $string['pluginname'] = 'Progress Review';
