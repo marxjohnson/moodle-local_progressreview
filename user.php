@@ -4,6 +4,7 @@ require_once('../../config.php');
 require_once($CFG->dirroot.'/local/progressreview/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 
+require_login($SITE);
 $sessionid = required_param('sessionid', PARAM_INT);
 $userid = required_param('userid', PARAM_INT);
 
