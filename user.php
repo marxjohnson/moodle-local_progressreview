@@ -27,7 +27,6 @@ $PAGE->set_url('/local/progressreview/user.php', $params);
 $PAGE->set_pagelayout('mydashboard');
 $PAGE->set_pagetype('user-profile');
 
-$PAGE->blocks->add_region('side-pre');
 $strreviews = get_string('pluginname', 'local_progressreview');
 $PAGE->set_heading(fullname($user).": $strreviews");
 
