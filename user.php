@@ -29,6 +29,7 @@ $PAGE->set_pagetype('user-profile');
 
 $strreviews = get_string('pluginname', 'local_progressreview');
 $PAGE->set_heading(fullname($user).": $strreviews");
+$PAGE->set_title(fullname($user).": $strreviews");
 
 $PAGE->navigation->extend_for_user($user);
 $output = $PAGE->get_renderer('local_progressreview');
