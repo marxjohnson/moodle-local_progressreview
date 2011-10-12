@@ -33,43 +33,44 @@ $PAGE->set_heading(fullname($user).": $strreviews");
 $PAGE->navigation->extend_for_user($user);
 $output = $PAGE->get_renderer('local_progressreview');
 
-$sessions = progressreview_controller::get_sessions_for_student($user);
+if($sessions = progressreview_controller::get_sessions_for_student($user)) {
 
-$subjectreviews = progressreview_controller::get_reviews($session->id, $user->id);
-$subjectdata = array();
-foreach ($subjectreviews as $subjectreview) {
-    $subjectdata[] = $subjectreview->get_plugin('subject')->get_review();
-}
-
-$tutorreview = current(progressreview_controller::get_reviews($session->id, $user->id, null, null, PROGRESSREVIEW_TUTOR));
-$tutorplugins = $tutorreview->get_plugins();
-
-$reviewdata = array();
-$pluginrenderers = array();
-foreach ($tutorplugins as $plugin) {
-    $reviewdata[] = $plugin->get_review();
-    if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name())) {
-        throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer.  It
-            must have a renderer with at least the review() method defined');
+    $subjectreviews = progressreview_controller::get_reviews($session->id, $user->id);
+    $subjectdata = array();
+    foreach ($subjectreviews as $subjectreview) {
+        $subjectdata[] = $subjectreview->get_plugin('subject')->get_review();
     }
-}
 
-$content = '';
+    $tutorreview = current(progressreview_controller::get_reviews($session->id, $user->id, null, null, PROGRESSREVIEW_TUTOR));
+    $tutorplugins = $tutorreview->get_plugins();
+
+    $reviewdata = array();
+    $pluginrenderers = array();
+    foreach ($tutorplugins as $plugin) {
+        $reviewdata[] = $plugin->get_review();
+        if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name())) {
+            throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer.  It
+                must have a renderer with at least the review() method defined');
+        }
+    }
 
     $content = $OUTPUT->heading(fullname($user).' - '.get_string('pluginname', 'local_progressreview'));
 
     $content .= $output->user_session_links($user, $sessions, $sessionid);
-$content .= $output->subject_review_table($subjectdata, false);
 
-$content .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
+    $content .= $output->subject_review_table($subjectdata, false);
 
-$tutorreviews = '';
-foreach ($pluginrenderers as $key => $pluginrenderer) {
-    $tutorreviews .= $pluginrenderer->review($reviewdata[$key]);
+    $content .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
+
+    $tutorreviews = '';
+    foreach ($pluginrenderers as $key => $pluginrenderer) {
+        $tutorreviews .= $pluginrenderer->review($reviewdata[$key]);
+    }
+
+    $content .= $OUTPUT->container($tutorreviews, null, 'tutorreviews');
+} else {
+    $content = $OUTPUT->error_text(get_string('noreviews', 'local_progressreview'));
 }
-
-$content .= $OUTPUT->container($tutorreviews, null, 'tutorreviews');
-
 echo $OUTPUT->header();
 
 echo $content;
