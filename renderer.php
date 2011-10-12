@@ -206,21 +206,22 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $performancegrade = @$review->scale[$review->performancegrade];
             }
             $mintarget = $review->minimumgrade;
+            if ($form || !empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
+                $row = new html_table_row(array(
+                    $picture,
+                    $name,
+                    $attendance,
+                    $punctuality,
+                    $homework,
+                    $behaviour,
+                    $effort,
+                    $mintarget,
+                    $targetgrade,
+                    $performancegrade
+                ));
 
-            $row = new html_table_row(array(
-                $picture,
-                $name,
-                $attendance,
-                $punctuality,
-                $homework,
-                $behaviour,
-                $effort,
-                $mintarget,
-                $targetgrade,
-                $performancegrade
-            ));
-
-            $table->data[] = $row;
+                $table->data[] = $row;
+            }
         }
 
         $output = '';
@@ -234,8 +235,15 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
     }
 
-    public function tutorgroup_list($progressreviews) {
+    public function tutor_review_table($review) {
         $output = '';
+        $plugins = $review->get_plugins();
+        foreach ($plugins as $plugin) {
+            $output .= $plugin->get_static_output();
+        }
+    }
+
+    public function tutorgroup_list($progressreviews) {
         $table = new html_table();
         $table->head = array(get_string('student', 'local_progressreview'), get_string('commentswritten', 'local_progressreview'));
         foreach($progressreviews as $progressreview) {
@@ -259,8 +267,17 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $row = array($link, $completed);
             $table->data[] = $row;
         }
-        $output = html_writer::table($table);
-        return $output;
+        return html_writer::table($table);
+    }
+
+    public function user_session_links($user, $sessions) {
+        $links = array();
+        foreach ($sessions as $session) {
+            $params = array('sessionid' => $session->id, 'userid' => $user->id);
+            $url = new moodle_url('/local/progressreview/user.php', $params);
+            $links[] = html_writer::link($url, $session->name);
+        }
+        return html_writer::alist($links);
     }
 }
 
