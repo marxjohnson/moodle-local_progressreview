@@ -62,6 +62,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
         $editform = new progressreview_tutor_form(null, array('progressreview' => $editreview));
         if ($data = $editform->get_data()) {
             $editform->process($data);
+            add_to_log($course, 'local_progressreview', 'update', $PAGE->url->out(), $editstudent->id);
             $content .= $OUTPUT->notification(get_string('savedreviewfor', 'local_progressreview', fullname($editstudent)));
         }
     }
@@ -89,6 +90,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
     }
 
 }
+add_to_log($course, 'local_progressreview', 'view', $PAGE->url->out(), $studentid);
 if (isset($form)) {
     ob_start();
     $form->display();
