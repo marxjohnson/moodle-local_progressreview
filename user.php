@@ -8,11 +8,15 @@ require_login($SITE);
 $sessionid = optional_param('sessionid', false, PARAM_INT);
 $userid = required_param('userid', PARAM_INT);
 
-if (!$sessionid) {
-    $sessionid = current(progressreview_controller::get_sessions())->id;
-}
-$session = progressreview_controller::validate_session($sessionid);
 $user = progressreview_controller::validate_student($userid);
+if($sessions = progressreview_controller::get_sessions_for_student($user)) {
+    if (!$sessionid) {
+        $sessionid = current($sessions)->id;
+    }
+    $session = progressreview_controller::validate_session($sessionid);
+} else {
+    print_error('noreviewsforstudent', 'local_progressreview');
+}
 
 $PAGE->set_context(get_context_instance(CONTEXT_USER, $user->id));
 
@@ -34,15 +38,13 @@ $PAGE->set_title(fullname($user).": $strreviews");
 $PAGE->navigation->extend_for_user($user);
 $output = $PAGE->get_renderer('local_progressreview');
 
-if($sessions = progressreview_controller::get_sessions_for_student($user)) {
+$subjectreviews = progressreview_controller::get_reviews($session->id, $user->id);
+$subjectdata = array();
+foreach ($subjectreviews as $subjectreview) {
+    $subjectdata[] = $subjectreview->get_plugin('subject')->get_review();
+}
 
-    $subjectreviews = progressreview_controller::get_reviews($session->id, $user->id);
-    $subjectdata = array();
-    foreach ($subjectreviews as $subjectreview) {
-        $subjectdata[] = $subjectreview->get_plugin('subject')->get_review();
-    }
-
-    $tutorreview = current(progressreview_controller::get_reviews($session->id, $user->id, null, null, PROGRESSREVIEW_TUTOR));
+if ($tutorreview = current(progressreview_controller::get_reviews($session->id, $user->id, null, null, PROGRESSREVIEW_TUTOR))) {
     $tutorplugins = $tutorreview->get_plugins();
 
     $reviewdata = array();
@@ -54,13 +56,15 @@ if($sessions = progressreview_controller::get_sessions_for_student($user)) {
                 must have a renderer with at least the review() method defined');
         }
     }
+}
 
-    $content = $OUTPUT->heading(fullname($user).' - '.get_string('pluginname', 'local_progressreview'));
+$content = $OUTPUT->heading(fullname($user).' - '.get_string('pluginname', 'local_progressreview'));
 
-    $content .= $output->user_session_links($user, $sessions, $sessionid);
+$content .= $output->user_session_links($user, $sessions, $sessionid);
 
-    $content .= $output->subject_review_table($subjectdata, false);
+$content .= $output->subject_review_table($subjectdata, false, $session->inductionreview);
 
+if ($tutorreview) {
     $content .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
 
     $tutorreviews = '';
@@ -69,9 +73,8 @@ if($sessions = progressreview_controller::get_sessions_for_student($user)) {
     }
 
     $content .= $OUTPUT->container($tutorreviews, null, 'tutorreviews');
-} else {
-    $content = $OUTPUT->error_text(get_string('noreviews', 'local_progressreview'));
 }
+
 echo $OUTPUT->header();
 
 echo $content;

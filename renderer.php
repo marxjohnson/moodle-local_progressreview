@@ -156,7 +156,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
      * @todo Make option for non-induction review, and allow avgcse to be configured
      * @todo Make pluggable
      */
-    function subject_review_table($reviews, $form = true) {
+    function subject_review_table($reviews, $form = true, $inductionreview = false) {
 
         $table = new html_table();
         $table->head = array(
@@ -222,6 +222,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
                 $table->data[] = $row;
             }
+            if (!$inductionreview) {
+                $headercell = new html_table_cell(get_string('comments', 'local_progressreview'));
+                $headercell->header = true;
+                $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
+                $commentscell->colspan = 8;
+                $row = new html_table_row(array('', $headercell, $commentscell));
+                $table->data[] = $row;
+            }
         }
 
         $output = '';
@@ -276,7 +284,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $params = array('sessionid' => $session->id, 'userid' => $user->id);
             $url = new moodle_url('/local/progressreview/user.php', $params);
             $link = html_writer::link($url, $session->name);
-            if ($session->id = $currentid) {
+            if ($session->id == $currentid) {
                 $link = html_writer::tag('strong', $link);
             }
             $links[] = $link;

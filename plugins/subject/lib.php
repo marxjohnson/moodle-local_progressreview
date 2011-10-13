@@ -264,8 +264,9 @@ abstract class progressreview_subject_template {
             $this->scaleid = $this->retrieve_scaleid();
         }
         if ($this->scaleid) {
-            $scalerecord = $DB->get_record('scale', array('id' => $this->scaleid));
-            $this->scale = explode(',', $scalerecord->scale);
+            if($scalerecord = $DB->get_record('scale', array('id' => $this->scaleid))) {
+                $this->scale = explode(',', $scalerecord->scale);
+            }
         } else {
             $this->scale = array();
         }
