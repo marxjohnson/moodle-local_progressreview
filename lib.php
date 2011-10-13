@@ -283,8 +283,9 @@ class progressreview_controller {
         $select = 'SELECT DISTINCT ps.* ';
         $from = 'FROM {progressreview_session} ps
             JOIN {progressreview} p ON p.sessionid = ps.id ';
-        $where = 'WHERE p.studentid = ?';
-        return $DB->get_records_sql($select.$from.$where, array($student->id));
+        $where = 'WHERE p.studentid = ? ';
+        $order = 'ORDER BY ps.deadline_tutor DESC';
+        return $DB->get_records_sql($select.$from.$where.$order, array($student->id));
     }
 
     /**
