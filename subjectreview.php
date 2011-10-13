@@ -50,8 +50,10 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                 'performancegrade' => $submittedreview['performancegrade'] == '' ? null : clean_param($submittedreview['performancegrade'], PARAM_INT)
             );
             if ($subjectreview->update($newdata)) {
+                add_to_log($course, 'local_progressreview', 'update', $PAGE->url->out(), $student->id);
                 $content = $OUTPUT->notification(get_string('changessaved'));
             } else {
+                add_to_log($course, 'local_progressreview', 'update', $PAGE->url->out(), $student->id.': error');
                 $content = $OUTPUT->error_text(get_string('changesnotsaved', 'local_progressreview'));
             }
         }
@@ -60,6 +62,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
 
     $content .= $output->changescale_button($sessionid, $courseid);
     $content .= $output->subject_review_table($reviewdata, true);
+    add_to_log($course, 'local_progressreview', 'view subjectreview', $PAGE->url->out());
 }
 
 echo $OUTPUT->header();
