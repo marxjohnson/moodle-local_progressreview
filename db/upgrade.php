@@ -4,7 +4,7 @@ function xmldb_local_progressreview_upgrade($oldversion) {
     global $DB;
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 2011101316) {
+    if ($oldversion < 2011101317) {
         ini_set('max_execution_time', 0); //Big job, disable time limit.
         // Changing the default of field homeworkdone on table progressreview_subject to drop it
         $table = new xmldb_table('progressreview_subject');
@@ -56,7 +56,8 @@ function xmldb_local_progressreview_upgrade($oldversion) {
         // Convert parent reviews to sessions
         $parentreview_to_session = array();
         $parentreviews = $DB->get_records('termreview', array('course' => 1));
-        foreach ($parentreviews as $parentreview) {
+        foreach ($parentreviews as $parentreview) { 
+        upgrade_set_timeout();
             $session = array(
                 'name' => $parentreview->name,
                 'deadline_subject' => $parentreview->deadline_subject,
@@ -267,7 +268,7 @@ function xmldb_local_progressreview_upgrade($oldversion) {
         }
     }
     // subject savepoint reached
-    upgrade_plugin_savepoint(true, 2011101316, 'progressreview', 'subject');
-    upgrade_plugin_savepoint(true, 2011101316, 'local', 'progressreview');
+    upgrade_plugin_savepoint(true, 2011101317, 'progressreview', 'subject');
+    upgrade_plugin_savepoint(true, 2011101317, 'local', 'progressreview');
     return true;
 }
