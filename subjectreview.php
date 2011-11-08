@@ -49,11 +49,15 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                 'targetgrade' => $submittedreview['targetgrade'] == '' ? null : clean_param($submittedreview['targetgrade'], PARAM_INT),
                 'performancegrade' => $submittedreview['performancegrade'] == '' ? null : clean_param($submittedreview['performancegrade'], PARAM_INT)
             );
-            if ($subjectreview->update($newdata)) {
-                add_to_log($course, 'local_progressreview', 'update', $PAGE->url->out(), $student->id);
+            if (!$reviews[$student->id]->get_session()->inductionreview) {
+                $newdata['comments'] = $submittedreview['comments'] == '' ? null : clean_param($submittedreview['comments'], PARAM_INT);
+            }
+            try {
+                $subjectreview->update($newdata);
+                add_to_log($course->id, 'local_progressreview', 'update', $PAGE->url->out(), $student->id);
                 $content = $OUTPUT->notification(get_string('changessaved'));
-            } else {
-                add_to_log($course, 'local_progressreview', 'update', $PAGE->url->out(), $student->id.': error');
+            } catch (dml_write_exception $e) {
+                add_to_log($course->id, 'local_progressreview', 'update', $PAGE->url->out(), $student->id.': '.$e->error);
                 $content = $OUTPUT->error_text(get_string('changesnotsaved', 'local_progressreview'));
             }
         }
