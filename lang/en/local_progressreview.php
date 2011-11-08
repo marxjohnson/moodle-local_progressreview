@@ -5,6 +5,7 @@ $string['behaviour'] = 'Behaviour';
 $string['changescale'] = 'Change Grade Scale';
 $string['changesnotsaved'] = 'Changes Not Saved';
 $string['comments'] = 'Comments';
+$string['commentstargets'] = 'Comments/Targets';
 $string['commentswritten'] = 'Comments Written?';
 $string['completedreviews'] = 'Completed Reviews';
 $string['courseswithreviews'] = 'Your courses with Reviews';

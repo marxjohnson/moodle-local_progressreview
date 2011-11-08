@@ -200,12 +200,18 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 //            $mintarget = $review->scale[$review->minimumgrade];
                 $targetgrade = html_writer::select($review->scale, $fieldarray.'[targetgrade]', $review->targetgrade);
                 $performancegrade = html_writer::select($review->scale, $fieldarray.'[performancegrade]', $review->performancegrade);
+                $commentsattrs = array(
+                    'name' => $fieldarray.'[comments]'
+                );
+                $commentsfield = html_writer::tag('textarea', $review->comments, $commentsattrs);
+                $commentscell = new html_table_cell($commentsfield);
             } else {
                 $homework = $review->homeworkdone.'/'.$review->homeworktotal;
                 $behaviour = @$session->scale_behaviour[$review->behaviour];
                 $effort = @$session->scale_effort[$review->effort];
                 $targetgrade = @$review->scale[$review->targetgrade];
                 $performancegrade = @$review->scale[$review->performancegrade];
+                $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
             }
             $mintarget = $review->minimumgrade;
             if ($form || !empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
@@ -224,10 +230,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
                 $table->data[] = $row;
             }
-            if (!$inductionreview) {
-                $headercell = new html_table_cell(get_string('comments', 'local_progressreview'));
+            if (!$session->inductionreview) {
+                $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
                 $headercell->header = true;
-                $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
+
                 $commentscell->colspan = 8;
                 $row = new html_table_row(array('', $headercell, $commentscell));
                 $table->data[] = $row;

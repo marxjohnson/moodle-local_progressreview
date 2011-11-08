@@ -10,6 +10,11 @@
     margin-bottom: 1em;
 }
 
+#page-local-progressreview-subjectreview textarea {
+    height: 2.5em;
+    width: 50em;
+}
+
 #page-local-progressreview-index .completed td {
     background-color: #B3FFB3;
 }
