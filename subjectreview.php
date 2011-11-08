@@ -62,7 +62,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
 
     $content .= $output->changescale_button($sessionid, $courseid);
     $content .= $output->subject_review_table($reviewdata, true);
-    add_to_log($course, 'local_progressreview', 'view subjectreview', $PAGE->url->out());
+    add_to_log($course->id, 'local_progressreview', 'view subjectreview', $PAGE->url->out());
 }
 
 echo $OUTPUT->header();

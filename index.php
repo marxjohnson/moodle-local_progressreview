@@ -47,7 +47,7 @@ if (empty($permissions)) {
 
 $PAGE->set_url('/local/progressreview/');
 $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'));
-add_to_log($SITE, 'local_progressreview', 'view', $PAGE->url->out());
+add_to_log(SITEID, 'local_progressreview', 'view', $PAGE->url->out());
 $output = $PAGE->get_renderer('local_progressreview');
 $content = '';
 
