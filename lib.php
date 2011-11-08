@@ -330,7 +330,7 @@ class progressreview_controller {
     } // end of member function get_reviews
 
 
-    public static function get_course_summaries($sessionid, $type, $categoryid = null) {
+    public static function get_course_summaries($session, $type, $categoryid = null) {
         if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
             throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
         }
@@ -342,21 +342,8 @@ class progressreview_controller {
         } else {
             $table = '{progressreview_tutor}';
         }
-        $completed_select = 'SELECT COUNT(*) ';
-        $completed_from = 'FROM
-            {progressreview} p1
-            JOIN '.$table.' ps ON p1.id = ps.reviewid ';
-        $completed_where = 'WHERE p1.courseid = c.id
-        		AND p1.teacherid = t.originalid';
-        $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
-        if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
-            $completed_where .= ' AND ps.performancegrade IS NOT NULL';
-            $completed_params = array();
-        } else {
-            $completed_where .= ' AND comments IS NOT NULL AND comments != ?';
-            $completed_params = array($DB->sql_empty());
-        }
 
+        $params = array();
         $concat_sql = $DB->sql_concat('t.firstname', '" "', 't.lastname');
         $select = 'SELECT
                     p.id,
@@ -364,15 +351,23 @@ class progressreview_controller {
                     c.fullname AS name,
 	            '.$concat_sql.' AS teacher,
                     COUNT(*) AS total,
-    	            ('.$completed_select.$completed_from.$completed_where.') AS completed ';
+                    COUNT(p1.id) AS completed ';
         $from = 'FROM
                     {progressreview} p
                     JOIN {course} c ON c.id = p.courseid
-                    JOIN {progressreview_teachers} t ON t.originalid = p.teacherid ';
+                    JOIN {progressreview_teachers} t ON t.originalid = p.teacherid
+                    LEFT JOIN '.$table.' p1 ON p1.reviewid = p.id ';
+        if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
+            $from .= 'AND p1.performancegrade IS NOT NULL ';
+        } else {
+            $from .= 'AND comments IS NOT NULL AND comments != ? ';
+            $params = array($DB->sql_empty());
+        }
+
         $where = 'WHERE
             p.sessionid = ?
             AND p.reviewtype = ? ';
-        $params = array_merge($completed_params, array($sessionid, $type));
+        $params = array_merge($params, array($session->id, $type));
 
         if ($categoryid) {
             $where .= 'AND c.category = ? ';
