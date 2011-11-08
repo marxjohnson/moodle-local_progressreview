@@ -61,13 +61,15 @@ if (isset($permissions['admin'])) {
 
 if (isset($permissions['manager'])) {
     if (!empty($sessions)) {
-        if (!$sessionid) {
-            $sessionid = current($sessions)->id;
+        if ($sessionid) {
+            $session = $sessions[$sessionid];
+        } else {
+            $session = current($sessions);
         }
         foreach ($permissions['manager'] as $categoryid) {
             $category = $DB->get_record('course_categories', array('id' => $categoryid));
-            $subjectsummaries = progressreview_controller::get_course_summaries($sessionid, PROGRESSREVIEW_SUBJECT, $category->id);
-            $tutorsummaries = progressreview_controller::get_course_summaries($sessionid, PROGRESSREVIEW_TUTOR, $category->id);
+            $subjectsummaries = progressreview_controller::get_course_summaries($session, PROGRESSREVIEW_SUBJECT, $category->id);
+            $tutorsummaries = progressreview_controller::get_course_summaries($session, PROGRESSREVIEW_TUTOR, $category->id);
             if ($subjectsummaries || $tutorsummaries) {
                 $department_table = $output->department_table($category, $subjectsummaries, $tutorsummaries);
                 $content .= $department_table;
