@@ -21,10 +21,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $sessionurl = new moodle_url('/local/progressreview/session.php', array('id' => $session->id));
             $editurl = new moodle_url('/local/progressreview/session.php', array('editid' => $session->id));
 
+            $subject_deadline = $session->deadline_subject ? date('D d/m/Y', $session->deadline_subject) : '';
+            $tutor_deadline = $session->deadline_tutor ? date('D d/m/Y', $session->deadline_tutor) : '';
             $row = new html_table_row(array(
                 html_writer::link($sessionurl, $session->name),
-                date('D d/m/Y', $session->deadline_subject),
-                date('D d/m/Y', $session->deadline_tutor),
+                $subject_deadline,
+                $tutor_deadline,
                 $this->editicon($editurl)
             ));
             if ($session->deadline_subject > time() || $session->deadline_tutor > time()) {
