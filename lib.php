@@ -60,6 +60,12 @@ class progressreview {
      */
     private $course;
 
+    /**
+     * The progress review object for this teacher/student/course in the previous session
+     * @access private
+     */
+    private $previous_review;
+
 
     /**
      * The constructor, initialises the interface.
@@ -86,6 +92,7 @@ class progressreview {
         $this->teacher = $this->retrieve_teacher($teacherid);
         $this->student = $DB->get_record('user', array('id' => $studentid));
         $this->course = $this->retrieve_course($courseid);
+        $this->previous_review = null;
 
         $this->session->scale_behaviour = explode(',', $this->session->scale_behaviour);
         $this->session->scale_homework = explode(',', $this->session->scale_homework);
@@ -131,6 +138,19 @@ class progressreview {
 
     public function get_plugins() {
         return $this->plugins;
+    }
+
+    public function get_previous() {
+        if (is_null($this->previous_review)) {
+            $this->previous_review = current(progressreview_controller::get_reviews(
+                $this->session->previoussession,
+                $this->student->id,
+                $this->course->originalid,
+                $this->teacher->originalid,
+                $this->type
+            ));
+        }
+        return $this->previous_review;
     }
 
     /**

@@ -35,6 +35,7 @@ $content = '';
 if ($mode == PROGRESSREVIEW_TEACHER) {
     $reviews = array();
     $reviewdata = array();
+    $previousdata = array();
     $students = get_users_by_capability($coursecontext, 'moodle/local_progressreview:viewown', '', 'lastname, firstname');
     foreach ($students as $student) {
         $reviews[$student->id] = new progressreview($student->id, $sessionid, $courseid, $USER->id, PROGRESSREVIEW_SUBJECT);
@@ -62,10 +63,15 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
             }
         }
         $reviewdata[] = $subjectreview->get_review();
+        if ($session->previoussession) {
+            if($previousreview = $reviews[$student->id]->get_previous()) {
+                $previousdata[] = $previousreview->get_plugin('subject')->get_review();
+            }
+        }
     }
 
     $content .= $output->changescale_button($sessionid, $courseid);
-    $content .= $output->subject_review_table($reviewdata, true);
+    $content .= $output->subject_review_table($reviewdata, true, $previousdata);
     add_to_log($course->id, 'local_progressreview', 'view subjectreview', $PAGE->url->out());
 }
 

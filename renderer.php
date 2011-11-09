@@ -158,7 +158,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
      * @todo Make option for non-induction review, and allow avgcse to be configured
      * @todo Make pluggable
      */
-    function subject_review_table($reviews, $form = true, $inductionreview = false) {
+    function subject_review_table($reviews, $form = true, $previousdata = array()) {
 
         $table = new html_table();
         $table->head = array(
@@ -178,7 +178,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $table->head[1] = get_string('teacher', 'local_progressreview');
         }
 
-        foreach ($reviews as $review) {
+        foreach ($reviews as $key => $review) {
             $student = $review->progressreview->get_student();
             $session = $review->progressreview->get_session();
             if ($form) {
@@ -214,6 +214,20 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
             }
             $mintarget = $review->minimumgrade;
+            if (array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
+                $p = $previousdata[$key];
+                if (!isset($psession)) {
+                    $psession = $p->progressreview->get_session();
+                }
+                $attendance .= $this->previous_data(number_format($p->attendance, 0).'%');
+                $punctuality .= $this->previous_data(number_format($p->punctuality, 0).'%');
+                $homework .= $this->previous_data($p->homeworkdone.'/'.$p->homeworktotal);
+                $behaviour .= $this->previous_data(@$psession->scale_behaviour[$p->behaviour]);
+                $effort .= $this->previous_data(@$psession->scale_effort[$p->effort]);
+                $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
+                $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
+            }
+
             if ($form || !empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
                 $row = new html_table_row(array(
                     $picture,
@@ -298,6 +312,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $links[] = $link;
         }
         return html_writer::alist($links);
+    }
+
+    public function previous_data($data) {
+        return $this->output->container('('.$data.')', 'previous');
     }
 }
 
