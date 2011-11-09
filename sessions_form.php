@@ -23,6 +23,19 @@ class progressreview_session_form extends moodleform {
         $mform->addElement('date_time_selector', 'snapshotdate', get_string('snapshotdate', 'local_progressreview'));
         $mform->addElement('select', 'previoussession', get_string('showdatafrom', 'local_progressreview'), $sessionoptions);
         $mform->addElement('advcheckbox', 'inductionreview', get_string('inductionreview', 'local_progressreview'));
+
+        $mform->setTypes(array(
+            'name' => PARAM_TEXT,
+            'deadline_subject' => PARAM_INT,
+            'deadline_tutor' => PARAM_INT,
+            'lockafterdeadline' => PARAM_BOOL,
+            'scale_behaviour' => PARAM_TEXT,
+            'scale_effort' => PARAM_TEXT,
+            'scale_homework' => PARAM_TEXT,
+            'snapshotdate' => PARAM_INT,
+            'previoussession' => PARAM_INT,
+            'inductionreview' => PARAM_BOOL
+        ));
         $this->add_action_buttons();
     }
 
