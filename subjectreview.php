@@ -50,7 +50,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                 'performancegrade' => $submittedreview['performancegrade'] == '' ? null : clean_param($submittedreview['performancegrade'], PARAM_INT)
             );
             if (!$reviews[$student->id]->get_session()->inductionreview) {
-                $newdata['comments'] = $submittedreview['comments'] == '' ? null : clean_param($submittedreview['comments'], PARAM_INT);
+                $newdata['comments'] = $submittedreview['comments'] == '' ? null : clean_param($submittedreview['comments'], PARAM_TEXT);
             }
             try {
                 $subjectreview->update($newdata);
