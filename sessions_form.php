@@ -6,7 +6,7 @@ class progressreview_session_form extends moodleform {
     protected function definition() {
         $mform =& $this->_form;
 
-        $mform->addElement('hidden', 'id');
+        $mform->addElement('hidden', 'editid');
         $mform->addElement('text', 'name', get_string('name', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_subject', get_string('deadline_subject', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_tutor', get_string('deadline_tutor', 'local_progressreview'));
@@ -21,7 +21,9 @@ class progressreview_session_form extends moodleform {
 
     public function process($data) {
         global $DB;
-        if ($data->id) {
+        if ($data->editid) {
+            $data->id = $data->editid;
+            unset($data->editid);
             return $DB->update_record('progressreview_session', $data);
         } else {
             $id = $DB->insert_record('progressreview_session', $data);

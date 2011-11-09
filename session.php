@@ -34,6 +34,7 @@ if (!$id) {
 
     if ($editid) {
         $session = $DB->get_record('progressreview_session', array('id' => $editid));
+        $session->editid = $session->id;
         $form->set_data($session);
     }
 
