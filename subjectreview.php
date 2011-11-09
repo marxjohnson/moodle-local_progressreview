@@ -71,6 +71,17 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
     }
 
     $content .= $output->changescale_button($sessionid, $courseid);
+    if (!empty($session->deadline_subject)) {
+        $deadline = userdate($session->deadline_subject);
+        $strdeadline = get_string('completesubjectreviewsby', 'local_progressreview', $deadline);
+        $content .= $OUTPUT->container($strdeadline, 'reviewnotes');
+    }
+    if (!empty($session->previoussession)) {
+        $previoussession = progressreview_controller::validate_session($session->previoussession);
+        $strprevious = get_string('previousfigures', 'local_progressreview', $previoussession->name);
+        $content .= $OUTPUT->container($strprevious, 'reviewnotes');
+    }
+    $content .= $output->container('', 'clearfix');
     $content .= $output->subject_review_table($reviewdata, true, $previousdata);
     add_to_log($course->id, 'local_progressreview', 'view subjectreview', $PAGE->url->out());
 }
