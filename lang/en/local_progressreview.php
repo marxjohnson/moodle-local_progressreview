@@ -43,6 +43,7 @@ $string['scale_behaviour'] = 'Behaviour Scale';
 $string['scale_effort'] = 'Effort Scale';
 $string['scale_homework'] = 'Scale Homework';
 $string['sessions'] = 'Sessions';
+$string['showdatafrom'] = 'Show Data From';
 $string['snapshot'] = 'Snapshot data';
 $string['snapshotdate'] = 'Snapshot Date';
 $string['snapshotted'] = 'Data Snapshotted';
