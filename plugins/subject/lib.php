@@ -4,7 +4,7 @@
  * class progressreview_subject
  * Interface to core data for Subject reviews
  */
-abstract class progressreview_subject_template {
+abstract class progressreview_subject_template extends progressreview_plugin {
     /*** Attributes: ***/
 
     /**
@@ -12,6 +12,10 @@ abstract class progressreview_subject_template {
      * @access public
      */
     public $id;
+
+    protected $name = 'subject';
+
+    protected $type = PROGRESSREVIEW_SUBJECT;
 
     /**
      * A reference to the progressreview object for the review that this subject review
@@ -217,7 +221,7 @@ abstract class progressreview_subject_template {
      * @return
      * @access private
      */
-    private function skeleton_review() {
+    protected function skeleton_review() {
         $skeleton = array();
         $skeleton['reviewid'] = $this->progressreview->id;
         $homework = $this->retrieve_homework();
@@ -245,9 +249,9 @@ abstract class progressreview_subject_template {
      * Retrieves the current review from the database, or generates one if required.
      *
      * @return
-     * @access private
+     * @access protected
      */
-    private function retrieve_review() {
+    protected function retrieve_review() {
         global $DB;
         if ($subjectreview = $DB->get_record('progressreview_subject', array('reviewid' => $this->progressreview->id))) {
             foreach ((array)$subjectreview as $property => $value) {
@@ -278,7 +282,7 @@ abstract class progressreview_subject_template {
      * Must be overidden in {@see progressreview_subject}
      *
      * @return
-     * @access private
+     * @access protected
      */
     protected abstract function retrieve_attendance(); // end of member function retrieve_attendance
 
@@ -290,7 +294,7 @@ abstract class progressreview_subject_template {
      * completed if it has been graded above the bottom grade on the scale.
      *
      * @return
-     * @access private
+     * @access protected
      */
     protected function retrieve_homework() {
         global $DB;
@@ -326,7 +330,7 @@ abstract class progressreview_subject_template {
      * installed.
      *
      * @return
-     * @access private
+     * @access protected
      */
     protected function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
         global $DB;
@@ -357,7 +361,7 @@ abstract class progressreview_subject_template {
      * used scale in the gradebook.
      *
      * @return
-     * @access private
+     * @access protected
      */
     protected function retrieve_scaleid() {
         global $DB;
@@ -385,6 +389,13 @@ abstract class progressreview_subject_template {
     public function get_scaleid() {
         return $this->scaleid;
     }
+
+    // TODO implement these methods properly
+    public function add_form_fields(&$mform) {}
+
+    public function process_form_fields($data) {}
+
+    public function add_form_data($data) {}
 
 } // end of progressreview_subject
 
