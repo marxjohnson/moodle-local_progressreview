@@ -222,7 +222,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                                               $review->effort,
                                               array(get_string('choosedots')),
                                               array('class' => 'subject'));
-                //            $mintarget = $review->scale[$review->minimumgrade];
+                $mintarget = @$review->scale[$review->minimumgrade-1];
                 $targetgrade = html_writer::select($review->scale,
                                                    $fieldarray.'[targetgrade]',
                                                    $review->targetgrade,
@@ -247,7 +247,6 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $performancegrade = @$review->scale[$review->performancegrade];
                 $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
             }
-            $mintarget = $review->minimumgrade;
             if (array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
                 $p = $previousdata[$key];
                 if (!isset($psession)) {

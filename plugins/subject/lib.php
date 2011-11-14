@@ -344,7 +344,7 @@ abstract class progressreview_subject_template extends progressreview_plugin {
                 }
                 if($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$item))) {
                     if($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
-                        $grades[$item] = $grade->finalgrade;
+                        $grades[$item] = (int)$grade->finalgrade;
                     }
                 } else {
                     $grades[$item] = null;
