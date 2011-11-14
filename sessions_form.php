@@ -6,7 +6,13 @@ class progressreview_session_form extends moodleform {
     protected function definition() {
         $mform =& $this->_form;
 
-        $mform->addElement('hidden', 'id');
+        $sessions = progressreview_controller::get_sessions();
+        $sessionoptions = array('' => get_string('choosedots'));
+        foreach ($sessions as $session) {
+            $sessionoptions[$session->id] = $session->name;
+        }
+
+        $mform->addElement('hidden', 'editid');
         $mform->addElement('text', 'name', get_string('name', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_subject', get_string('deadline_subject', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_tutor', get_string('deadline_tutor', 'local_progressreview'));
@@ -15,13 +21,29 @@ class progressreview_session_form extends moodleform {
         $mform->addElement('text', 'scale_effort', get_string('scale_effort', 'local_progressreview'));
         $mform->addElement('text', 'scale_homework', get_string('scale_homework', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'snapshotdate', get_string('snapshotdate', 'local_progressreview'));
+        $mform->addElement('select', 'previoussession', get_string('showdatafrom', 'local_progressreview'), $sessionoptions);
         $mform->addElement('advcheckbox', 'inductionreview', get_string('inductionreview', 'local_progressreview'));
+
+        $mform->setTypes(array(
+            'name' => PARAM_TEXT,
+            'deadline_subject' => PARAM_INT,
+            'deadline_tutor' => PARAM_INT,
+            'lockafterdeadline' => PARAM_BOOL,
+            'scale_behaviour' => PARAM_TEXT,
+            'scale_effort' => PARAM_TEXT,
+            'scale_homework' => PARAM_TEXT,
+            'snapshotdate' => PARAM_INT,
+            'previoussession' => PARAM_INT,
+            'inductionreview' => PARAM_BOOL
+        ));
         $this->add_action_buttons();
     }
 
     public function process($data) {
         global $DB;
-        if ($data->id) {
+        if ($data->editid) {
+            $data->id = $data->editid;
+            unset($data->editid);
             return $DB->update_record('progressreview_session', $data);
         } else {
             $id = $DB->insert_record('progressreview_session', $data);

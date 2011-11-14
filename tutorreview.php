@@ -92,6 +92,16 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
 }
 add_to_log($course, 'local_progressreview', 'view', $PAGE->url->out(), $studentid);
 if (isset($form)) {
+    if (!empty($session->deadline_tutor)) {
+        $deadline = userdate($session->deadline_tutor);
+        $strdeadline = get_string('completetutorreviewsby', 'local_progressreview', $deadline);
+        $content .= $OUTPUT->container($strdeadline, 'reviewnotes');
+    }
+    if (!empty($session->previoussession)) {
+        $previoussession = progressreview_controller::validate_session($session->previoussession);
+        $strprevious = get_string('previousfigures', 'local_progressreview', $previoussession->name);
+        $content .= $OUTPUT->container($strprevious, 'reviewnotes');
+    }
     ob_start();
     $form->display();
     $content .= str_replace('&amp;', '&', ob_get_contents());

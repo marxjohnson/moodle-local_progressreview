@@ -73,11 +73,12 @@ class progressreview_distributed_course_selector extends progressreview_potentia
                     $where .= 'AND id '.$not_in_sql.' ';
                     $params = array_merge($params, $not_in_params);
                 }
-                $course = $DB->get_record_sql($select.$from.$where, $params);
-                if (!isset($options[$course->category])) {
-                    $options[$course->category] = array();
+                if ($course = $DB->get_record_sql($select.$from.$where, $params)) {
+                    if (!isset($options[$course->category])) {
+                        $options[$course->category] = array();
+                    }
+                    $options[$course->category][$course->id] = $course;
                 }
-                $options[$course->category][$course->id] = $course;
             }
             return $options;
         }

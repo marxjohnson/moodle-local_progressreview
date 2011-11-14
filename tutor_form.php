@@ -20,10 +20,16 @@ class progressreview_tutor_form extends moodleform {
 
         $output = $PAGE->get_renderer('local_progressreview');
         $reviews = progressreview_controller::get_reviews($session->id, $student->id);
-        foreach($reviews as &$review) {
+        $previousdata = array();
+        foreach($reviews as $key => &$review) {
+            if ($session->previoussession) {
+                if($previousreview = $review->get_previous()) {
+                    $previousdata[$key] = $previousreview->get_plugin('subject')->get_review();
+                }
+            }
             $review = $review->get_plugin('subject')->get_review();
         }
-        $table = $output->subject_review_table($reviews, false);
+        $table = $output->subject_review_table($reviews, false, $previousdata);
         $mform->addElement('html', $table);
 
         $progressreview->get_plugin('tutor')->add_form_fields($mform);

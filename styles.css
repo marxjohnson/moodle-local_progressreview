@@ -4,10 +4,25 @@
 
 #page-local-progressreview-subjectreview .changescale {
     width: 10em;
-    margin-left: auto;
-    margin-right: 8em;
-    margin-top:1em;
-    margin-bottom: 1em;
+    float:right;
+}
+
+#page-local-progressreview-subjectreview textarea {
+    height: 2.5em;
+    width: 50em;
+}
+
+#page-local-progressreview-tutorreview #id_save {
+    background-color: white;
+    color: black;
+    font-weight: bold;
+    border: 0px !important;
+    margin-left: -5em;
+}
+
+.path-local-progressreview .reviewnotes {
+    width: 50%;
+    font-weight: bold;
 }
 
 #page-local-progressreview-index .completed td {
@@ -23,3 +38,17 @@
 #tutorreviews h5 {
     text-align: left;
 }
+
+.path-local-progressreview #progressindicator {
+    width:9em;
+    height: 2em;
+    position:fixed;
+    right: 1em;
+    bottom: 1em;
+    background-color: #FFFFD7 !important;
+    border: 2px solid #FFE920;
+    padding-left: 1em;
+    padding-top: .8em;
+    padding-bottom: .8em;
+}
+

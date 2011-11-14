@@ -9,7 +9,7 @@ require_login($SITE);
 require_capability('moodle/local_progressreview:manage', $PAGE->context);
 
 $id = optional_param('id', null, PARAM_INT);
-$editid = optional_param('editid', null, PARAM_INT);
+$editid = optional_param('editid', '', PARAM_INT);
 $generate_subject = optional_param('generate_subject', false, PARAM_TEXT);
 $regenerate_subject = optional_param('regenerate_subject', false, PARAM_TEXT);
 $snapshot = optional_param('snapshot', false, PARAM_TEXT);
@@ -27,17 +27,18 @@ if (!$id) {
 
     if ($data = $form->get_data()) {
         $sessionid = $form->process($data);
-        add_to_log($SITE, 'local_progressreview', 'update', $PAGE->url->out(), $sessionid);
+        add_to_log(SITEID, 'local_progressreview', 'update', $PAGE->url->out(), $sessionid);
         redirect($PAGE->url->out(true, array('id' => $sessionid)), get_string('sessioncreated', 'local_progressreview'));
         exit();
     }
 
     if ($editid) {
         $session = $DB->get_record('progressreview_session', array('id' => $editid));
+        $session->editid = $session->id;
         $form->set_data($session);
     }
 
-    add_to_log($SITE, 'local_progressreview', 'view form', $PAGE->url->out(), $editid);
+    add_to_log(SITEID, 'local_progressreview', 'view form', $PAGE->url->out(), $editid);
 } else {
     $output = $PAGE->get_renderer('local_progressreview');
     $session = $DB->get_record('progressreview_session', array('id' => $id));
@@ -95,14 +96,14 @@ if (!$id) {
     }
 
     if ($tutors) {
-        add_to_log($SITE, 'local_progressreview', 'update reviews', $PAGE->url->out(), count($tutors));
+        add_to_log(SITEID, 'local_progressreview', 'update reviews', $PAGE->url->out(), count($tutors));
         foreach ($tutors as $tutor) {
             progressreview_controller::generate_reviews_for_course($tutor->id, $session->id, PROGRESSREVIEW_TUTOR);
         }
         redirect($PAGE->url->out(), get_string('reviewsgenerated', 'local_progressreview'));
         exit();
     }
-    add_to_log($SITE, 'local_progressreview', 'view', $PAGE->url->out());
+    add_to_log(SITEID, 'local_progressreview', 'view', $PAGE->url->out());
 
     $tutor_selector = $output->course_selector_form($potential_tutor_selector, $distributed_tutor_selector, $session->id, PROGRESSREVIEW_TUTOR);
     $content .= $OUTPUT->heading(get_string('tutorreviews', 'local_progressreview'), 2);

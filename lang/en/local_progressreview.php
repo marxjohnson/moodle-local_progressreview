@@ -1,12 +1,20 @@
 <?php
 
 $string['attendance'] = 'Attendance';
+$string['autosaving'] = 'Autosaving';
+$string['autosaveactive'] = 'Autosave Active';
+$string['autosavefailed'] = 'Autosave Failed. Autosaving will now be disabled. Please ensure that
+you manually save using the button at the bottom of the page. The server returned the following 
+message: {$a}';
 $string['behaviour'] = 'Behaviour';
 $string['changescale'] = 'Change Grade Scale';
 $string['changesnotsaved'] = 'Changes Not Saved';
 $string['comments'] = 'Comments';
+$string['commentstargets'] = 'Comments/Targets';
 $string['commentswritten'] = 'Comments Written?';
 $string['completedreviews'] = 'Completed Reviews';
+$string['completesubjectreviewsby'] = 'Subject Reviews must be completed by {$a}';
+$string['completetutorreviewsby'] = 'Tutor Reviews must be completed by {$a}';
 $string['courseswithreviews'] = 'Your courses with Reviews';
 $string['createsession'] = 'Create Session';
 $string['createreviews'] = 'Generate Reviews';
@@ -29,6 +37,7 @@ $string['outstandingreviews'] = 'Outstanding Reviews';
 $string['performancegrade'] = 'Performance Grade';
 $string['pluginname'] = 'Progress Review';
 $string['punctuality'] = 'Punctuality';
+$string['previousfigures'] = 'Figures in (brackets) are from {$a}';
 $string['regenerate'] = 'Generate Missing Reviews';
 $string['reference'] = 'Reference';
 $string['returntolist'] = 'Return to List';
@@ -42,6 +51,7 @@ $string['scale_behaviour'] = 'Behaviour Scale';
 $string['scale_effort'] = 'Effort Scale';
 $string['scale_homework'] = 'Scale Homework';
 $string['sessions'] = 'Sessions';
+$string['showdatafrom'] = 'Show Data From';
 $string['snapshot'] = 'Snapshot data';
 $string['snapshotdate'] = 'Snapshot Date';
 $string['snapshotted'] = 'Data Snapshotted';

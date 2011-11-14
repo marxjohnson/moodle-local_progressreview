@@ -60,6 +60,12 @@ class progressreview {
      */
     private $course;
 
+    /**
+     * The progress review object for this teacher/student/course in the previous session
+     * @access private
+     */
+    private $previous_review;
+
 
     /**
      * The constructor, initialises the interface.
@@ -86,6 +92,7 @@ class progressreview {
         $this->teacher = $this->retrieve_teacher($teacherid);
         $this->student = $DB->get_record('user', array('id' => $studentid));
         $this->course = $this->retrieve_course($courseid);
+        $this->previous_review = null;
 
         $this->session->scale_behaviour = explode(',', $this->session->scale_behaviour);
         $this->session->scale_homework = explode(',', $this->session->scale_homework);
@@ -125,12 +132,29 @@ class progressreview {
         return $this->course;
     }
 
+    public function get_type() {
+        return $this->type;
+    }
+
     public function get_plugin($name) {
         return $this->plugins[$name];
     }
 
     public function get_plugins() {
         return $this->plugins;
+    }
+
+    public function get_previous() {
+        if (is_null($this->previous_review)) {
+            $this->previous_review = current(progressreview_controller::get_reviews(
+                $this->session->previoussession,
+                $this->student->id,
+                $this->course->originalid,
+                $this->teacher->originalid,
+                $this->type
+            ));
+        }
+        return $this->previous_review;
     }
 
     /**
@@ -330,7 +354,7 @@ class progressreview_controller {
     } // end of member function get_reviews
 
 
-    public static function get_course_summaries($sessionid, $type, $categoryid = null) {
+    public static function get_course_summaries($session, $type, $categoryid = null) {
         if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
             throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
         }
@@ -342,21 +366,8 @@ class progressreview_controller {
         } else {
             $table = '{progressreview_tutor}';
         }
-        $completed_select = 'SELECT COUNT(*) ';
-        $completed_from = 'FROM
-            {progressreview} p1
-            JOIN '.$table.' ps ON p1.id = ps.reviewid ';
-        $completed_where = 'WHERE p1.courseid = c.id
-        		AND p1.teacherid = t.originalid';
-        $session = $DB->get_record('progressreview_session', array('id' => $sessionid));
-        if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
-            $completed_where .= ' AND ps.performancegrade IS NOT NULL';
-            $completed_params = array();
-        } else {
-            $completed_where .= ' AND comments IS NOT NULL AND comments != ?';
-            $completed_params = array($DB->sql_empty());
-        }
 
+        $params = array();
         $concat_sql = $DB->sql_concat('t.firstname', '" "', 't.lastname');
         $select = 'SELECT
                     p.id,
@@ -364,15 +375,23 @@ class progressreview_controller {
                     c.fullname AS name,
 	            '.$concat_sql.' AS teacher,
                     COUNT(*) AS total,
-    	            ('.$completed_select.$completed_from.$completed_where.') AS completed ';
+                    COUNT(p1.id) AS completed ';
         $from = 'FROM
                     {progressreview} p
                     JOIN {course} c ON c.id = p.courseid
-                    JOIN {progressreview_teachers} t ON t.originalid = p.teacherid ';
+                    JOIN {progressreview_teachers} t ON t.originalid = p.teacherid
+                    LEFT JOIN '.$table.' p1 ON p1.reviewid = p.id ';
+        if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
+            $from .= 'AND p1.performancegrade IS NOT NULL ';
+        } else {
+            $from .= 'AND comments IS NOT NULL AND comments != ? ';
+            $params = array($DB->sql_empty());
+        }
+
         $where = 'WHERE
             p.sessionid = ?
             AND p.reviewtype = ? ';
-        $params = array_merge($completed_params, array($sessionid, $type));
+        $params = array_merge($params, array($session->id, $type));
 
         if ($categoryid) {
             $where .= 'AND c.category = ? ';
@@ -542,6 +561,10 @@ abstract class progressreview_plugin {
             return $datum !== false;
         });
 
+        if (empty($data)) {
+            throw new progressreview_invalidfield_exception('Invalid Field Name');
+        }
+
         if (!empty($this->id)) {
             $data->id = $this->id;
             $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
@@ -552,6 +575,22 @@ abstract class progressreview_plugin {
             return $this->id;
         }
     } // end of member function update
+
+    public function require_js() {}
+
+    public function autosave($field, $value) {
+        try {
+            $success = $this->update(array($field => $value));
+        } catch (progressreview_invalidfield_exception $e) {
+            throw $e;
+        } catch (dml_write_exception $e) {
+            throw $e;
+        }
+        if (!$success) {
+            throw new progressreview_autosave_exception('Autosave Failed');
+        }
+    }
+
 
     /**
      * Retrieves this plugin's data for the current review and stores in the the object
@@ -579,3 +618,7 @@ abstract class progressreview_plugin {
     abstract function add_form_data($data);
 
 }
+
+class progressreview_invalidfield_exception extends Exception {};
+class progressreview_invalidvalue_exception extends Exception {};
+class progressreview_autosave_exception extends Exception {};
