@@ -338,9 +338,10 @@ abstract class progressreview_subject_template {
                 if (!in_array($item, array('target', 'min', 'cpg'))) {
                     throw new coding_exception('Invalid item specified. Valid names are target, min and cpg.');
                 }
-                if($item = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$item))) {
-                    $grade = $DB->get_record('grade_grades', array('itemid' => $item->id, 'userid' => $studentid));
-                    $grades[$item] = $grade->finalgrade;
+                if($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$item))) {
+                    if($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
+                        $grades[$item] = $grade->finalgrade;
+                    }
                 } else {
                     $grades[$item] = null;
                 }
