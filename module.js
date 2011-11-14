@@ -22,7 +22,7 @@ M.local_progressreview = {
     autosave: function(plugin, field, value) {
 
         Y = this.Y;
-        this.progress.setStyle('display', 'none');
+        this.progress.setStyle('display', 'block');
         var studentid = Y.one('#id_editid').get('value');
         var sessionid = Y.one('#id_sessionid').get('value');
         var courseid = Y.one('#id_courseid').get('value');
@@ -31,16 +31,10 @@ M.local_progressreview = {
 
         var url = M.cfg.wwwroot+'/local/progressreview/autosave.php';
         Y.io(url, {
-            data: {
-                'studentid': studentid,
-                'sessionid': sessionid,
-                'courseid': courseid,
-                'teacherid': teacherid,
-                'reviewtype': reviewtype,
-                'plugin': plugin,
-                'field': field,
-                'value': value
-            },
+            data: 'studentid='+studentid+'&sessionid='+sessionid
+                +'&courseid='+courseid+'&teacherid='+teacherid
+                +'&reviewtype='+reviewtype+'&plugin='+plugin
+                +'&field='+field+'&value='+value,
             on: {
                 success: function(id, o) {
                     M.local_progressreview.progress.setStyle('display', 'none');
