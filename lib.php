@@ -132,6 +132,10 @@ class progressreview {
         return $this->course;
     }
 
+    public function get_type() {
+        return $this->type;
+    }
+
     public function get_plugin($name) {
         return $this->plugins[$name];
     }
@@ -557,6 +561,10 @@ abstract class progressreview_plugin {
             return $datum !== false;
         });
 
+        if (empty($data)) {
+            throw new progressreview_invalidfield_exception('Invalid Field Name');
+        }
+
         if (!empty($this->id)) {
             $data->id = $this->id;
             $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
@@ -567,6 +575,22 @@ abstract class progressreview_plugin {
             return $this->id;
         }
     } // end of member function update
+
+    public function require_js() {}
+
+    public function autosave($field, $value) {
+        try {
+            $success = $this->update(array($field => $value));
+        } catch (progressreview_invalidfield_exception $e) {
+            throw $e;
+        } catch (dml_write_exception $e) {
+            throw $e;
+        }
+        if (!$success) {
+            throw new progressreview_autosave_exception('Autosave Failed');
+        }
+    }
+
 
     /**
      * Retrieves this plugin's data for the current review and stores in the the object
@@ -594,3 +618,7 @@ abstract class progressreview_plugin {
     abstract function add_form_data($data);
 
 }
+
+class progressreview_invalidfield_exception extends Exception {};
+class progressreview_invalidvalue_exception extends Exception {};
+class progressreview_autosave_exception extends Exception {};

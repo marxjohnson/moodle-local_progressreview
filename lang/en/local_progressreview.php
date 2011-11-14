@@ -1,6 +1,11 @@
 <?php
 
 $string['attendance'] = 'Attendance';
+$string['autosaving'] = 'Autosaving';
+$string['autosaveactive'] = 'Autosave Active';
+$string['autosavefailed'] = 'Autosave Failed. Autosaving will now be disabled. Please ensure that
+you manually save using the button at the bottom of the page. The server returned the following 
+message: {$a}';
 $string['behaviour'] = 'Behaviour';
 $string['changescale'] = 'Change Grade Scale';
 $string['changesnotsaved'] = 'Changes Not Saved';
