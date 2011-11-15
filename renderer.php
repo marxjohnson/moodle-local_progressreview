@@ -405,5 +405,16 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
         return $this->output->container($loader.$label, '', 'progressindicator');
     }
+
+    public function tabs($active) {
+        $tabs = array();
+        $tabs[] = new tabobject(1,
+                new moodle_url('/local/progressreview/index.php'),
+                get_string('manage', 'local_progressreview'));
+        $tabs[] = new tabobject(2,
+                new moodle_url('/local/progressreview/print.php'),
+                get_string('print', 'local_progressreview'));
+        print_tabs(array($tabs), $active);
+    }
 }
 
