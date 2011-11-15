@@ -215,23 +215,23 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $behaviour = html_writer::select($session->scale_behaviour,
                                                  $fieldarray.'[behaviour]',
                                                  $review->behaviour,
-                                                 array(get_string('choosedots')),
+                                                 array('' => get_string('choosedots')),
                                                  array('class' => 'subject'));
                 $effort = html_writer::select($session->scale_effort,
                                               $fieldarray.'[effort]',
                                               $review->effort,
-                                              array(get_string('choosedots')),
+                                              array('' => get_string('choosedots')),
                                               array('class' => 'subject'));
                 $mintarget = @$review->scale[$review->minimumgrade-1];
                 $targetgrade = html_writer::select($review->scale,
                                                    $fieldarray.'[targetgrade]',
                                                    $review->targetgrade,
-                                                   array(get_string('choosedots')),
+                                                   array('' => get_string('choosedots')),
                                                    array('class' => 'subject'));
                 $performancegrade = html_writer::select($review->scale,
                                                         $fieldarray.'[performancegrade]',
                                                         $review->performancegrade,
-                                                        array(get_string('choosedots')),
+                                                        array('' => get_string('choosedots')),
                                                         array('class' => 'subject'));
                 $commentsattrs = array(
                     'class' => 'subject',
