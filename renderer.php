@@ -416,5 +416,107 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 get_string('print', 'local_progressreview'));
         print_tabs(array($tabs), $active);
     }
+
+    public function print_selectors($session, $student, $course, $teacher) {
+
+        $fields = '';
+        $rows = array(
+            'session' => array(
+                'label' => html_writer::label(get_string('sessions', 'local_progressreview'), 'sessionselect'),
+                'selector' => $session
+            ),
+            'student' => array(
+                'label' => html_writer::label(get_string('students', 'local_progressreview'), 'studentselect'),
+                'selector' => $student
+            ),
+            'course' => array(
+                'label' => html_writer::label(get_string('courses', 'local_progressreview'), 'courseselect'),
+                'selector' => $course
+            ),
+            'teacher' => array(
+                'label' => html_writer::label(get_string('teachers', 'local_progressreview'), 'teacherselect'),
+                'selector' => $teacher
+            )
+        );
+
+        foreach ($rows as $row) {
+            $label = $this->output->container($row['label'], 'fitemtitle');
+            $field = $this->output->container($row['selector']->display(true), 'felement');
+            $fields .= $this->output->container($label.$field, 'fitem');
+        }
+
+        $submitattrs = array(
+            'value' => get_string('continue'),
+            'type' => 'submit',
+            'name' => 'continue'
+        );
+
+        $legend = html_writer::tag('legend', get_string('selectcriteria', 'local_progressreview'));
+        $fieldset = html_writer::tag('fieldset', $legend.$fields);
+
+        $submit = html_writer::empty_tag('input', $submitattrs);
+        $formattrs = array('method' => 'post', 'action' => $this->page->url->out(), 'class' => 'mform');
+        $form = html_writer::tag('form', $fieldset.$submit, $formattrs);
+        return $form;
+
+    }
+
+    public function print_confirmation($sessions, $students, $courses, $teachers) {
+        $sessionnames = array();
+        $studentnames = array();
+        $coursenames = array();
+        $teachernames = array();
+        foreach ($sessions as $session) {
+            $sessionnames[] = fullname($session);
+        }
+        foreach ($students as $student) {
+            $studentnames[] = fullname($student);
+        }
+        foreach ($courses as $course) {
+            $coursenames[] = fullname($course);
+        }
+        foreach ($teachers as $teacher) {
+            $teachernames[] = fullname($teacher);
+        }
+        $table = new html_table;
+        $table->head = array(
+            get_string('sessions', 'local_progressreview'),
+            get_string('students', 'local_progressreview'),
+            get_string('courses', 'local_progressreview'),
+            get_string('teachers', 'local_progressreview')
+        );
+        $strall = get_string('all', 'local_progressreview');
+        $table->data[] = new html_table_row(array(
+            empty($sessionnames) ? $strall : html_writer::alist($sessionnames),
+            empty($studentnames) ? $strall : html_writer::alist($studentnames),
+            empty($coursenames) ? $strall : html_writer::alist($coursenames),
+            empty($teachernames) ? $strall : html_writer::alist($teachernames)
+        ));
+
+        $buttons = '';
+        $url = '/local/progressreview/print.php';
+        $backurl = new moodle_url($url);
+        $confirmparams = array(
+            'sessions' => json_encode(array_keys($sessions)),
+            'students' => json_encode(array_keys($students)),
+            'courses' => json_encode(array_keys($courses)),
+            'teachers' => json_encode(array_keys($teachers)),
+            'generate' => true
+        );
+        $viewurl = new moodle_url($url, $confirmparams);
+        $confirmparams['download'] = true;
+        $downloadurl = new moodle_url($url, $confirmparams);
+        $buttons .= $this->output->single_button($backurl, 'Back');
+        $buttons .= $this->output->single_button($viewurl,
+                                                 'Generate PDF and View',
+                                                 'post');
+        $buttons .= $this->output->single_button($downloadurl,
+                                                 'Generate PDF and Download',
+                                                 'post');
+
+        $output = html_writer::table($table).$buttons;
+        return $output;
+
+    }
 }
 

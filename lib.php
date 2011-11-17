@@ -505,6 +505,27 @@ class progressreview_controller {
             $review->get_plugin('subject')->snapshot();
         }
     } // end of member function snapshot_data_for_session
+
+    public static function build_print_criteria($criteria, $field, $values) {
+        if ($values) {
+            if (empty($criteria)) {
+                foreach ($values as $value) {
+                    $criteria[] = new print_criterion($field, $value);
+                }
+            } else {
+                $tempcriteria = array();
+                foreach ($values as $value) {
+                    foreach ($criteria as $criterion) {
+                        $tempcriterion = clone($criterion);
+                        $tempcriterion->$field = $value;
+                        $tempcriteria[] = $tempcriterion;
+                    }
+                }
+                $criteria = $tempcriteria;
+            }
+        }
+        return $criteria;
+    }
 } // end of progressreview_controller
 
 abstract class progressreview_plugin {
@@ -617,6 +638,181 @@ abstract class progressreview_plugin {
      */
     abstract function add_form_data($data);
 
+}
+
+class print_criterion {
+    public $sessionid;
+    public $studentid;
+    public $courseid;
+    public $teacherid;
+    public $type;
+
+    public function __construct($field, $value) {
+        $this->sessionid = null;
+        $this->studentid = null;
+        $this->courseid = null;
+        $this->teacherid = null;
+        $this->$field = $value;
+    }
+}
+
+if (class_exists('user_selector_base')) {
+
+    abstract class progressreview_print_selector extends user_selector_base {
+
+        protected $filters;
+
+        public function __construct($name, $options = array(), $filters = array()) {
+            $this->filters = array(
+                'sessionid' => array(),
+                'courseid' => array(),
+                'studentid' => array(),
+                'teacherid' => array()
+            );
+            array_filter($filters, function($filter) use (&$filters) {
+                if (in_array(key($filters), array_keys($this->filters))) {
+                    $return = true;
+                } else {
+                    $return = false;
+                }
+                next($filters);
+                return $return;
+            });
+            $this->filters = $filters;
+            return parent::__construct($name, $options);
+        }
+
+        protected function get_options() {
+            $options = parent::get_options();
+            $options['file'] = 'local/progressreview/lib.php';
+            return $options;
+        }
+
+        protected function where_clause($conditions) {
+            if (!empty($conditions)) {
+                $where = 'WHERE 1 ';
+                foreach ($conditions as $condition) {
+                    if (!empty($condition)) {
+                        $where = 'AND '.$condition.' ';
+                    }
+                }
+            } else {
+                $where = '';
+            }
+            return $where;
+        }
+
+        protected function add_search($search, $field) {
+            global $DB;
+            $sql = '';
+            $param = '';
+            if (!empty($search)) {
+                $sql = $DB->sql_like($field, '?');
+                $param = '%'.$search.'%';
+            }
+            return array($sql, array($param));
+        }
+
+        protected function add_filters($exclude = '') {
+            global $DB;
+            $sql = '';
+            $params = array();
+            foreach ($this->filters as $field => $ids) {
+                if ($field != $exclude && !empty($ids)) {
+                    list($insql, $inparams) = $DB->get_in_or_equal($ids);
+                    $sql = $field.' '.$insql.' ';
+                    $params = array_merge($params, $inparams);
+                }
+            }
+            return array($sql, $params);
+        }
+
+    }
+
+    class progressreview_session_selector extends progressreview_print_selector {
+        public function find_users($search = '') {
+            global $DB;
+            $select = 'SELECT DISTINCT s.id AS id, s.name AS lastname, "" AS firstname, "" AS email ';
+            $from = 'FROM {progressreview_session} s JOIN {progressreview} p ON s.id = p.sessionid ';
+            $params = array();
+            $conditions = array();
+            $order = 'ORDER BY s.deadline_tutor DESC';
+
+            list($conditions[], $searchparams) = $this->add_search($search, 'name');
+            list($conditions[], $filterparams) = $this->add_filters('sessionid');
+            $params = array_merge($params, $searchparams, $filterparams);
+            $where = $this->where_clause($conditions);
+
+            $options = $DB->get_records_sql($select.$from.$where.$order, $params);
+            $optgroupname = get_string('sessions', 'local_progressreview');
+            return array($optgroupname => $options);
+        }
+    }
+    class progressreview_student_selector extends progressreview_print_selector {
+        public function find_users($search) {
+            global $DB;
+            $select = 'SELECT DISTINCT u.id , u.firstname, u.lastname, u.email ';
+            $from = 'FROM {user} u JOIN {progressreview} p ON u.id = p.studentid ';
+            $params = array();
+            $conditions = array();
+            $order = 'ORDER BY lastname ASC, firstname ASC';
+
+            $fullname = $DB->sql_concat_join('" "', array('firstname', 'lastname'));
+            list($conditions[], $searchparams) = $this->add_search($search, $fullname);
+            list($conditions[], $filterparams) = $this->add_filters('studentid');
+            $params = array_merge($params, $searchparams, $filterparams);
+            $where = $this->where_clause($conditions);
+
+            $options = $DB->get_records_sql($select.$from.$where.$order, $params);
+            $optgroupname = get_string('students', 'local_progressreview');
+
+            return array($optgroupname => $options);
+        }
+    }
+
+    class progressreview_course_selector extends progressreview_print_selector {
+        public function find_users($search) {
+            global $DB;
+            $select = 'SELECT DISTINCT c.id, c.shortname AS lastname, "" AS firstname, c.fullname AS email ';
+            $from = 'FROM {course} c JOIN {progressreview} p ON c.id = p.courseid ';
+            $params = array();
+            $conditions = array();
+            $order = 'ORDER BY lastname ASC';
+
+            $fullname = $DB->sql_concat_join('" "', array('c.shortname', 'c.fullname'));
+            list($conditions[], $searchparams) = $this->add_search($search, $fullname);
+            list($conditions[], $filterparams) = $this->add_filters('courseid');
+            $params = array_merge($params, $searchparams, $filterparams);
+            $where = $this->where_clause($conditions);
+
+            $options = $DB->get_records_sql($select.$from.$where.$order, $params);
+            $optgroupname = get_string('courses', 'local_progressreview');
+
+            return array($optgroupname => $options);
+        }
+    }
+
+    class progressreview_teacher_selector extends progressreview_print_selector {
+        public function find_users($search) {
+            global $DB;
+            $select = 'SELECT DISTINCT u.id , u.firstname, u.lastname, u.email ';
+            $from = 'FROM {user} u JOIN {progressreview} p ON u.id = p.teacherid ';
+            $params = array();
+            $conditions = array();
+            $order = 'ORDER BY lastname ASC, firstname ASC';
+
+            $fullname = $DB->sql_concat_join('" "', array('firstname', 'lastname'));
+            list($conditions[], $searchparams) = $this->add_search($search, $fullname);
+            list($conditions[], $filterparams) = $this->add_filters('teacherid');
+            $params = array_merge($params, $searchparams, $filterparams);
+            $where = $this->where_clause($conditions);
+
+            $options = $DB->get_records_sql($select.$from.$where.$order, $params);
+            $optgroupname = get_string('teachers', 'local_progressreview');
+
+            return array($optgroupname => $options);
+        }
+    }
 }
 
 class progressreview_invalidfield_exception extends Exception {};
