@@ -4,6 +4,7 @@ require_once('../../config.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/renderer.php');
+require_once($CFG->dirroot.'/local/progressreview/pdf/class.ezpdf.php');
 
 $sort = optional_param('sort', null, PARAM_TEXT);
 $generate = optional_param('generate', false, PARAM_BOOL);
