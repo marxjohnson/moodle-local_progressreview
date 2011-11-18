@@ -94,9 +94,15 @@ class progressreview {
         $this->course = $this->retrieve_course($courseid);
         $this->previous_review = null;
 
-        $this->session->scale_behaviour = explode(',', $this->session->scale_behaviour);
-        $this->session->scale_homework = explode(',', $this->session->scale_homework);
-        $this->session->scale_effort = explode(',', $this->session->scale_effort);
+        if (!is_array($this->session->scale_behaviour)) {
+            $this->session->scale_behaviour = explode(',', $this->session->scale_behaviour);
+        }
+        if (!is_array($this->session->scale_homework)) {
+            $this->session->scale_homework = explode(',', $this->session->scale_homework);
+        }
+        if (!is_array($this->session->scale_effort)) {
+            $this->session->scale_effort = explode(',', $this->session->scale_effort);
+        }
 
         $params = array('studentid' => $studentid, 'courseid' => $courseid, 'teacherid' => $teacherid, 'sessionid' => $sessionid);
         if ($review = $DB->get_record('progressreview', $params)) {
@@ -113,6 +119,7 @@ class progressreview {
         }
 
         $this->init_plugins();
+
         return true;
     } // end of member function __construct
 
@@ -195,6 +202,27 @@ class progressreview {
         return true;
     } // end of member function get_plugins
 
+    private function retrieve_session($id) {
+        global $DB;
+        if (!array_key_exists($id, progressreview_cache::$sessions)) {
+            $session = $DB->get_record('progressreview_session', array('id' => $id));
+            progressreview_cache::$sessions[$id] = $session;
+        }
+
+        return progressreview_cache::$sessions[$id];
+    }
+
+    private function retrieve_student($id) {
+        global $DB;
+        if (!array_key_exists($id, progressreview_cache::$students)) {
+            if (!$student = $DB->get_record('user', array('id' => $id))) {
+                throw new progressreview_nouser_exception();
+            }
+            progressreview_cache::$students[$id] = $student;
+        }
+
+        return progressreview_cache::$students[$id];
+    }
 
     /**
      * Returns the record in progressreview_teacher for the given user's id, creating
@@ -208,14 +236,19 @@ class progressreview {
     private function retrieve_teacher($id) {
         global $DB;
 
-        if (!$teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
-        	$teacher = $DB->get_record('user', array('id' => $id), 'id, firstname, lastname');
-        	$teacher->originalid = $teacher->id;
-        	unset($teacher->id);
-        	$teacher->id = $DB->insert_record('progressreview_teachers', $teacher);
+        if (!array_key_exists($id, progressreview_cache::$teachers)) {
+            if (!$teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
+                if (!$teacher = $DB->get_record('user', array('id' => $id), 'id, firstname, lastname')) {
+                    throw new progressreview_nouser_exception();
+                }
+                $teacher->originalid = $teacher->id;
+                unset($teacher->id);
+                $teacher->id = $DB->insert_record('progressreview_teachers', $teacher);
+            }
+            progressreview_cache::$teachers[$id] = $teacher;
         }
 
-        return $teacher;
+        return progressreview_cache::$teachers[$id];
     } // end of member function retrieve_teacher
 
     /**
@@ -230,14 +263,17 @@ class progressreview {
     private function retrieve_course($id) {
         global $DB;
 
-        if (!$course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
-        	$course = $DB->get_record('course', array('id' => $id), 'id, shortname, fullname');
-        	$course->originalid = $course->id;
-        	unset($course->id);
-        	$course->id = $DB->insert_record('progressreview_course', $course);
+        if (!array_key_exists($id, progressreview_cache::$courses)) {
+            if (!$course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
+                    $course = $DB->get_record('course', array('id' => $id), 'id, shortname, fullname');
+                    $course->originalid = $course->id;
+                    unset($course->id);
+                    $course->id = $DB->insert_record('progressreview_course', $course);
+            }
+            progressreview_cache::$courses[$id] = $course;
         }
 
-        return $course;
+        return progressreview_cache::$courses[$id];
     } // end of member function retrieve_course
 
 } // end of progressreview
@@ -250,8 +286,11 @@ class progressreview_controller {
 
     public static function validate_session($id) {
         global $DB;
-        if ($session = $DB->get_record('progressreview_session', array('id' => $id))) {
-            return $session;
+        if (array_key_exists($id, progressreview_cache::$sessions)) {
+            return progressreview_cache::$sessions[$id];
+        } else if ($session = $DB->get_record('progressreview_session', array('id' => $id))) {
+            progressreview_cache::$sessions[$id] = $session;
+            return progressreview_cache::$sessions[$id];
         } else {
             throw new moodle_exception('invalidsession', 'local_progressreview', '', $id);
         }
@@ -259,10 +298,14 @@ class progressreview_controller {
 
     public static function validate_course($id) {
         global $DB;
-        if ($course = $DB->get_record('course', array('id' => $id))) {
-            return $course;
+        if (array_key_exists($id, progressreview_cache::$courses)) {
+            return progressreview_cache::$courses[$id];
+        } else if ($course = $DB->get_record('course', array('id' => $id))) {
+            progressreview_cache::$courses[$id] = $course;
+            return progressreview_cache::$courses[$id];
         } else if ($course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
-            return $course;
+            progressreview_cache::$courses[$id] = $course;
+            return progressreview_cache::$courses[$id];
         } else {
             throw new moodle_exception('invalidcourse', 'local_progressreview', '', $id);
         }
@@ -270,8 +313,11 @@ class progressreview_controller {
 
     public static function validate_student($id) {
         global $DB;
-        if ($student = $DB->get_record('user', array('id' => $id))) {
-            return $student;
+        if (array_key_exists($id, progressreview_cache::$students)) {
+            return progressreview_cache::$students[$id];
+        } else if ($student = $DB->get_record('user', array('id' => $id))) {
+            progressreview_cache::$students[$id] = $student;
+            return progressreview_cache::$students[$id];
         } else {
             throw new moodle_exception('invalidstudent', 'local_progressreview', '', $id);
         }
@@ -279,10 +325,14 @@ class progressreview_controller {
 
     public static function validate_teacher($id) {
         global $DB;
-        if ($teacher = $DB->get_record('user', array('id' => $id))) {
-            return $teacher;
-        } else if ($teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
-            return $teacher;
+        if (array_key_exists($id, progressreview_cache::$teachers)) {
+            return progressreview_cache::$teachers[$id];
+        } else if ($teacher = $DB->get_record('teacher', array('id' => $id))) {
+            progressreview_cache::$teachers[$id] = $teacher;
+            return progressreview_cache::$teachers[$id];
+        } else if ($teacher = $DB->get_record('progressreview_teacher', array('originalid' => $id))) {
+            progressreview_cache::$teachers[$id] = $teacher;
+            return progressreview_cache::$teachers[$id];
         } else {
             throw new moodle_exception('invalidteacher', 'local_progressreview', '', $id);
         }
@@ -296,7 +346,11 @@ class progressreview_controller {
      */
     public static function get_sessions() {
         global $DB;
-        return $DB->get_records('progressreview_session', array(), 'deadline_tutor DESC');
+        if (empty(progressreview_cache::$sessions)) {
+            $sessions = $DB->get_records('progressreview_session', array(), 'deadline_tutor DESC');
+            progressreview_cache::$sessions = $sessions;
+        }
+        return progressreview_cache::$sessions;
     } // end of member function get_sessions
 
     /**
@@ -569,6 +623,16 @@ class progressreview_controller {
         register_shutdown_function('progressreview_controller::print_error_handler', $strerror, $strlabel);
     }
 } // end of progressreview_controller
+
+class progressreview_cache {
+
+    public static $sessions = array();
+    public static $students = array();
+    public static $courses = array();
+    public static $teachers = array();
+    public static $scales = array();
+
+}
 
 abstract class progressreview_plugin {
 

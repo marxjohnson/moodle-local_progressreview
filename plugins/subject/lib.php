@@ -268,9 +268,14 @@ abstract class progressreview_subject_template extends progressreview_plugin {
             $this->scaleid = $this->retrieve_scaleid();
         }
         if ($this->scaleid) {
-            if($scalerecord = $DB->get_record('scale', array('id' => $this->scaleid))) {
-                $this->scale = explode(',', $scalerecord->scale);
+            if (!array_key_exists($this->scaleid, progressreview_cache::$scales)) {
+                if ($scalerecord = $DB->get_record('scale', array('id' => $this->scaleid))) {
+                    progressreview_cache::$scales[$this->scaleid] = explode(',', $scalerecord->scale);
+                } else {
+                    progressreview_cache::$scales[$this->scaleid] = array();
+                }
             }
+            $this->scale = progressreview_cache::$scales[$this->scaleid];
         } else {
             $this->scale = array();
         }
