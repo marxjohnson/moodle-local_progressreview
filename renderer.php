@@ -515,10 +515,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $downloadurl = new moodle_url($url, $confirmparams);
         $buttons .= $this->output->single_button($backurl, 'Back');
         $buttons .= $this->output->single_button($viewurl,
-                                                 'Generate PDF and View',
+                                                 get_string('generateandview', 'local_progressreview'),
                                                  'post');
         $buttons .= $this->output->single_button($downloadurl,
-                                                 'Generate PDF and Download',
+                                                 get_string('generateanddownload', 'local_progressreview'),
                                                  'post');
 
         $output = html_writer::table($table).$buttons;
