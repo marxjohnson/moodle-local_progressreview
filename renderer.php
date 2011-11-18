@@ -418,23 +418,23 @@ class local_progressreview_renderer extends plugin_renderer_base {
     }
 
     public function print_selectors($session, $student, $course, $teacher) {
-
+        $hw = 'html_writer';
         $fields = '';
         $rows = array(
             'session' => array(
-                'label' => html_writer::label(get_string('sessions', 'local_progressreview'), 'sessionselect'),
+                'label' => $hw::label(get_string('sessions', 'local_progressreview'), 'sessionselect'),
                 'selector' => $session
             ),
             'student' => array(
-                'label' => html_writer::label(get_string('students', 'local_progressreview'), 'studentselect'),
+                'label' => $hw::label(get_string('students', 'local_progressreview'), 'studentselect'),
                 'selector' => $student
             ),
             'course' => array(
-                'label' => html_writer::label(get_string('courses', 'local_progressreview'), 'courseselect'),
+                'label' => $hw::label(get_string('courses', 'local_progressreview'), 'courseselect'),
                 'selector' => $course
             ),
             'teacher' => array(
-                'label' => html_writer::label(get_string('teachers', 'local_progressreview'), 'teacherselect'),
+                'label' => $hw::label(get_string('teachers', 'local_progressreview'), 'teacherselect'),
                 'selector' => $teacher
             )
         );
@@ -451,12 +451,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
             'name' => 'continue'
         );
 
-        $legend = html_writer::tag('legend', get_string('selectcriteria', 'local_progressreview'));
-        $fieldset = html_writer::tag('fieldset', $legend.$fields);
+        $legend = $hw::tag('legend', get_string('selectcriteria', 'local_progressreview'));
+        $fieldset = $hw::tag('fieldset', $legend.$fields);
 
-        $submit = html_writer::empty_tag('input', $submitattrs);
+        $submit = $hw::empty_tag('input', $submitattrs);
         $formattrs = array('method' => 'post', 'action' => $this->page->url->out(), 'class' => 'mform');
-        $form = html_writer::tag('form', $fieldset.$submit, $formattrs);
+        $form = $hw::tag('form', $fieldset.$submit, $formattrs);
         return $form;
 
     }
