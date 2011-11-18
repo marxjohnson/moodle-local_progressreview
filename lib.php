@@ -927,6 +927,33 @@ if (class_exists('user_selector_base')) {
     }
 }
 
+class pdf_writer {
+    static $pdf;
+
+    public static function init($size = 'A4', $orientation = 'portrait', $font = 'Helvetica') {
+        global $CFG;
+        self::$pdf = new Cezpdf($size, $orientation);
+        self::$pdf->selectFont($CFG->dirroot.'/local/progressreview/pdf/fonts/'.$font);
+
+        return self::$pdf;
+    }
+
+    public static function table($data, $head = '', $title = '', $options = array()) {
+        self::$pdf->ezTable($data, $head, $title, $options);
+        return self::$pdf;
+    }
+
+    public static function text($text, $size = 10, $options = array()) {
+        self::$pdf->ezText($text, $size, $options);
+        return self::$pdf;
+    }
+
+    public static function page_break() {
+        self::$pdf->ezNewPage();
+        return self::$pdf;
+    }
+}
+
 class progressreview_invalidfield_exception extends Exception {};
 class progressreview_invalidvalue_exception extends Exception {};
 class progressreview_autosave_exception extends Exception {};
