@@ -2,8 +2,8 @@
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
-require_once($CFG->dirroot.'/local/progressreview/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/renderer.php');
+require_once($CFG->dirroot.'/local/progressreview/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/pdf/class.ezpdf.php');
 
 $sort = optional_param('sort', null, PARAM_TEXT);
@@ -34,7 +34,9 @@ if ($generate) {
     progressreview_controller::register_print_error_handler();
     if ($disablememlimit) {
         ini_set('memory_limit', -1);
+        ini_set('max_execution_time', 0);
     }
+
     $sessions = json_decode(optional_param('sessions', '[]', PARAM_RAW));
     $students = json_decode(optional_param('students', '[]', PARAM_RAW));
     $courses = json_decode(optional_param('courses', '[]', PARAM_RAW));
@@ -93,17 +95,18 @@ if ($generate) {
 
     ksort($sortedtutorreviews);
     $html = '';
-    $output = $PAGE->get_renderer('local_progressreview');
+    $pdf = pdf_writer::init('A4', 'landscape');
+    $output = $PAGE->get_renderer('local_progressreview_print');
     foreach ($sortedtutorreviews as $sessionreviews) {
         ksort($sessionreviews);
         foreach ($sessionreviews as $student => $tutorreview) {
-            $heading = fullname($tutorreview->get_student()).' - '.get_string('pluginname', 'local_progressreview');
-            $html .= $OUTPUT->heading($heading);
-            $subjectdata = array();
             $session = $tutorreview->get_session();
+            $heading = fullname($tutorreview->get_student()).' - '.$session->name;
+            //$pdf = $output->heading($heading, 1);
+            $subjectdata = array();
             if (isset($sortedsubjectreviews[$session->id][$student])) {
                 $subjectdata = $sortedsubjectreviews[$session->id][$student];
-                $html .= $output->subject_review_table($subjectdata, false, $session->inductionreview);
+                $pdf = $output->subject_review_table($subjectdata, false, $session->inductionreview, $heading);
             }
 
             $tutorplugins = $tutorreview->get_plugins();
@@ -111,27 +114,34 @@ if ($generate) {
             $reviewdata = array();
             $pluginrenderers = array();
             foreach ($tutorplugins as $plugin) {
+                require_once($CFG->dirroot.'/local/progressreview/plugins/'.$plugin->get_name().'/renderer.php');
                 $reviewdata[] = $plugin->get_review();
-                if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name())) {
-                    throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer.  It
-                        must have a renderer with at least the review() method defined');
+                if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name().'_print')) {
+                    throw new coding_exception('The progressreview_'.$plugin->get_name().' has no print renderer.
+                        It must have a print renderer with at least the review() method defined');
                 }
             }
 
-            $html .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
+            $pdf = $output->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
 
             $tutorreviews = '';
             foreach ($pluginrenderers as $key => $pluginrenderer) {
-                $tutorreviews .= $pluginrenderer->review($reviewdata[$key]);
+                $pdf = $pluginrenderer->review($reviewdata[$key]);
             }
-
-            $html .= $OUTPUT->container($tutorreviews, null, 'tutorreviews');
+        $pdf->ezNewPage();
         }
     }
 
-    $filename = '/tmp/'.md5($html).'.html';
-    file_put_contents($filename, $html);
-    echo 'Wrote reviews to '.$filename;
+    /*$pdf->ezText("\n\n".$pdf->messages,10,array('justification'=>'left'));
+    $pdfcode = $pdf->output(1);
+    $end_time = microtime();
+    $pdfcode = str_replace("\n","\n<br>",htmlspecialchars($pdfcode));
+    echo '<html><body>';
+    echo trim($pdfcode);
+    echo '</body></html>';
+     */
+    $pdf->ezStream();
+
     exit();
 
 } else if ($continue) {
