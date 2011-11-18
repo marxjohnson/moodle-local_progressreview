@@ -28,6 +28,7 @@ $teacherselect = new progressreview_teacher_selector('teacherselect', $selectoro
 
 $content .= $OUTPUT->heading(get_string('printheading', 'local_progressreview'), 2);
 if ($generate) {
+    confirm_sesskey();
     $sessions = json_decode(optional_param('sessions', '[]', PARAM_RAW));
     $students = json_decode(optional_param('students', '[]', PARAM_RAW));
     $courses = json_decode(optional_param('courses', '[]', PARAM_RAW));
@@ -51,6 +52,7 @@ if ($generate) {
         var_dump($reviews);
 
 } else if ($continue) {
+    confirm_sesskey();
     $sessions = $sessionselect->get_selected_users();
     $students = $studentselect->get_selected_users();
     $courses = $courseselect->get_selected_users();

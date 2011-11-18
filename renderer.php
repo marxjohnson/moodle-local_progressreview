@@ -445,6 +445,13 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $fields .= $this->output->container($label.$field, 'fitem');
         }
 
+        $sesskeyattrs = array(
+            'type' => 'hidden',
+            'name' => 'sesskey',
+            'value' => sesskey()
+        );
+        $fields .= $hw::empty_tag('input', $sesskeyattrs);
+
         $submitattrs = array(
             'value' => get_string('continue'),
             'type' => 'submit',
