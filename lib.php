@@ -526,6 +526,48 @@ class progressreview_controller {
         }
         return $criteria;
     }
+
+    public static function print_error_handler($strerror, $strlabel) {
+        global $OUTPUT;
+        $isError = false;
+        if ($error = error_get_last()){
+            switch($error['type']){
+                case E_ERROR:
+                case E_CORE_ERROR:
+                case E_COMPILE_ERROR:
+                case E_USER_ERROR:
+                    $isError = true;
+                    break;
+            }
+        }
+
+        if ($isError){
+            if (strpos($error['message'], 'Allowed memory size') !== false) {
+                echo $strerror.'<br />';
+                $params = array(
+                    'sessions' => $_POST['sessions'],
+                    'students' => $_POST['students'],
+                    'courses' => $_POST['courses'],
+                    'teachers' => $_POST['teachers'],
+                    'generate' => true,
+                    'disablememlimit' => true,
+                    'sesskey' => sesskey()
+                );
+                $url = new moodle_url('/local/progressreview/print.php', $params);
+                echo html_writer::link($url, $strlabel);
+            } else {
+                echo "Script execution halted ({$error['message']})";
+            }
+        }
+    }
+
+    public static function register_print_error_handler() {
+        ini_set('display_errors', 0);
+        $limit = ini_get('memory_limit');
+        $strerror = get_string('outofmemory', 'local_progressreview', $limit);
+        $strlabel = get_string('disablememlimit', 'local_progressreview');
+        register_shutdown_function('progressreview_controller::print_error_handler', $strerror, $strlabel);
+    }
 } // end of progressreview_controller
 
 abstract class progressreview_plugin {
