@@ -88,10 +88,14 @@ class progressreview {
     public function __construct($studentid,  $sessionid,  $courseid,  $teacherid, $type = null) {
         global $DB;
 
-        $this->session = $DB->get_record('progressreview_session', array('id' => $sessionid));
-        $this->teacher = $this->retrieve_teacher($teacherid);
-        $this->student = $DB->get_record('user', array('id' => $studentid));
-        $this->course = $this->retrieve_course($courseid);
+        try {
+            $this->session = $this->retrieve_session($sessionid);
+            $this->teacher = $this->retrieve_teacher($teacherid);
+            $this->student = $this->retrieve_student($studentid);
+            $this->course = $this->retrieve_course($courseid);
+        } catch (progressreview_nouser_exception $e) {
+            throw $e;
+        }
         $this->previous_review = null;
 
         if (!is_array($this->session->scale_behaviour)) {
@@ -400,7 +404,9 @@ class progressreview_controller {
         $reviews = array();
         if($review_records = $DB->get_records('progressreview', $params)) {
             foreach ($review_records as $r) {
-                $reviews[$r->id] = new progressreview($r->studentid, $r->sessionid, $r->courseid, $r->teacherid);
+                try {
+                    $reviews[$r->id] = new progressreview($r->studentid, $r->sessionid, $r->courseid, $r->teacherid);
+                } catch (progressreview_nouser_exception $e) {}
             }
         }
         return $reviews;
@@ -924,3 +930,4 @@ if (class_exists('user_selector_base')) {
 class progressreview_invalidfield_exception extends Exception {};
 class progressreview_invalidvalue_exception extends Exception {};
 class progressreview_autosave_exception extends Exception {};
+class progressreview_nouser_exception extends Exception {};
