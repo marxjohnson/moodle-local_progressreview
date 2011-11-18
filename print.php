@@ -45,16 +45,93 @@ if ($generate) {
     $criteria = progressreview_controller::build_print_criteria($criteria, 'courseid', $courses);
     $criteria = progressreview_controller::build_print_criteria($criteria, 'teacherid', $teachers);
 
-    $reviews = array();
+    $subjectreviews = array();
+    $tutorreviews = array();
     foreach ($criteria as $args) {
         $args = (array)$args;
-        $args['type'] = PROGRESSREVIEW_STUDENT;
-        $subjectreviews = call_user_func_array('progressreview_controller::get_reviews', $args);
+        $args['type'] = PROGRESSREVIEW_SUBJECT;
+        $newsubjectreviews = call_user_func_array('progressreview_controller::get_reviews', $args);
+        if ($newsubjectreviews) {
+            $subjectreviews = array_merge($subjectreviews, $newsubjectreviews);
+        }
         $args['type'] = PROGRESSREVIEW_TUTOR;
-        $tutorreviews = call_user_func_array('progressreview_controller::get_reviews', $args);
-        $reviews = array_merge($reviews, $subjectreviews, $tutorreviews);
+        $newtutorreviews = call_user_func_array('progressreview_controller::get_reviews', $args);
+        if ($newtutorreviews) {
+            $tutorreviews = array_merge($tutorreviews, $newtutorreviews);
+        }
     }
-        var_dump($reviews);
+
+    $sortedtutorreviews = array();
+    $sortedsubjectreviews = array();
+
+    foreach ($tutorreviews as $tutorreview) {
+        $sessid = $tutorreview->get_session()->id;
+        $student = $tutorreview->get_student();
+        $studentname = $student->lastname.$student->firstname.$student->id;
+        if (!array_key_exists($sessid, $sortedtutorreviews)) {
+            $sortedtutorreviews[$sessid] = array();
+        }
+        $sortedtutorreviews[$sessid][$studentname] = $tutorreview;
+    }
+
+    foreach ($subjectreviews as $subjectreview) {
+        $sessid = $subjectreview->get_session()->id;
+        $course = $subjectreview->get_course()->shortname;
+        $student = $subjectreview->get_student();
+        $studentname = $student->lastname.$student->firstname.$student->id;
+        $teacher = $subjectreview->get_teacher();
+        $teachername = $teacher->lastname.$teacher->firstname.$teacher->id;
+        if (!array_key_exists($sessid, $sortedsubjectreviews)) {
+            $sortedsubjectreviews[$sessid] = array();
+        }
+        if (!array_key_exists($studentname, $sortedsubjectreviews[$sessid])) {
+            $sortedsubjectreviews[$sessid][$studentname] = array();
+        }
+        $sortedsubjectreviews[$sessid][$studentname][] = $subjectreview->get_plugin('subject')->get_review();;
+    }
+
+    ksort($sortedtutorreviews);
+    $html = '';
+    $output = $PAGE->get_renderer('local_progressreview');
+    foreach ($sortedtutorreviews as $sessionreviews) {
+        ksort($sessionreviews);
+        foreach ($sessionreviews as $student => $tutorreview) {
+            $heading = fullname($tutorreview->get_student()).' - '.get_string('pluginname', 'local_progressreview');
+            $html .= $OUTPUT->heading($heading);
+            $subjectdata = array();
+            $session = $tutorreview->get_session();
+            if (isset($sortedsubjectreviews[$session->id][$student])) {
+                $subjectdata = $sortedsubjectreviews[$session->id][$student];
+                $html .= $output->subject_review_table($subjectdata, false, $session->inductionreview);
+            }
+
+            $tutorplugins = $tutorreview->get_plugins();
+
+            $reviewdata = array();
+            $pluginrenderers = array();
+            foreach ($tutorplugins as $plugin) {
+                $reviewdata[] = $plugin->get_review();
+                if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name())) {
+                    throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer.  It
+                        must have a renderer with at least the review() method defined');
+                }
+            }
+
+            $html .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
+
+            $tutorreviews = '';
+            foreach ($pluginrenderers as $key => $pluginrenderer) {
+                $tutorreviews .= $pluginrenderer->review($reviewdata[$key]);
+            }
+
+            $html .= $OUTPUT->container($tutorreviews, null, 'tutorreviews');
+        }
+    }
+
+    $filename = '/tmp/'.md5($html).'.html';
+    file_put_contents($filename, $html);
+    echo 'Wrote reviews to '.$filename;
+    exit();
 
 } else if ($continue) {
     confirm_sesskey();
