@@ -534,3 +534,114 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
 }
 
+class local_progressreview_print_renderer extends plugin_renderer_base {
+
+    public function subject_review_table($reviews, $form = false, $previousreviews = array(), $title) {
+        $form = false;
+
+        $head = array(
+            'course' => get_string('course'),
+            'teacher' => get_string('teacher', 'local_progressreview'),
+            'attendance' => get_string('attendance', 'local_progressreview'),
+            'punctuality' => get_string('punctuality', 'local_progressreview'),
+            'homework' => get_string('homework', 'local_progressreview'),
+            'behaviour' => get_string('behaviour', 'local_progressreview'),
+            'effort' => get_string('effort', 'local_progressreview'),
+            'targetgrade' => get_string('targetgrade', 'local_progressreview'),
+            'performancegrade' => get_string('performancegrade', 'local_progressreview')
+        );
+        $data = array();
+
+        foreach ($reviews as $key => $review) {
+            $student = $review->progressreview->get_student();
+            $session = $review->progressreview->get_session();
+            $coursename = $review->progressreview->get_course()->fullname;
+            $name = fullname($review->progressreview->get_teacher());
+            $attendance = number_format($review->attendance, 0).'%';
+            $punctuality = number_format($review->punctuality, 0).'%';
+            $fieldarray = 'review['.$review->id.']';
+            $homework = $review->homeworkdone.'/'.$review->homeworktotal;
+            $behaviour = @$session->scale_behaviour[$review->behaviour];
+            $effort = @$session->scale_effort[$review->effort];
+            $targetgrade = @$review->scale[$review->targetgrade];
+            $performancegrade = @$review->scale[$review->performancegrade];
+            $commentscell = $review->comments;
+            if (array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
+                $p = $previousdata[$key];
+                if (!isset($psession)) {
+                    $psession = $p->progressreview->get_session();
+                }
+                $attendance .= $this->previous_data(number_format($p->attendance, 0).'%');
+                $punctuality .= $this->previous_data(number_format($p->punctuality, 0).'%');
+                $homework .= $this->previous_data($p->homeworkdone.'/'.$p->homeworktotal);
+                $behaviour .= $this->previous_data(@$psession->scale_behaviour[$p->behaviour]);
+                $effort .= $this->previous_data(@$psession->scale_effort[$p->effort]);
+                $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
+                $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
+            }
+
+            if (!empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
+                $row = array(
+                    'course' => $coursename,
+                    'teacher' => $name,
+                    'attendance' => $attendance,
+                    'punctuality' => $punctuality,
+                    'homework' => $homework,
+                    'behaviour' => $behaviour,
+                    'effort' => $effort,
+                    'targetgrade' => $targetgrade,
+                    'performancegrade' => $performancegrade
+                );
+
+                $data[] = $row;
+            }
+            /*if (!$session->inductionreview) {
+                $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
+                $headercell->header = true;
+
+                $commentscell->colspan = 8;
+                $row = new html_table_row(array('', $headercell, $commentscell));
+                $table->data[] = $row;
+            }*/
+        }
+
+        $options = array(
+            'fontSize' => 8,
+            'titleFontSize' => 18,
+            'cols' => array(
+                'course' => array('width' => 130),
+                'teacher' => array('width' => '100'),
+                'attendance' => array('width' => '70'),
+                'punctuality' => array('width' => '70'),
+                'homework' =>  array('width' => '70'),
+                'behaviour' => array('width' => '70'),
+                'effort' =>  array('width' => '70'),
+                'targetgrade' => array('width' => '70'),
+                'performancegrade' => array('width' => '70')
+            )
+        );
+
+        return pdf_writer::table($data, $head, $title, $options);
+
+    }
+
+    public function heading($text, $level) {
+        $sizes = array(1 => 18, 2 => 16, 3 => 14, 4 => 12, 5 => 10);
+        $size = $sizes[$level];
+        $text = html_writer::tag('b', $text);
+        $options = array('leading' => 2*$size);
+
+        return pdf_writer::text($text, $size, $options);
+    }
+
+}
+
+class plugin_print_renderer_base extends plugin_renderer_base {
+
+    public function __construct(moodle_page $page, $target) {
+        global $output;
+        parent::__construct($page, $target);
+        $this->output = $output;
+    }
+}
+

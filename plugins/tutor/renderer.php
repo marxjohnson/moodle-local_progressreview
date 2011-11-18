@@ -7,3 +7,11 @@ class progressreview_tutor_renderer extends plugin_renderer_base {
         return $output;
     }
 }
+
+class progressreview_tutor_print_renderer extends plugin_print_renderer_base {
+
+    public function review($reviewdata) {
+        $this->output->heading(get_string('comments', 'local_progressreview'), 4);
+        return pdf_writer::text($reviewdata->comments, 12);
+    }
+}
