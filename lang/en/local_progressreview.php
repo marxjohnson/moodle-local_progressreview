@@ -22,6 +22,7 @@ $string['createsession'] = 'Create Session';
 $string['createreviews'] = 'Generate Reviews';
 $string['deadline_subject'] = 'Subject Review Deadline';
 $string['deadline_tutor'] = 'Tutor Review Deadline';
+$string['disablememlimit'] = 'Try again with Memory Limit disabled';
 $string['effort'] = 'Effort';
 $string['endofgroup'] = 'End of Group';
 $string['homework'] = 'Homework Completion';
@@ -37,6 +38,11 @@ $string['minimumgrade'] = 'Minimum Grade';
 $string['name'] = 'Name';
 $string['nosessions'] = 'There are currently no Review Sessions';
 $string['noreviews'] = 'This user has no reviews';
+$string['outofmemory'] = 'ERROR: While fetching the progress reviews for printing, the system reached its
+                    memory limit of {$a}.  This can happen when printing a large number of reviews.
+                    You can ask your Server Administrator to raise this limit, or if you are aware of
+                    the risks of doing so, click the link below to try again with the memory limit
+                    disabled.';
 $string['outstandingreviews'] = 'Outstanding Reviews';
 $string['performancegrade'] = 'Performance Grade';
 $string['pluginname'] = 'Progress Review';

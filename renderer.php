@@ -525,5 +525,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return $output;
 
     }
+
+    public function disable_memlimit_button() {
+        $url = new moodle_url('/local/progressreview/print.php', array('disablememlimit' => true));
+        $label = get_string('disablememlimit', 'local_progressreview');
+        return $this->output->single_button($url, $label, 'post');
+    }
+
 }
 

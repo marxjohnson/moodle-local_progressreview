@@ -8,6 +8,7 @@ require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 $sort = optional_param('sort', null, PARAM_TEXT);
 $generate = optional_param('generate', false, PARAM_BOOL);
 $continue = optional_param('continue', false, PARAM_BOOL);
+$disablememlimit = optional_param('disablememlimit', false, PARAM_BOOL);
 
 require_login($SITE);
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
@@ -29,6 +30,10 @@ $teacherselect = new progressreview_teacher_selector('teacherselect', $selectoro
 $content .= $OUTPUT->heading(get_string('printheading', 'local_progressreview'), 2);
 if ($generate) {
     confirm_sesskey();
+    progressreview_controller::register_print_error_handler();
+    if ($disablememlimit) {
+        ini_set('memory_limit', -1);
+    }
     $sessions = json_decode(optional_param('sessions', '[]', PARAM_RAW));
     $students = json_decode(optional_param('students', '[]', PARAM_RAW));
     $courses = json_decode(optional_param('courses', '[]', PARAM_RAW));
