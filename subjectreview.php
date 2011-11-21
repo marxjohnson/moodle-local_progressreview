@@ -62,10 +62,10 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                 $content = $OUTPUT->error_text(get_string('changesnotsaved', 'local_progressreview'));
             }
         }
-        $reviewdata[] = $subjectreview->get_review();
+        $reviewdata[$student->id] = $subjectreview->get_review();
         if ($session->previoussession) {
             if($previousreview = $reviews[$student->id]->get_previous()) {
-                $previousdata[] = $previousreview->get_plugin('subject')->get_review();
+                $previousdata[$student->id] = $previousreview->get_plugin('subject')->get_review();
             }
         }
     }
