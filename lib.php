@@ -928,28 +928,393 @@ if (class_exists('user_selector_base')) {
 }
 
 class pdf_writer {
+
     static $pdf;
+    static $debug = '';
 
-    public static function init($size = 'A4', $orientation = 'portrait', $font = 'Helvetica') {
+    private static function parse_colour($color) {
+        if (strlen($color) != 6) {
+            return false;
+        }
+        $red = hexdec(substr($color, 0, 2));
+        $green = hexdec(substr($color, 2, 2));
+        $blue = hexdec(substr($color, 4, 2));
+        return array('red' => $red, 'green' => $green, 'blue' => $blue);
+    }
+
+    /**
+     * Initialise the PDF, create an inital page and set an inital font
+     */
+    public static function init($size = 'A4', $orientation = 'P', stdClass $font = null) {
         global $CFG;
-        self::$pdf = new Cezpdf($size, $orientation);
-        self::$pdf->selectFont($CFG->dirroot.'/local/progressreview/pdf/fonts/'.$font);
+        self::$pdf = new fpdf_table($orientation, 'pt', $size);
+        self::$pdf->AddPage();
+        if (empty($font)) {
+            $font = (object)array('family' => 'Helvetica', 'size' => 12);
+        }
+        self::change_font($font);
 
         return self::$pdf;
     }
 
-    public static function table($data, $head = '', $title = '', $options = array()) {
-        self::$pdf->ezTable($data, $head, $title, $options);
+    /**
+     * Sets font family, size, decoration and colour as specified
+     */
+    public static function change_font(stdClass $font) {
+        $family = isset($font->family) ? $font->family : '';
+        $size = isset($font->size) ? $font->size : '';
+        $decoration = isset($font->decoration) ? $font->decoration : '';
+        $colour = isset($font->colour) ? self::parse_colour($font->colour) : '';
+
+        if (!empty($colour)) {
+            self::$pdf->SetTextColor($color['red'], $colour['green'], $colour['blue']);
+        }
+
+        self::$pdf->SetFont($family, $decoration, $size);
         return self::$pdf;
     }
 
-    public static function text($text, $size = 10, $options = array()) {
-        self::$pdf->ezText($text, $size, $options);
+    public static function change_line_style(stdClass $style) {
+        $colour = isset($font->colour) ? self::parse_colour($style->colour) : '';
+        $width = isset($font->width) ? $style->width : '';
+        if (!empty($colour)) {
+            self::$pdf->SetDrawColor($colour['red'], $colour['green'], $colour['blue']);
+        }
+        if (!empty($width)) {
+            self::$pdf->SetLineWidth($width);
+        }
+    }
+
+    /**
+     * Arbitrary cells containing text, optionally with borders and backgrounds
+     *
+     * @param $text The text to display, can include line breaks with <br /> or \n
+     * @param $options an associative array of options, in the format 'option' => $value
+     *  Possible options:
+     *  font - object defining any of family, size and decoration, and colour as properties.
+     *  fill - HTML-style hex string of RGB for background colour.
+     *  width - the cell width, defaults to 0 (whole page)
+     *  height - the cell height, defaults to 0
+     *  border - 0 for no border, 1 for all borders, combination of LTRB for Left, Top, Right, Bottom
+     *      defaults to 0
+     *  align - L for left, C for center, R for right, defaults to L
+     *
+     */
+    public static function cell($text, $options = array()) {
+        $width = array_key_exists('width', $options) ? $options['width'] : '';
+        $height = array_key_exists('height', $options) ? $options['height'] : self::$pdf->FontSize*1.2;
+        $border = array_key_exists('border', $options) ? $options['border'] : '';
+        $fill = array_key_exists('fill', $options) ? $options['fill'] : 0;
+        $breakafter = array_key_exists('breakafter', $options) ? $options['breakafter'] : 0;
+        $align = array_key_exists('align', $options) ? $options['align'] : 'L';
+        if (array_key_exists('font', $options) && !empty($options['font'])) {
+            self::change_font($options['font']);
+        }
+        if (array_key_exists('fill', $options)) {
+            $fill = 1;
+            $colour = self::parse_colour($options['fill']);
+            self::$pdf->SetFillColor($colour['red'], $colour['green'], $colour['blue']);
+        }
+
+        if (empty($border)) {
+            $borders = 0;
+        } else {
+            $style = new stdClass;
+            $borders = $border->borders;
+            $style->width = isset($border->width) ? $border->width : null;
+            $style->colour = isset($border->colour) ? $border->colour : null;
+            self::$pdf->change_line_style($style);
+        }
+
+        $text = str_replace('<br />', "\n", $text);
+        if (strpos($text, "\n") === false) {
+            return self::$pdf->Cell($width, $height, $text, $borders, $breakafter, $align, $fill);
+        } else {
+            return self::$pdf->MultiCell($width, $height, $text, $borders, $align, $fill);
+        }
+    }
+
+    /**
+     * Adds a cell with no line break following (like an HTML span)
+     */
+    public static function span($text, $options = array()) {
+        $options['breakafter'] = 0;
+        return self::cell($text, $options);
+    }
+
+    /**
+     * Adds a cell with a line break following (line an HTML div)
+     */
+    public static function div($text, $options = array()) {
+        $options['breakafter'] = 1;
+        return self::cell($text, $options);
+    }
+
+
+    public static function link($url, $text, $height = 10) {
+        if (typeof($url) == 'moodle_url') {
+            $url = $url->out();
+        }
+        self::$pdf->Write($height, $text, $url);
         return self::$pdf;
     }
 
+    public static function image($path, $x = null, $y = null, $width = 0, $height = 0, $format = null, $url = '') {
+        if (typeof($url) == 'moodle_url') {
+            $url = $url->out();
+        }
+        if (typeof($path == 'moodule_url')) {
+            $path = $path->out();
+        }
+        self::$pdf->Image($path, $x, $y, $width, $height, $format, $url);
+        return self::$pdf;
+    }
+
+    public static function alist(array $items, $options = array(), $ordered = false) {
+       //Save x
+        $bak_x = $pdf->x;
+        if ($ordered) {
+            $bullet = '•';
+        } else {
+            $bullet = 1;
+        }
+
+        for ($i=0; $i<sizeof($items); $i++) {
+            //Get bullet width including margin
+            $blt_width = $this->GetStringWidth($bullet . $options['margin'])+$this->cMargin*2;
+
+            // SetX
+            self::$pdf->SetX($bak_x);
+
+            //Output indent
+            if ($options['indent'] > 0) {
+                self::$pdf->Cell($options['indent']);
+            }
+
+            //Output bullet
+            self::$pdf->Cell($blt_width,$h,$bullet . $options['margin'],0,'',$fill);
+
+            //Output text
+            self::$pdf->MultiCell($w-$blt_width,$h,$items[$i],$border,$align,$fill);
+
+            //Insert a spacer between items if not the last item
+            if ($i != sizeof($items)-1) {
+                self::$pdf->Ln($options['spacer']);
+            }
+
+            //Increment bullet if it's a number
+            if (is_numeric($bullet)) {
+                $bullet++;
+            }
+        }
+
+        //Restore x
+        self::$pdf->x = $bak_x;
+        return $pdf;
+    }
+
+    public static function table(html_table $table) {
+        $default_header_type = array(
+            'WIDTH' => 6,                      //cell width
+            'T_COLOR' => array(220,230,240),   //text color
+            'T_SIZE' => 8,                     //font size
+            'T_FONT' => 'Arial',               //font family
+            'T_ALIGN' => 'C',                  //horizontal alignment, possible values: LRC (left, right, center)
+            'V_ALIGN' => 'M',                  //vertical alignment, possible values: TMB(top, middle, bottom)
+            'T_TYPE' => 'B',                   //font type
+            'LN_SIZE' => 8,                    //line size for one row
+            'BG_COLOR' => array(255, 255, 255),  //background color
+            'BRD_COLOR' => array(0,0,0),    //border color
+            'BRD_SIZE' => 0.2,                 //border size
+            'BRD_TYPE' => '1',                 //border type, can be: 0, 1 or a combination of: "LRTB"
+            'TEXT' => '',                      //text
+        );
+
+        $default_data_type = array(
+            'T_COLOR' => array(0,0,0),         //text color
+            'T_SIZE' => 6,                     //font size
+            'T_FONT' => 'Arial',               //font family
+            'T_ALIGN' => 'C',                  //horizontal alignment, possible values: LRC (left, right, center)
+            'V_ALIGN' => 'M',                  //vertical alignment, possible values: TMB(top, middle, bottom)
+            'T_TYPE' => '',                    //font type
+            'LN_SIZE' => 8,                    //line size for one row
+            'BG_COLOR' => array(255,255,255),  //background color
+            'BRD_COLOR' => array(0,0,0),    //border color
+            'BRD_SIZE' => 0.1,                 //border size
+            'BRD_TYPE' => 'LR',                 //border type, can be: 0, 1 or a combination of: "LRTB"
+        );
+
+        $table_type = array(
+            'TB_ALIGN' => 'L',                 //table align on page
+            'L_MARGIN' => 25,                  //space to the left margin
+            'BRD_COLOR' => array(0,0,0),    //border color
+            'BRD_SIZE' => '0.3',               //border size
+        );
+
+        $head = $table->head;
+        $data = $table->data;
+
+        self::$pdf->tbInitialize(count($data[0]), true, true);
+        self::$pdf->tbSetTableType($table_type);
+
+        // Colors, line width and bold font
+        self::$pdf->SetTextColor(0);
+        self::$pdf->SetLineWidth(.3);
+        self::$pdf->SetFont('');
+
+        // prepare table data and populate missing properties with reasonable defaults
+        if (!empty($table->align)) {
+            foreach ($table->align as $key => $aa) {
+                if ($aa) {
+                    $table->align[$key] = $aa;  // Fix for RTL languages
+                } else {
+                    $table->align[$key] = null;
+                }
+            }
+        }
+        if (!empty($table->size)) {
+            foreach ($table->size as $key => $ss) {
+                if ($ss) {
+                    $table->size[$key] = $ss;
+                } else {
+                    $table->size[$key] = null;
+                }
+            }
+        }
+        if (!empty($table->head)) {
+            foreach ($table->head as $key => $val) {
+                if (!isset($table->align[$key])) {
+                    $table->align[$key] = null;
+                }
+                if (!isset($table->size[$key])) {
+                    $table->size[$key] = null;
+                }
+                if (!isset($table->wrap[$key])) {
+                    $table->wrap[$key] = null;
+                }
+
+            }
+        }
+
+        // explicitly assigned properties override those defined via $table->attributes
+        $attributes = array_merge($table->attributes, array(
+                'width'         => $table->width,
+                'cellpadding'   => $table->cellpadding,
+                'cellspacing'   => $table->cellspacing
+            ));
+
+        $countcols = 0;
+
+        if (!empty($table->head)) {
+            $countcols = count($table->head);
+
+            $keys = array_keys($table->head);
+            $lastkey = end($keys);
+
+            $headers = array();
+            foreach ($table->head as $key => $heading) {
+                $headers[$key] = $default_header_type;
+                // Convert plain string headings into html_table_cell objects
+                if (!($heading instanceof html_table_cell)) {
+                    $headingtext = $heading;
+                    $heading = new html_table_cell();
+                    $heading->text = $headingtext;
+                    $heading->header = true;
+                }
+
+                if ($heading->header !== false) {
+                    $heading->header = true;
+                }
+
+                if ($heading->header && empty($heading->scope)) {
+                    $heading->scope = 'col';
+                }
+
+                if (isset($table->headspan[$key]) && $table->headspan[$key] > 1) {
+                    $heading->colspan = $table->headspan[$key];
+                    $countcols += $table->headspan[$key] - 1;
+                }
+
+                if (isset($table->size[$key])) {
+                    $headers[$key]['WIDTH'] = $table->size[$key];
+                }
+                if (isset($table->align[$key])) {
+                    $headers[$key]['T_ALIGN'] = $table->align[$key];
+                }
+                $headers[$key]['TEXT'] = $heading->text;
+                $headers[$key]['COLSPAN'] = $heading->colspan;
+            }
+            $headers = array_values($headers);
+            self::$pdf->tbSetHeaderType($headers, true);
+            self::$pdf->tbDrawHeader($headers);
+        }
+
+        $fill = false;
+
+        if (!empty($table->data)) {
+            $oddeven    = 1;
+            $keys       = array_keys($table->data);
+            $lastrowkey = end($keys);
+
+            foreach ($table->data as $key => $row) {
+                self::$pdf->SetFont('', '');
+
+                if ($fill) {
+                    $rowfill = array(224,235,225);
+                } else {
+                    $rowfill = array(255,255,255);
+                }
+
+                // Convert array rows to html_table_rows and cell strings to html_table_cell objects
+                if (!($row instanceof html_table_row)) {
+                    $newrow = new html_table_row();
+
+                    foreach ($row as $item) {
+                        $cell = new html_table_cell();
+                        $cell->text = $item;
+                        $newrow->cells[] = $cell;
+                    }
+                    $row = $newrow;
+                }
+
+                $cells = array();
+                foreach ($row->cells as $key => $cell) {
+                    $cells[$key] = $default_data_type;
+                    $cells[$key]['BG_COLOR'] = $rowfill;
+
+                    if (!($cell instanceof html_table_cell)) {
+                        $mycell = new html_table_cell();
+                        $mycell->text = $cell;
+                        $cell = $mycell;
+                    }
+
+                    if ($cell->header === true) {
+                        $cells[$key]['T_TYPE'] = 'B';
+                    }
+
+                    $cells[$key]['COLSPAN'] = $cell->colspan;
+                    $cells[$key]['TEXT'] = $cell->text;
+
+                }
+                $cells = array_values($cells);
+                self::$pdf->tbSetDataType($cells); 
+                self::$pdf->tbDrawData($cells);
+                $fill = !$fill;
+            }
+        }
+        //output the table data to the pdf
+        self::$pdf->tbOuputData();
+
+        //draw the Table Border
+        self::$pdf->tbDrawBorder();
+        return self::$pdf;
+    }
+
+    /**
+     * Start a new page
+     */
     public static function page_break() {
-        self::$pdf->ezNewPage();
+        self::$pdf->AddPage();
         return self::$pdf;
     }
 }

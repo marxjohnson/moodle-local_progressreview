@@ -538,8 +538,9 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
 
     public function subject_review_table($reviews, $form = false, $previousreviews = array(), $title) {
         $form = false;
+        $table = new html_table();
 
-        $head = array(
+        $table->head = array(
             'course' => get_string('course'),
             'teacher' => get_string('teacher', 'local_progressreview'),
             'attendance' => get_string('attendance', 'local_progressreview'),
@@ -550,7 +551,6 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
             'targetgrade' => get_string('targetgrade', 'local_progressreview'),
             'performancegrade' => get_string('performancegrade', 'local_progressreview')
         );
-        $data = array();
 
         foreach ($reviews as $key => $review) {
             $student = $review->progressreview->get_student();
@@ -593,47 +593,36 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
                     'performancegrade' => $performancegrade
                 );
 
-                $data[] = $row;
+                $table->data[] = $row;
             }
-            /*if (!$session->inductionreview) {
+            if (!$session->inductionreview) {
                 $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
                 $headercell->header = true;
 
                 $commentscell->colspan = 8;
                 $row = new html_table_row(array('', $headercell, $commentscell));
                 $table->data[] = $row;
-            }*/
+            }
         }
 
-        $options = array(
-            'fontSize' => 8,
-            'titleFontSize' => 18,
-            'cols' => array(
-                'course' => array('width' => 130),
-                'teacher' => array('width' => '100'),
-                'attendance' => array('width' => '70'),
-                'punctuality' => array('width' => '70'),
-                'homework' =>  array('width' => '70'),
-                'behaviour' => array('width' => '70'),
-                'effort' =>  array('width' => '70'),
-                'targetgrade' => array('width' => '70'),
-                'performancegrade' => array('width' => '70')
-            )
-        );
+        $table->size = array(70, 70, 70, 70, 70, 70, 70, 70, 70);
+        pdf_writer::change_font((object)array('size' => 8));
 
-        return pdf_writer::table($data, $head, $title, $options);
+        return pdf_writer::table($table);
 
     }
 
-    public function heading($text, $level) {
-        $sizes = array(1 => 18, 2 => 16, 3 => 14, 4 => 12, 5 => 10);
+    public static function heading($text, $level = 1, $options = array()) {
+        $sizes = array(null, 18, 16, 14, 12, 10);
         $size = $sizes[$level];
-        $text = html_writer::tag('b', $text);
-        $options = array('leading' => 2*$size);
+        if (!array_key_exists('font', $options)) {
+            $options['font'] = new stdClass;
+        }
+        $options['font']->size = $size;
+        $options['font']->decoration = 'B';
 
-        return pdf_writer::text($text, $size, $options);
+        return pdf_writer::div($text, $options);
     }
-
 }
 
 class plugin_print_renderer_base extends plugin_renderer_base {

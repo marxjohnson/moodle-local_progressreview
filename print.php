@@ -4,7 +4,7 @@ require_once('../../config.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
 require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 require_once($CFG->dirroot.'/local/progressreview/lib.php');
-require_once($CFG->dirroot.'/local/progressreview/pdf/class.ezpdf.php');
+require_once($CFG->dirroot.'/local/progressreview/fpdf/class.fpdf_table.php');
 
 $sort = optional_param('sort', null, PARAM_TEXT);
 $generate = optional_param('generate', false, PARAM_BOOL);
@@ -90,23 +90,23 @@ if ($generate) {
         if (!array_key_exists($studentname, $sortedsubjectreviews[$sessid])) {
             $sortedsubjectreviews[$sessid][$studentname] = array();
         }
-        $sortedsubjectreviews[$sessid][$studentname][] = $subjectreview->get_plugin('subject')->get_review();;
+        $sortedsubjectreviews[$sessid][$studentname][] = $subjectreview->get_plugin('subject')->get_review();
     }
 
     ksort($sortedtutorreviews);
     $html = '';
-    $pdf = pdf_writer::init('A4', 'landscape');
+    $pdf = pdf_writer::init('A4', 'L');
     $output = $PAGE->get_renderer('local_progressreview_print');
     foreach ($sortedtutorreviews as $sessionreviews) {
         ksort($sessionreviews);
         foreach ($sessionreviews as $student => $tutorreview) {
             $session = $tutorreview->get_session();
             $heading = fullname($tutorreview->get_student()).' - '.$session->name;
-            //$pdf = $output->heading($heading, 1);
+            $pdf = $output->heading($heading, 1);
             $subjectdata = array();
             if (isset($sortedsubjectreviews[$session->id][$student])) {
                 $subjectdata = $sortedsubjectreviews[$session->id][$student];
-                $pdf = $output->subject_review_table($subjectdata, false, $session->inductionreview, $heading);
+                $pdf = $output->subject_review_table($subjectdata);
             }
 
             $tutorplugins = $tutorreview->get_plugins();
@@ -128,7 +128,7 @@ if ($generate) {
             foreach ($pluginrenderers as $key => $pluginrenderer) {
                 $pdf = $pluginrenderer->review($reviewdata[$key]);
             }
-        $pdf->ezNewPage();
+        $pdf = pdf_writer::page_break();
         }
     }
 
@@ -140,7 +140,8 @@ if ($generate) {
     echo trim($pdfcode);
     echo '</body></html>';
      */
-    $pdf->ezStream();
+    pdf_writer::div(pdf_writer::$debug);
+    $pdf->Output();
 
     exit();
 

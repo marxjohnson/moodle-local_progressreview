@@ -22,8 +22,9 @@ class progressreview_targets_print_renderer extends plugin_print_renderer_base {
         foreach ($targets as $target) {
             $this->output->heading(get_string('modulename', 'ilptarget').' '.$count, 5);
             $deadline = date('l d/m/Y', $target->deadline);
-            pdf_writer::text($target->targetset, 12);
-            pdf_writer::text(get_string('deadline', 'ilptarget').': '.$deadline);
+            $options = array('font' => (object)array('size' => 12));
+            pdf_writer::div($target->targetset, $options);
+            pdf_writer::div(get_string('deadline', 'ilptarget').': '.$deadline);
             $count++;
         }
         return pdf_writer::$pdf;
