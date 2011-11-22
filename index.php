@@ -102,6 +102,7 @@ if (isset($permissions['teacher'])) {
 
 echo $OUTPUT->header();
 
+$output->tabs(1);
 echo $content;
 
 echo $OUTPUT->footer();
