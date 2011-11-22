@@ -565,7 +565,7 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
             $effort = @$session->scale_effort[$review->effort];
             $targetgrade = @$review->scale[$review->targetgrade];
             $performancegrade = @$review->scale[$review->performancegrade];
-            if (array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
+            if ($session->previoussession && array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
                 $p = $previousdata[$key];
                 if (!isset($psession)) {
                     $psession = $p->progressreview->get_session();
