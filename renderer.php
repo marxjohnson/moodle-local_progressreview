@@ -541,15 +541,15 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
         $table = new html_table();
 
         $table->head = array(
-            'course' => get_string('course'),
-            'teacher' => get_string('teacher', 'local_progressreview'),
-            'attendance' => get_string('attendance', 'local_progressreview'),
-            'punctuality' => get_string('punctuality', 'local_progressreview'),
-            'homework' => get_string('homework', 'local_progressreview'),
-            'behaviour' => get_string('behaviour', 'local_progressreview'),
-            'effort' => get_string('effort', 'local_progressreview'),
-            'targetgrade' => get_string('targetgrade', 'local_progressreview'),
-            'performancegrade' => get_string('performancegrade', 'local_progressreview')
+            get_string('course'),
+            get_string('teacher', 'local_progressreview'),
+            get_string('attendance', 'local_progressreview'),
+            get_string('punctuality', 'local_progressreview'),
+            get_string('homework', 'local_progressreview'),
+            get_string('behaviour', 'local_progressreview'),
+            get_string('effort', 'local_progressreview'),
+            get_string('targetgrade', 'local_progressreview'),
+            get_string('performancegrade', 'local_progressreview')
         );
 
         foreach ($reviews as $key => $review) {
@@ -582,15 +582,15 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
 
             if (!empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
                 $row = array(
-                    'course' => $coursename,
-                    'teacher' => $name,
-                    'attendance' => $attendance,
-                    'punctuality' => $punctuality,
-                    'homework' => $homework,
-                    'behaviour' => $behaviour,
-                    'effort' => $effort,
-                    'targetgrade' => $targetgrade,
-                    'performancegrade' => $performancegrade
+                    $coursename,
+                    $name,
+                    $attendance,
+                    $punctuality,
+                    $homework,
+                    $behaviour,
+                    $effort,
+                    $targetgrade,
+                    $performancegrade
                 );
 
                 $table->data[] = $row;
