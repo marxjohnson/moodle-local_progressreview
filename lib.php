@@ -331,7 +331,7 @@ class progressreview_controller {
         global $DB;
         if (array_key_exists($id, progressreview_cache::$teachers)) {
             return progressreview_cache::$teachers[$id];
-        } else if ($teacher = $DB->get_record('teacher', array('id' => $id))) {
+        } else if ($teacher = $DB->get_record('user', array('id' => $id))) {
             progressreview_cache::$teachers[$id] = $teacher;
             return progressreview_cache::$teachers[$id];
         } else if ($teacher = $DB->get_record('progressreview_teacher', array('originalid' => $id))) {
