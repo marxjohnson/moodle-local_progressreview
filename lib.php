@@ -1279,6 +1279,20 @@ class pdf_writer {
                     $row = $newrow;
                 }
 
+                // fpdf_table requires an equal number of cells in each row, regardless of colspan
+                foreach ($row->cells as $key => $cell) {
+                    if ($cell instanceof html_table_cell && $cell->colspan > 1) {
+                        $spancount = $cell->colspan;
+                        $firstcells = array_slice($row->cells, 0, $key+1);
+                        $lastcells = array_slice($row->cells, $key);
+                        $extracells = array();
+                        for ($i = $spancount; $i > 1; $i--) {
+                            $extracells[] = '';
+                        }
+                        $row->cells = array_merge($firstcells, $extracells, $lastcells);
+                    }
+                }
+                
                 $cells = array();
                 foreach ($row->cells as $key => $cell) {
                     $cells[$key] = $default_data_type;
