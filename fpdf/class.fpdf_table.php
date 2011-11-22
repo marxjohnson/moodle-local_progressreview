@@ -561,8 +561,7 @@ public function tbDrawData($data, $header = true){
  * @return 	void
  */
 protected function _tbAddDataToCache($data, $sDataType = 'data'){
-	
-	
+
 	if (!is_array($data)) {
 		//this is fatal error
 		trigger_error("Invalid data value 0x00012. (not array)", E_USER_ERROR);
@@ -623,7 +622,6 @@ protected function _tbAddDataToCache($data, $sDataType = 'data'){
 		$data[$i]['HEIGHT'] = 0;	//default HEIGHT
 				
 		if ($data[$i]['LN_SIZE'] <= 0){
-                    var_dump($data);
 			trigger_error("Invalid Line Size {$data[$i]['LN_SIZE']}", E_USER_ERROR);
 		}
 		
