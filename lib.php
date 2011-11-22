@@ -602,7 +602,9 @@ class progressreview_controller {
         }
 
         if ($isError){
-            if (strpos($error['message'], 'Allowed memory size') !== false) {
+            $memory = strpos($error['message'], 'Allowed memory size') !== false;
+            $exectime = strpos($error['message'], 'Maximum execution time') !== false;
+            if ($memory || $exectime) {
                 echo $strerror.'<br />';
                 $params = array(
                     'sessions' => $_POST['sessions'],
