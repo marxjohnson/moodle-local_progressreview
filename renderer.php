@@ -536,7 +536,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
 class local_progressreview_print_renderer extends plugin_renderer_base {
 
-    public function subject_review_table($reviews, $form = false, $previousreviews = array(), $title) {
+    public function subject_review_table($reviews, $form = false, $previousreviews = array()) {
         $form = false;
         $table = new html_table();
 
