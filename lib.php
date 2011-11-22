@@ -1246,9 +1246,8 @@ class pdf_writer {
                 $headers[$key]['TEXT'] = $heading->text;
                 $headers[$key]['COLSPAN'] = $heading->colspan;
             }
-            $headers = array_values($headers);
-            self::$pdf->tbSetHeaderType($headers, true);
-            self::$pdf->tbDrawHeader($headers);
+            self::$pdf->tbSetHeaderType(array($headers), true);
+            self::$pdf->tbDrawHeader();
         }
 
         $fill = false;
@@ -1312,7 +1311,6 @@ class pdf_writer {
                     $cells[$key]['TEXT'] = $cell->text;
 
                 }
-                $cells = array_values($cells);
                 self::$pdf->tbSetDataType($cells); 
                 self::$pdf->tbDrawData($cells);
                 $fill = !$fill;
