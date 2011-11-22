@@ -565,7 +565,6 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
             $effort = @$session->scale_effort[$review->effort];
             $targetgrade = @$review->scale[$review->targetgrade];
             $performancegrade = @$review->scale[$review->performancegrade];
-            $commentscell = $review->comments;
             if (array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
                 $p = $previousdata[$key];
                 if (!isset($psession)) {
@@ -599,7 +598,8 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
                 $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
                 $headercell->header = true;
 
-                $commentscell->colspan = 8;
+                $commentscell = new html_table_cell($review->comments);
+                $commentscell->colspan = 7;
                 $row = new html_table_row(array('', $headercell, $commentscell));
                 $table->data[] = $row;
             }
