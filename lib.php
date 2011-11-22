@@ -1116,7 +1116,7 @@ class pdf_writer {
     public static function table(html_table $table) {
         $default_header_type = array(
             'WIDTH' => 6,                      //cell width
-            'T_COLOR' => array(220,230,240),   //text color
+            'T_COLOR' => array(0,0,0),   //text color
             'T_SIZE' => 8,                     //font size
             'T_FONT' => 'Arial',               //font family
             'T_ALIGN' => 'C',                  //horizontal alignment, possible values: LRC (left, right, center)
@@ -1134,7 +1134,7 @@ class pdf_writer {
             'T_COLOR' => array(0,0,0),         //text color
             'T_SIZE' => 6,                     //font size
             'T_FONT' => 'Arial',               //font family
-            'T_ALIGN' => 'C',                  //horizontal alignment, possible values: LRC (left, right, center)
+            'T_ALIGN' => 'L',                  //horizontal alignment, possible values: LRC (left, right, center)
             'V_ALIGN' => 'M',                  //vertical alignment, possible values: TMB(top, middle, bottom)
             'T_TYPE' => '',                    //font type
             'LN_SIZE' => 8,                    //line size for one row
