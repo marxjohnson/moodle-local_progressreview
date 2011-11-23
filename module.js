@@ -35,18 +35,18 @@ M.local_progressreview = {
                 +'&courseid='+courseid+'&teacherid='+teacherid
                 +'&reviewtype='+reviewtype+'&plugin='+plugin
                 +'&field='+field+'&value='+value,
+            context: this,
             on: {
                 success: function(id, o) {
-                    M.local_progressreview.progress.setStyle('display', 'none');
+                    this.progress.setStyle('display', 'none');
                 },
 
                 failure: function(id, o) {
                     var message = o.responseText;
-                    module = M.local_progressreview;
                     alert(M.util.get_string('autosavefailed', 'local_progressreview', message));
-                    module.savebutton.set('disabled', false);
-                    module.savebutton.set('value', module.savestring);
-                    M.local_progressreview.progress.setStyle('display', 'none');
+                    this.savebutton.set('disabled', false);
+                    this.savebutton.set('value', module.savestring);
+                    this.progress.setStyle('display', 'none');
                 }
             }
         });
