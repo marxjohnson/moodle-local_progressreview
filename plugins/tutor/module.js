@@ -11,9 +11,5 @@ M.progressreview_tutor = {
             comments.set('value', strfiller+' '+comments.get('value'));
         });
         Y.one('#id_comments').insert(button, 'after');
-    },
-
-    init_spellcheck: function() {
-        
     }
 }
