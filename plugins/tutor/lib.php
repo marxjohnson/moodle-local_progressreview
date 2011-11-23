@@ -97,4 +97,18 @@ class progressreview_tutor extends progressreview_plugin {
         return $data;
     }
 
+    public function require_js() {
+        global $PAGE;
+        $jsmodule = array(
+            'name' => 'progressreview_tutor',
+            'fullpath' => '/local/progressreview/plugins/tutor/module.js',
+            'requires' => array('base', 'node'),
+            'strings' => array(
+                array('didntattend', 'progressreview_tutor'),
+                array('didntattendfiller', 'progressreview_tutor')
+            )
+        );
+        $PAGE->requires->js_init_call('M.progressreview_tutor.init', null, false, $jsmodule);
+    }
+
 } // end of progressreview_tutor

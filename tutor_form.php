@@ -42,6 +42,7 @@ class progressreview_tutor_form extends moodleform {
                 $mform->addElement('header', $pluginname, $legend);
                 $plugin->add_form_fields($mform);
             }
+            $plugin->require_js();
         }
 
         $tutorgroup = progressreview_controller::get_reviews($progressreview->get_session()->id, null, $progressreview->get_course()->originalid, null, PROGRESSREVIEW_TUTOR);
