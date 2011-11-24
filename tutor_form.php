@@ -11,10 +11,12 @@ class progressreview_tutor_form extends moodleform {
         $student = $progressreview->get_student();
         $session = $progressreview->get_session();
 
-        $mform->addElement('hidden', 'reviewid', $progressreview->id);
-        $mform->addElement('hidden', 'editid', $student->id);
-        $mform->addElement('hidden', 'courseid', $progressreview->get_course()->originalid);
-        $mform->addElement('hidden', 'sessionid', $session->id);
+        $mform->addElement('hidden', 'reviewid', $progressreview->id, array('id' => 'id_reviewid'));
+        $mform->addElement('hidden', 'editid', $student->id, array('id' => 'id_editid'));
+        $mform->addElement('hidden', 'courseid', $progressreview->get_course()->originalid, array('id' => 'id_courseid'));
+        $mform->addElement('hidden', 'sessionid', $session->id, array('id' => 'id_sessionid'));
+        $mform->addElement('hidden', 'teacherid', $progressreview->get_teacher()->originalid, array('id' => 'id_teacherid'));
+        $mform->addElement('hidden', 'reviewtype', PROGRESSREVIEW_TUTOR, array('id' => 'id_reviewtype'));
         $mform->addElement('header', 'core', fullname($student));
         $mform->addElement('html', $OUTPUT->user_picture($student));
 
@@ -34,6 +36,24 @@ class progressreview_tutor_form extends moodleform {
 
         $progressreview->get_plugin('tutor')->add_form_fields($mform);
 
+        $strsave = get_string('saveand', 'local_progressreview');
+
+        $jsmodule = array(
+            'name' => 'local_progressreview',
+            'fullpath' => '/local/progressreview/module.js',
+            'requires' => array('base', 'node', 'io', 'json', 'transition'),
+            'strings' => array(
+                array('autosaveactive', 'local_progressreview'),
+                array('autosavefailed', 'local_progressreview'),
+                array('autosaving', 'local_progressreview')
+            )
+        );
+
+        $PAGE->requires->js_init_call('M.local_progressreview.init_autosave',
+                                      array($strsave),
+                                      false,
+                                      $jsmodule);
+
         $plugins = $progressreview->get_plugins();
         foreach ($plugins as $plugin) {
             $pluginname = $plugin->get_name();
@@ -43,6 +63,8 @@ class progressreview_tutor_form extends moodleform {
                 $plugin->add_form_fields($mform);
             }
             $plugin->require_js();
+            $modulename = 'M.progressreview_'.$pluginname;
+            $PAGE->requires->js_init_call($modulename.'.init_autosave');
         }
 
         $tutorgroup = progressreview_controller::get_reviews($progressreview->get_session()->id, null, $progressreview->get_course()->originalid, null, PROGRESSREVIEW_TUTOR);
@@ -77,8 +99,8 @@ class progressreview_tutor_form extends moodleform {
             }
         }
 
-        $mform->closeHeaderBefore('saveand');
-        $mform->addElement('static', 'saveand', '<strong>'.get_string('saveand', 'local_progressreview').'</strong>');
+        $mform->closeHeaderBefore('save');
+        $mform->addElement('button', 'save', get_string('saveand', 'local_progressreview'));
         $buttongroup = array();
         if ($prev) {
             $prevstudent = $prev->get_student();
@@ -98,6 +120,8 @@ class progressreview_tutor_form extends moodleform {
         }
 
         $mform->addGroup($buttongroup, 'buttons');
+
+        $mform->addElement('html', $output->progress_indicator());
 
     }
 

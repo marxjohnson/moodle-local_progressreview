@@ -80,7 +80,10 @@ class progressreview_tutor extends progressreview_plugin {
     } // end of member function retrieve_review
 
     public function add_form_fields(&$mform) {
-        $mform->addElement('textarea', 'comments', get_string('comments', 'local_progressreview'), array('rows' => 5, 'cols' => 50));
+        $mform->addElement('textarea',
+                           'comments',
+                           get_string('comments', 'local_progressreview'),
+                           array('rows' => 5, 'cols' => 50, 'class' => 'tutor'));
 
     }
 

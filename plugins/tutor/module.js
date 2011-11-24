@@ -14,6 +14,14 @@ M.progressreview_tutor = {
             });
             Y.one('#id_comments').insert(button, 'after');
         }
+    },
+
+    init_autosave: function(Y) {
+        Y.all('.tutor').on('change', function(e) {
+            field = e.target.get('name');
+            value = e.target.get('value');
+
+            M.local_progressreview.autosave('tutor', field, value);
         });
     }
 }
