@@ -304,10 +304,13 @@ class progressreview_controller {
         global $DB;
         if (array_key_exists($id, progressreview_cache::$courses)) {
             return progressreview_cache::$courses[$id];
-        } else if ($course = $DB->get_record('course', array('id' => $id))) {
+        } else if ($course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
             progressreview_cache::$courses[$id] = $course;
             return progressreview_cache::$courses[$id];
-        } else if ($course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
+        } else if ($course = $DB->get_record('course', array('id' => $id), 'id, shortname, fullname')) {
+            $course->originalid = $course->id;
+            unset($course->id);
+            $course->id = $DB->insert_record('progressreview_course', $course);
             progressreview_cache::$courses[$id] = $course;
             return progressreview_cache::$courses[$id];
         } else {
@@ -331,10 +334,13 @@ class progressreview_controller {
         global $DB;
         if (array_key_exists($id, progressreview_cache::$teachers)) {
             return progressreview_cache::$teachers[$id];
-        } else if ($teacher = $DB->get_record('user', array('id' => $id))) {
+        } else if ($teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
             progressreview_cache::$teachers[$id] = $teacher;
             return progressreview_cache::$teachers[$id];
-        } else if ($teacher = $DB->get_record('progressreview_teacher', array('originalid' => $id))) {
+        } else if ($teacher = $DB->get_record('user', array('id' => $id), 'id, firstname, lastname')) {
+            $teacher->originalid = $teacher->id;
+            unset($teacher->id);
+            $teacher->id = $DB->insert_record('progressreview_teachers', $teacher);
             progressreview_cache::$teachers[$id] = $teacher;
             return progressreview_cache::$teachers[$id];
         } else {
