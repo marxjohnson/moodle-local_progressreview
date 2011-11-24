@@ -53,16 +53,25 @@ class progressreview_targets extends progressreview_plugin {
             });
 
             if (!empty($target->id)) {
-                $DB->update_record('ilptarget_posts', $target);
-                $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
+                if (!$DB->update_record('ilptarget_posts', $target)) {
+                    throw new progressreview_autosave_exception('Target Update Failed');
+                }
+                if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+                    throw new progressreview_autosave_exception('Timestamp Update Failed');
+                }
             } else {
                 $target->data1 = $DB->sql_empty();
                 $target->data2 = $DB->sql_empty();
                 $target->id = $DB->insert_record('ilptarget_posts', $target);
 
                 if ($target->id) {
-                    $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
-                    $DB->insert_record('progressreview_targets', (object)array('targetid' => $target->id, 'reviewid' => $this->progressreview->id));
+                    if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+                        throw new progressreview_autosave_exception('Timestamp Update Failed');
+                    }
+                    $insert = (object)array('targetid' => $target->id, 'reviewid' => $this->progressreview->id);
+                    if (!$DB->insert_record('progressreview_targets', $insert)) {
+                        throw new progressreview_autosave_exception('Target Creation Failed');
+                    }
                 }
             }
             foreach ((array)$target as $field => $datum) {
