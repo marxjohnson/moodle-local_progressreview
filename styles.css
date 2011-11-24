@@ -20,6 +20,10 @@
     margin-left: -5em;
 }
 
+#page-local-progressreview-tutorreview.ie #id_save {
+    margin-left: 10em;
+}
+
 .path-local-progressreview .reviewnotes {
     width: 50%;
     font-weight: bold;
