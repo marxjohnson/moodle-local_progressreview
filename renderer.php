@@ -321,7 +321,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $jsmodule = array(
                 'name' => 'local_progressreview',
                 'fullpath' => '/local/progressreview/module.js',
-                'requires' => array('base', 'node', 'io', 'json', 'transition'),
+                'requires' => array('base', 'node', 'io', 'json'),
                 'strings' => array(
                     array('autosaveactive', 'local_progressreview'),
                     array('autosavefailed', 'local_progressreview'),
@@ -404,6 +404,234 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $label = html_writer::tag('span', $strautosave, array('id' => 'autosavelabel'));
 
         return $this->output->container($loader.$label, '', 'progressindicator');
+    }
+
+    public function tabs($active) {
+        $tabs = array();
+        $tabs[] = new tabobject(1,
+                new moodle_url('/local/progressreview/index.php'),
+                get_string('manage', 'local_progressreview'));
+        $tabs[] = new tabobject(2,
+                new moodle_url('/local/progressreview/print.php'),
+                get_string('print', 'local_progressreview'));
+        print_tabs(array($tabs), $active);
+    }
+
+    public function print_selectors($session, $student, $course, $teacher) {
+        $hw = 'html_writer';
+        $fields = '';
+        $rows = array(
+            'session' => array(
+                'label' => $hw::label(get_string('sessions', 'local_progressreview'), 'sessionselect'),
+                'selector' => $session
+            ),
+            'student' => array(
+                'label' => $hw::label(get_string('students', 'local_progressreview'), 'studentselect'),
+                'selector' => $student
+            ),
+            'course' => array(
+                'label' => $hw::label(get_string('courses', 'local_progressreview'), 'courseselect'),
+                'selector' => $course
+            ),
+            'teacher' => array(
+                'label' => $hw::label(get_string('teachers', 'local_progressreview'), 'teacherselect'),
+                'selector' => $teacher
+            )
+        );
+
+        foreach ($rows as $row) {
+            $label = $this->output->container($row['label'], 'fitemtitle');
+            $field = $this->output->container($row['selector']->display(true), 'felement');
+            $fields .= $this->output->container($label.$field, 'fitem');
+        }
+
+        $sesskeyattrs = array(
+            'type' => 'hidden',
+            'name' => 'sesskey',
+            'value' => sesskey()
+        );
+        $fields .= $hw::empty_tag('input', $sesskeyattrs);
+
+        $submitattrs = array(
+            'value' => get_string('continue'),
+            'type' => 'submit',
+            'name' => 'continue'
+        );
+
+        $legend = $hw::tag('legend', get_string('selectcriteria', 'local_progressreview'));
+        $fieldset = $hw::tag('fieldset', $legend.$fields);
+
+        $submit = $hw::empty_tag('input', $submitattrs);
+        $formattrs = array('method' => 'post', 'action' => $this->page->url->out(), 'class' => 'mform');
+        $form = $hw::tag('form', $fieldset.$submit, $formattrs);
+        return $form;
+
+    }
+
+    public function print_confirmation($sessions, $students, $courses, $teachers) {
+        $sessionnames = array();
+        $studentnames = array();
+        $coursenames = array();
+        $teachernames = array();
+        foreach ($sessions as $session) {
+            $sessionnames[] = fullname($session);
+        }
+        foreach ($students as $student) {
+            $studentnames[] = fullname($student);
+        }
+        foreach ($courses as $course) {
+            $coursenames[] = fullname($course);
+        }
+        foreach ($teachers as $teacher) {
+            $teachernames[] = fullname($teacher);
+        }
+        $table = new html_table;
+        $table->head = array(
+            get_string('sessions', 'local_progressreview'),
+            get_string('students', 'local_progressreview'),
+            get_string('courses', 'local_progressreview'),
+            get_string('teachers', 'local_progressreview')
+        );
+        $strall = get_string('all', 'local_progressreview');
+        $table->data[] = new html_table_row(array(
+            empty($sessionnames) ? $strall : html_writer::alist($sessionnames),
+            empty($studentnames) ? $strall : html_writer::alist($studentnames),
+            empty($coursenames) ? $strall : html_writer::alist($coursenames),
+            empty($teachernames) ? $strall : html_writer::alist($teachernames)
+        ));
+
+        $buttons = '';
+        $url = '/local/progressreview/print.php';
+        $backurl = new moodle_url($url);
+        $confirmparams = array(
+            'sessions' => json_encode(array_keys($sessions)),
+            'students' => json_encode(array_keys($students)),
+            'courses' => json_encode(array_keys($courses)),
+            'teachers' => json_encode(array_keys($teachers)),
+            'generate' => true
+        );
+        $viewurl = new moodle_url($url, $confirmparams);
+        $confirmparams['download'] = true;
+        $downloadurl = new moodle_url($url, $confirmparams);
+        $buttons .= $this->output->single_button($backurl, 'Back');
+        $buttons .= $this->output->single_button($viewurl,
+                                                 get_string('generateandview', 'local_progressreview'),
+                                                 'post');
+        $buttons .= $this->output->single_button($downloadurl,
+                                                 get_string('generateanddownload', 'local_progressreview'),
+                                                 'post');
+
+        $output = html_writer::table($table).$buttons;
+        return $output;
+
+    }
+
+    public function disable_memlimit_button() {
+        $url = new moodle_url('/local/progressreview/print.php', array('disablememlimit' => true));
+        $label = get_string('disablememlimit', 'local_progressreview');
+        return $this->output->single_button($url, $label, 'post');
+    }
+
+}
+
+class local_progressreview_print_renderer extends plugin_renderer_base {
+
+    public function subject_review_table($reviews, $form = false, $previousreviews = array()) {
+        $form = false;
+        $table = new html_table();
+
+        $table->head = array(
+            get_string('course'),
+            get_string('teacher', 'local_progressreview'),
+            get_string('attendance', 'local_progressreview'),
+            get_string('punctuality', 'local_progressreview'),
+            get_string('homework', 'local_progressreview'),
+            get_string('behaviour', 'local_progressreview'),
+            get_string('effort', 'local_progressreview'),
+            get_string('targetgrade', 'local_progressreview'),
+            get_string('performancegrade', 'local_progressreview')
+        );
+
+        foreach ($reviews as $key => $review) {
+            $student = $review->progressreview->get_student();
+            $session = $review->progressreview->get_session();
+            $coursename = $review->progressreview->get_course()->fullname;
+            $name = fullname($review->progressreview->get_teacher());
+            $attendance = number_format($review->attendance, 0).'%';
+            $punctuality = number_format($review->punctuality, 0).'%';
+            $fieldarray = 'review['.$review->id.']';
+            $homework = $review->homeworkdone.'/'.$review->homeworktotal;
+            $behaviour = @$session->scale_behaviour[$review->behaviour];
+            $effort = @$session->scale_effort[$review->effort];
+            $targetgrade = @$review->scale[$review->targetgrade];
+            $performancegrade = @$review->scale[$review->performancegrade];
+            if ($session->previoussession && array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
+                $p = $previousdata[$key];
+                if (!isset($psession)) {
+                    $psession = $p->progressreview->get_session();
+                }
+                $attendance .= $this->previous_data(number_format($p->attendance, 0).'%');
+                $punctuality .= $this->previous_data(number_format($p->punctuality, 0).'%');
+                $homework .= $this->previous_data($p->homeworkdone.'/'.$p->homeworktotal);
+                $behaviour .= $this->previous_data(@$psession->scale_behaviour[$p->behaviour]);
+                $effort .= $this->previous_data(@$psession->scale_effort[$p->effort]);
+                $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
+                $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
+            }
+
+            if (!empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
+                $row = array(
+                    $coursename,
+                    $name,
+                    $attendance,
+                    $punctuality,
+                    $homework,
+                    $behaviour,
+                    $effort,
+                    $targetgrade,
+                    $performancegrade
+                );
+
+                $table->data[] = $row;
+            }
+            if (!$session->inductionreview) {
+                $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
+                $headercell->header = true;
+
+                $commentscell = new html_table_cell($review->comments);
+                $commentscell->colspan = 7;
+                $row = new html_table_row(array('', $headercell, $commentscell));
+                $table->data[] = $row;
+            }
+        }
+
+        $table->size = array(70, 70, 70, 70, 70, 70, 70, 70, 70);
+        pdf_writer::change_font((object)array('size' => 8));
+
+        pdf_writer::table($table);
+        pdf_writer::$pdf->Ln(30);
+
+    }
+
+    public static function heading($text, $level = 1, $options = array()) {
+        $sizes = array(null, 18, 16, 14, 12, 10);
+        $size = $sizes[$level];
+        if (!array_key_exists('font', $options)) {
+            $options['font'] = new stdClass;
+        }
+        $options['font']->size = $size;
+        $options['font']->decoration = 'B';
+
+        return pdf_writer::div($text, $options);
+    }
+}
+
+class plugin_print_renderer_base extends plugin_renderer_base {
+
+    public function __construct(moodle_page $page, $target) {
+        global $output;
+        parent::__construct($page, $target);
+        $this->output = $output;
     }
 }
 

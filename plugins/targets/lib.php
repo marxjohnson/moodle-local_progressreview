@@ -29,12 +29,6 @@ class progressreview_targets extends progressreview_plugin {
      */
     private $targets;
 
-    /**
-     * Return the targets' data as an array of records
-     *
-     * @return
-     * @access public
-     */
     public function update($targets) {
         global $DB;
         foreach ($targets as $number => $target) {
@@ -53,16 +47,25 @@ class progressreview_targets extends progressreview_plugin {
             });
 
             if (!empty($target->id)) {
-                $DB->update_record('ilptarget_posts', $target);
-                $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
+                if (!$DB->update_record('ilptarget_posts', $target)) {
+                    throw new progressreview_autosave_exception('Target Update Failed');
+                }
+                if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+                    throw new progressreview_autosave_exception('Timestamp Update Failed');
+                }
             } else {
                 $target->data1 = $DB->sql_empty();
                 $target->data2 = $DB->sql_empty();
                 $target->id = $DB->insert_record('ilptarget_posts', $target);
 
                 if ($target->id) {
-                    $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
-                    $DB->insert_record('progressreview_targets', (object)array('targetid' => $target->id, 'reviewid' => $this->progressreview->id));
+                    if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+                        throw new progressreview_autosave_exception('Timestamp Update Failed');
+                    }
+                    $insert = (object)array('targetid' => $target->id, 'reviewid' => $this->progressreview->id);
+                    if (!$DB->insert_record('progressreview_targets', $insert)) {
+                        throw new progressreview_autosave_exception('Target Creation Failed');
+                    }
                 }
             }
             foreach ((array)$target as $field => $datum) {
@@ -71,6 +74,12 @@ class progressreview_targets extends progressreview_plugin {
         }
     } // end of member function update
 
+    /**
+     * Return the targets' data as an array of records
+     *
+     * @return
+     * @access public
+     */
     public function get_review() {
         return $this->targets;
     } // end of member function get_targets
@@ -88,12 +97,19 @@ class progressreview_targets extends progressreview_plugin {
         $count = 0;
         while ($count < 3) {
             $count++;
-            $mform->addElement('textarea', 'targets['.($count-1).']', get_string('name', 'ilptarget').' '.$count, array('rows' => 3, 'cols' => 50));
+            $mform->addElement('textarea',
+                               'targets['.($count-1).']',
+                               get_string('name', 'ilptarget').' '.$count,
+                               array('rows' => 3, 'cols' => 50, 'class' => 'targets'));
             $years = array(
                 'startyear' => date('Y'),
                 'stopyear' => date('Y', strtotime('next year'))
             );
-            $mform->addElement('date_selector', 'deadlines['.($count-1).']', get_string('deadline', 'ilptarget').' '.$count, $years);
+            $mform->addElement('date_selector',
+                               'deadlines['.($count-1).']',
+                               get_string('deadline', 'ilptarget').' '.$count,
+                               $years,
+                               array('class' => 'targets deadline'.($count-1)));
             $mform->setDefault('deadlines['.($count-1).']', strtotime('3 weeks'));
         }
     }
@@ -153,6 +169,51 @@ class progressreview_targets extends progressreview_plugin {
         $data->deadlines = $deadlines;
         $data->targets = $targets;
         return $data;
+    }
+
+    public function autosave($field, $value) {
+        try {
+            $number = substr($field, -1);
+            $field1 = substr($field, 0, -1);
+            if ($field1 == 'targets') {
+                $field1 = 'targetset';
+                $field2 = 'deadline';
+                $value2 = strtotime('2 weeks');
+            } else {
+                $field1 = 'deadline';
+                $field2 = 'targetset';
+                $value2 = '';
+            }
+            $targets = array();
+            if (!empty($this->targets[$number])) {
+                $update = (object)array(
+                    'id' => $this->targets[$number]->id,
+                    'timemodified' => time(),
+                    $field1 => $value
+                );
+                $targets[$number] = $update;
+            } else {
+                if (!empty($value)) {
+                    $newtarget = (object)array(
+                        'timecreated' => time(),
+                        'timemodified' => time(),
+                        'setforuserid' => $this->progressreview->get_student()->id,
+                        'setbyuserid' => $this->progressreview->get_teacher()->originalid
+                    );
+                    $newtarget->$field1 = $value;
+                    $newtarget->$field2 = $value2;
+                    $targets[$number] = $newtarget;
+                }
+            }
+
+            $this->update($targets);
+        } catch (progressreview_invalidfield_exception $e) {
+            throw $e;
+        } catch (dml_write_exception $e) {
+            throw $e;
+        } catch (progressreview_autosave_exception $e) {
+            throw $e;
+        }
     }
 
 

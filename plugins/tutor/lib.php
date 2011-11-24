@@ -80,7 +80,10 @@ class progressreview_tutor extends progressreview_plugin {
     } // end of member function retrieve_review
 
     public function add_form_fields(&$mform) {
-        $mform->addElement('textarea', 'comments', get_string('comments', 'local_progressreview'), array('rows' => 5, 'cols' => 50));
+        $mform->addElement('textarea',
+                           'comments',
+                           get_string('comments', 'local_progressreview'),
+                           array('rows' => 5, 'cols' => 50, 'class' => 'tutor'));
 
     }
 
@@ -95,6 +98,20 @@ class progressreview_tutor extends progressreview_plugin {
     public function add_form_data($data) {
         $data->comments = $this->comments;
         return $data;
+    }
+
+    public function require_js() {
+        global $PAGE;
+        $jsmodule = array(
+            'name' => 'progressreview_tutor',
+            'fullpath' => '/local/progressreview/plugins/tutor/module.js',
+            'requires' => array('base', 'node'),
+            'strings' => array(
+                array('didntattend', 'progressreview_tutor'),
+                array('didntattendfiller', 'progressreview_tutor')
+            )
+        );
+        $PAGE->requires->js_init_call('M.progressreview_tutor.init', null, false, $jsmodule);
     }
 
 } // end of progressreview_tutor
