@@ -6,6 +6,8 @@ M.local_progressreview = {
 
     savebutton: '',
 
+    autosave_failed: false,
+
     init_autosave: function (Y, savestring) {
         this.Y = Y;
         this.progress = Y.one('#progressindicator');
@@ -21,34 +23,38 @@ M.local_progressreview = {
 
     autosave: function(plugin, field, value) {
 
-        Y = this.Y;
-        this.progress.setStyle('display', 'block');
-        var studentid = Y.one('#id_editid').get('value');
-        var sessionid = Y.one('#id_sessionid').get('value');
-        var courseid = Y.one('#id_courseid').get('value');
-        var teacherid = Y.one('#id_teacherid').get('value');
-        var reviewtype = Y.one('#id_reviewtype').get('value');
+        if (!this.autosave_failed) {
+            Y = this.Y;
+            this.progress.setStyle('display', 'block');
+            var studentid = Y.one('#id_editid').get('value');
+            var sessionid = Y.one('#id_sessionid').get('value');
+            var courseid = Y.one('#id_courseid').get('value');
+            var teacherid = Y.one('#id_teacherid').get('value');
+            var reviewtype = Y.one('#id_reviewtype').get('value');
 
-        var url = M.cfg.wwwroot+'/local/progressreview/autosave.php';
-        Y.io(url, {
-            data: 'studentid='+studentid+'&sessionid='+sessionid
-                +'&courseid='+courseid+'&teacherid='+teacherid
-                +'&reviewtype='+reviewtype+'&plugin='+plugin
-                +'&field='+field+'&value='+value,
-            context: this,
-            on: {
-                success: function(id, o) {
-                    this.progress.setStyle('display', 'none');
-                },
+            var url = M.cfg.wwwroot+'/local/progressreview/autosave.php';
+            Y.io(url, {
+                data: 'studentid='+studentid+'&sessionid='+sessionid
+                    +'&courseid='+courseid+'&teacherid='+teacherid
+                    +'&reviewtype='+reviewtype+'&plugin='+plugin
+                    +'&field='+field+'&value='+value,
+                context: this,
+                method: 'post',
+                on: {
+                    success: function(id, o) {
+                        this.progress.setStyle('display', 'none');
+                    },
 
-                failure: function(id, o) {
-                    var message = o.responseText;
-                    alert(M.util.get_string('autosavefailed', 'local_progressreview', message));
-                    this.savebutton.set('disabled', false);
-                    this.savebutton.set('value', module.savestring);
-                    this.progress.setStyle('display', 'none');
+                    failure: function(id, o) {
+                        var message = o.responseText;
+                        alert(M.util.get_string('autosavefailed', 'local_progressreview', message));
+                        this.savebutton.set('disabled', false);
+                        this.savebutton.set('value', this.savestring);
+                        this.progress.setStyle('display', 'none');
+                        this.autosave_failed = true;
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 }
