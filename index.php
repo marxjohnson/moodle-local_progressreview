@@ -5,6 +5,9 @@ require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 
 $courseid = optional_param('courseid', null, PARAM_INT);
 $sessionid = optional_param('sessionid', null, PARAM_INT);
+$teacherid = optional_param('teacherid', null, PARAM_INT);
+
+$controller = 'progressreview_controller';
 
 require_login($SITE);
 $permissions = array(
@@ -30,7 +33,7 @@ if ($courseid) {
     $courses = $DB->get_records('course', array('id' => $courseid));
     $courses[$courseid]->context = get_context_instance(CONTEXT_COURSE, $courseid);
 } else {
-    $courses = progressreview_controller::get_my_review_courses($sessionid);
+    $courses = $controller::get_my_review_courses($sessionid);
 }
 foreach ($courses as $course) {
     if (has_capability('moodle/local_progressreview:write', $course->context)) {
@@ -51,7 +54,7 @@ add_to_log(SITEID, 'local_progressreview', 'view', $PAGE->url->out());
 $output = $PAGE->get_renderer('local_progressreview');
 $content = '';
 
-$sessions = progressreview_controller::get_sessions();
+$sessions = $controller::get_sessions();
 $session_links = $output->session_links($PAGE->url, $sessions);
 
 if (isset($permissions['admin'])) {
@@ -66,13 +69,34 @@ if (isset($permissions['manager'])) {
         } else {
             $session = current($sessions);
         }
-        foreach ($permissions['manager'] as $categoryid) {
-            $category = $DB->get_record('course_categories', array('id' => $categoryid));
-            $subjectsummaries = progressreview_controller::get_course_summaries($session, PROGRESSREVIEW_SUBJECT, $category->id);
-            $tutorsummaries = progressreview_controller::get_course_summaries($session, PROGRESSREVIEW_TUTOR, $category->id);
-            if ($subjectsummaries || $tutorsummaries) {
-                $department_table = $output->department_table($category, $subjectsummaries, $tutorsummaries);
-                $content .= $department_table;
+        if (isset($course)) {
+            $PAGE->navbar->add($session->name, $PAGE->url);
+            $PAGE->navbar->add($courses[$courseid]->fullname);
+
+            $heading = $courses[$courseid]->fullname;
+            if ($teacher = $DB->get_record('user', array('id' => $teacherid))) {
+                $heading .= ' - '.fullname($teacher);
+            }
+            $content .= $OUTPUT->heading($heading, 2);
+            if ($reviews = $controller::get_reviews($session->id, null, $courseid, $teacherid)) {
+                $reviewdata = array();
+                foreach ($reviews as $review) {
+                    $reviewdata[] = $review->get_plugin('subject')->get_review();
+                }
+                $content .= $output->subject_review_table($reviewdata, false);
+            } else if ($controller::get_reviews($sessionid, null, $courseid, $teacherid, PROGRESSREVIEW_TUTOR)){
+                coding_error('Tutor Review details not implemented yet!');
+            }
+        } else {
+            $PAGE->navbar->add($session->name);
+            foreach ($permissions['manager'] as $categoryid) {
+                $category = $DB->get_record('course_categories', array('id' => $categoryid));
+                $subjectsummaries = $controller::get_course_summaries($session, PROGRESSREVIEW_SUBJECT, $category->id);
+                $tutorsummaries = $controller::get_course_summaries($session, PROGRESSREVIEW_TUTOR, $category->id);
+                if ($subjectsummaries || $tutorsummaries) {
+                    $department_table = $output->department_table($category, $subjectsummaries, $tutorsummaries);
+                    $content .= $department_table;
+                }
             }
         }
     } else {
@@ -93,7 +117,7 @@ if (isset($permissions['teacher'])) {
     if (!$sessionid) {
         $sessionid = current($sessions)->id;
     }
-    $reviews = progressreview_controller::get_reviews($sessionid, $USER->id);
+    $reviews = $controller::get_reviews($sessionid, $USER->id);
     $user_reviews = $output->user_reviews($reviews);
     $content .= $user_reviews;
 }

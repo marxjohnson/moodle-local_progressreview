@@ -440,6 +440,7 @@ class progressreview_controller {
                     c.id as courseid,
                     c.fullname AS name,
 	            '.$concat_sql.' AS teacher,
+                    t.originalid AS teacherid,
                     COUNT(*) AS total,
                     COUNT(p1.id) AS completed ';
         $from = 'FROM
