@@ -63,7 +63,7 @@ $content = $OUTPUT->heading(fullname($user).' - '.get_string('pluginname', 'loca
 
 $content .= $output->user_session_links($user, $sessions, $sessionid);
 
-$content .= $output->subject_review_table($subjectdata, false, $session->inductionreview);
+$content .= $output->subject_review_table($subjectdata, false, $session->inductionreview, PROGRESSREVIEW_TEACHER);
 
 if ($tutorreview) {
     $content .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
