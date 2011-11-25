@@ -158,7 +158,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
      * @todo Make option for non-induction review, and allow avgcse to be configured
      * @todo Make pluggable
      */
-    function subject_review_table($reviews, $form = true, $previousdata = array()) {
+    function subject_review_table($reviews, $form = true, $previousdata = array(), $displayby = PROGRESSREVIEW_STUDENT) {
 
         $table = new html_table();
         $table->head = array(
@@ -173,7 +173,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
             get_string('targetgrade', 'local_progressreview'),
             get_string('performancegrade', 'local_progressreview')
         );
-        if (!$form) {
+        if (!$form && $displayby == PROGRESSREVIEW_TEACHER) {
             $table->head[0] = get_string('course');
             $table->head[1] = get_string('teacher', 'local_progressreview');
         }
@@ -181,7 +181,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         foreach ($reviews as $key => $review) {
             $student = $review->progressreview->get_student();
             $session = $review->progressreview->get_session();
-            if ($form) {
+            if ($form || $displayby == PROGRESSREVIEW_STUDENT) {
                 $picture = $this->output->user_picture($student);
                 $name = fullname($student);
             } else {
