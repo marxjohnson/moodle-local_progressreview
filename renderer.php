@@ -321,7 +321,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $jsmodule = array(
                 'name' => 'local_progressreview',
                 'fullpath' => '/local/progressreview/module.js',
-                'requires' => array('base', 'node', 'io', 'json'),
+                'requires' => array('base', 'node', 'io', 'json', 'event-valuechange', 'event-delegate'),
                 'strings' => array(
                     array('autosaveactive', 'local_progressreview'),
                     array('autosavefailed', 'local_progressreview'),
