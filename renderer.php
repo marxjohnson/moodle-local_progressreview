@@ -276,14 +276,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 ));
 
                 $table->data[] = $row;
-            }
-            if (!$session->inductionreview) {
-                $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
-                $headercell->header = true;
+                if (!$session->inductionreview) {
+                    $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
+                    $headercell->header = true;
 
-                $commentscell->colspan = 8;
-                $row = new html_table_row(array('', $headercell, $commentscell));
-                $table->data[] = $row;
+                    $commentscell->colspan = 8;
+                    $row = new html_table_row(array('', $headercell, $commentscell));
+                    $table->data[] = $row;
+                }
             }
         }
 
