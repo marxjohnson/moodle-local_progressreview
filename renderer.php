@@ -190,6 +190,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
             }
             $attendance = number_format($review->attendance, 0).'%';
             $punctuality = number_format($review->punctuality, 0).'%';
+            $mintarget = @$review->scale[$review->minimumgrade-1];
             $fieldarray = 'review['.$review->id.']';
             if ($form) {
                 $idattrs = array(
@@ -222,7 +223,6 @@ class local_progressreview_renderer extends plugin_renderer_base {
                                               $review->effort,
                                               array('' => get_string('choosedots')),
                                               array('class' => 'subject'));
-                $mintarget = @$review->scale[$review->minimumgrade-1];
                 $targetgrade = html_writer::select($review->scale,
                                                    $fieldarray.'[targetgrade]',
                                                    $review->targetgrade,
