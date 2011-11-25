@@ -5,15 +5,15 @@ M.progressreview_targets = {
 
     init_autosave: function(Y) {
         this.Y = Y;
-        Y.one('#targets').delegate('change', function(e) {
+        Y.all('.targets').on('change', function(e) {
             this.autosave(e.target);
-        }, '.targets', this);
+        }, this);
 
         Y.one('#targets').delegate('focus', function(e) {
             if (this.calendar_watch == null) {
                 this.calendar_watch = Y.one('#dateselector-calendar-panel').delegate('click', function(e) {
                     this.autosave(M.form.dateselector.currentowner.dayselect);
-                }, '.calcell a', this);
+                }, '.calcell', this);
             }
         }, 'select', this);
 
