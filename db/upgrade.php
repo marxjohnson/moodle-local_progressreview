@@ -16,6 +16,6 @@ function xmldb_local_progressreview_upgrade($oldversion) {
         // subject savepoint reached
         upgrade_plugin_savepoint(true, 2011101318, 'progressreview', 'subject');
         upgrade_plugin_savepoint(true, 2011101318, 'local', 'progressreview');
-        return true;
     }
+    return true;
 }
