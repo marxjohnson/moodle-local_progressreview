@@ -73,7 +73,11 @@ M.local_progressreview = {
         course = cells.shift().get('textContent');
         teacher = cells.shift().get('textContent');
 
-        strparams = {'teacher': teacher, 'course': course, 'session': session};
+        strparams = {
+            'teacher': '<strong>'+teacher+'</strong>',
+            'course': '<strong>'+course+'</strong>',
+            'session': '<strong>'+session+'</strong>'
+        };
         strconfirm = M.util.get_string('confirmdelete', 'local_progressreview', strparams);
 
         confirmurl = url+'&confirm=1&sesskey='+sesskey;
@@ -83,12 +87,13 @@ M.local_progressreview = {
             fixedcenter: true,
             visible: false,
             draggable: false,
+            close: false,
             text: strconfirm,
             icon: YAHOO.widget.SimpleDialog.ICON_HELP,
             constraintoviewport: true,
             buttons: [
                 {
-                    text: M.util.get_string('confirm', 'moodle'),
+                    text: M.util.get_string('continue', 'moodle'),
                     handler:function() {
                         this.hide();
                         window.location.href = confirmurl;
