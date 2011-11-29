@@ -97,7 +97,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                     'requires' => array('base', 'node', 'event-delegate', 'yui2-event','yui2-container', 'yui2-button'),
                     'strings' => array(
                         array('confirmdelete', 'local_progressreview'),
-                        array('confirm', 'moodle'),
+                        array('continue', 'moodle'),
                         array('cancel', 'moodle')
                     )
                 );
