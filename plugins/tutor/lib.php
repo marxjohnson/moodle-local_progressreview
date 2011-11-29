@@ -60,6 +60,11 @@ class progressreview_tutor extends progressreview_plugin {
         );
     } // end of member function get_review
 
+    public function delete() {
+        global $DB;
+        $DB->delete_records('progressreview_tutor', array('id' => $this->id));
+    }
+
     /**
      * Sets $id and $comments based on the values in progressreview_tutor, or creates a
      * new record and just sets $id.

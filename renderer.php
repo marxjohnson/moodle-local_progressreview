@@ -49,24 +49,32 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
             if ($summaries) {
                 $table = new html_table();
+                $table->id = $type;
                 $table->head = array(
                     get_string('name', 'local_progressreview'),
                     get_string('teachers', 'local_progressreview'),
                     get_string('reviews', 'local_progressreview'),
                     get_string('completedreviews', 'local_progressreview'),
-                    get_string('outstandingreviews', 'local_progressreview')
+                    get_string('outstandingreviews', 'local_progressreview'),
+                    ''
                 );
 
                 foreach ($summaries as $summary) {
                     $courseattrs = array('courseid' => $summary->courseid, 'teacherid' => $summary->teacherid);
                     $courseurl = new moodle_url('/local/progressreview/index.php', $courseattrs);
+                    $deleteicon = $this->output->pix_icon('t/delete', get_string('delete'));
+                    $deleteattrs = $courseattrs;
+                    $deleteattrs['sessionid'] = $summary->sessionid;
+                    $deleteurl = new moodle_url('/local/progressreview/delete.php', $deleteattrs);
+                    $deletelink = html_writer::link($deleteurl, $deleteicon, array('class' => 'delete'));
 
                     $row = new html_table_row(array(
                         html_writer::link($courseurl, $summary->name),
                         $summary->teacher,
                         $summary->total,
                         $summary->completed,
-                        ($summary->total)-($summary->completed)
+                        ($summary->total)-($summary->completed),
+                        $deletelink
                     ));
 
                     $row->attributes['class'] = 'incomplete';
@@ -82,6 +90,21 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
                 $output .= $this->output->heading(get_string($type, 'local_progressreview'), 3);
                 $output .= html_writer::table($table);
+
+                $jsmodule = array(
+                    'name' => 'local_progressreview',
+                    'fullpath' => '/local/progressreview/module.js',
+                    'requires' => array('base', 'node', 'event-delegate', 'yui2-event','yui2-container', 'yui2-button'),
+                    'strings' => array(
+                        array('confirmdelete', 'local_progressreview'),
+                        array('confirm', 'moodle'),
+                        array('cancel', 'moodle')
+                    )
+                );
+                $this->page->requires->js_init_call('M.local_progressreview.init_delete',
+                                                    array(sesskey(), $summary->sessionname),
+                                                    false,
+                                                    $jsmodule);
             }
         }
 

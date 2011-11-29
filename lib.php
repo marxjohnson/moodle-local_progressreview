@@ -280,6 +280,23 @@ class progressreview {
         return progressreview_cache::$courses[$id];
     } // end of member function retrieve_course
 
+    /**
+     * Deletes all data associated with this review
+     */
+    public function delete() {
+        global $DB;
+        try {
+            foreach ($this->plugins as $plugin) {
+                $plugin->delete();
+            }
+            if (!$DB->delete_records('progressreview', array('id' => $this->id))) {
+                throw new progressreview_nodelete_exception('Couldn\'t delete review record '.$this->id);
+            }
+        } catch (dml_exception $e) {
+            throw new progressreview_nodelete_exception('Couldn\'t delete review record '.$this->id.': '.$e->getMessage());
+        }
+    }
+
 } // end of progressreview
 
 /**
@@ -419,6 +436,16 @@ class progressreview_controller {
 
     } // end of member function get_reviews
 
+    public static function delete_reviews($sessionid, $studentid = null, $courseid = null, $teacherid = null, $type = PROGRESSREVIEW_SUBJECT) {
+        $reviews = self::get_reviews($sessionid, $studentid, $courseid, $teacherid, $type);
+        foreach ($reviews as $review) {
+            try {
+                $review->delete();
+            } catch (progressreview_nodelete_exception $e) {
+                throw $e;
+            }
+        }
+    }
 
     public static function get_course_summaries($session, $type, $categoryid = null) {
         if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
@@ -437,6 +464,8 @@ class progressreview_controller {
         $concat_sql = $DB->sql_concat('t.firstname', '" "', 't.lastname');
         $select = 'SELECT
                     p.id,
+                    p.sessionid as sessionid,
+                    s.name as sessionname,
                     c.id as courseid,
                     c.fullname AS name,
 	            '.$concat_sql.' AS teacher,
@@ -447,6 +476,7 @@ class progressreview_controller {
                     {progressreview} p
                     JOIN {course} c ON c.id = p.courseid
                     JOIN {progressreview_teachers} t ON t.originalid = p.teacherid
+                    JOIN {progressreview_session} s ON s.id = p.sessionid
                     LEFT JOIN '.$table.' p1 ON p1.reviewid = p.id ';
         if ($type == PROGRESSREVIEW_SUBJECT && $session->inductionreview) {
             $from .= 'AND p1.performancegrade IS NOT NULL ';
@@ -465,7 +495,7 @@ class progressreview_controller {
         }
         $params[] = $categoryid;
 
-        $group = 'GROUP BY name, teacher ';
+        $group = 'GROUP BY courseid, teacherid ';
         $order = 'ORDER BY name, teacher ';
 
         return $DB->get_records_sql($select.$from.$where.$group.$order, $params);
@@ -743,6 +773,11 @@ abstract class progressreview_plugin {
      * Returns an object containing the data required for rendering this plugin's widgets
      */
     abstract function get_review();
+
+    /**
+     * Deletes all data for this plugin associated with the current review.
+     */
+    abstract function delete();
 
     /**
      * Adds the fields this plugin needs to the review form

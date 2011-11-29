@@ -56,5 +56,55 @@ M.local_progressreview = {
                 }
             });
         }
+    },
+
+    init_delete: function(Y, sesskey, session) {
+        this.Y = Y;
+        Y.one('#subjectreviews').delegate('click', this.confirm_delete, '.delete', this, sesskey, session);
+        Y.one('#tutorreviews').delegate('click', this.confirm_delete, '.delete', this, sesskey, session);
+    },
+
+    confirm_delete: function(e, sesskey, session) {
+        Y = this.Y;
+        e.preventDefault();
+        url = e.currentTarget.get('href');
+        row = e.currentTarget.get('parentNode').get('parentNode');
+        cells = row.get('children');
+        course = cells.shift().get('textContent');
+        teacher = cells.shift().get('textContent');
+
+        strparams = {'teacher': teacher, 'course': course, 'session': session};
+        strconfirm = M.util.get_string('confirmdelete', 'local_progressreview', strparams);
+
+        confirmurl = url+'&confirm=1&sesskey='+sesskey;
+
+        dialog = new YAHOO.widget.SimpleDialog("simpledialog1", {
+            width: "500px",
+            fixedcenter: true,
+            visible: false,
+            draggable: false,
+            text: strconfirm,
+            icon: YAHOO.widget.SimpleDialog.ICON_HELP,
+            constraintoviewport: true,
+            buttons: [
+                {
+                    text: M.util.get_string('confirm', 'moodle'),
+                    handler:function() {
+                        this.hide();
+                        window.location.href = confirmurl;
+                    }
+                },
+                {
+                    text: M.util.get_string('cancel', 'moodle'),
+                    handler:function() {
+                        this.hide();
+                    },
+                    isDefault: true
+                }
+            ]
+        });
+        dialog.render( document.body );
+        dialog.show();
+
     }
 }

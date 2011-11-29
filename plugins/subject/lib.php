@@ -159,6 +159,11 @@ abstract class progressreview_subject_template extends progressreview_plugin {
         );
     } // end of member function get_review
 
+    public function delete() {
+        global $DB;
+        $DB->delete_records('progressreview_subject', array('id' => $this->id));
+    }
+
     /**
      * Updates the attributes with the passed values and saves the values to the
      * database.
