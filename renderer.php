@@ -90,6 +90,21 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
                 $output .= $this->output->heading(get_string($type, 'local_progressreview'), 3);
                 $output .= html_writer::table($table);
+
+                $jsmodule = array(
+                    'name' => 'local_progressreview',
+                    'fullpath' => '/local/progressreview/module.js',
+                    'requires' => array('base', 'node', 'event-delegate', 'yui2-event','yui2-container', 'yui2-button'),
+                    'strings' => array(
+                        array('confirmdelete', 'local_progressreview'),
+                        array('confirm', 'moodle'),
+                        array('cancel', 'moodle')
+                    )
+                );
+                $this->page->requires->js_init_call('M.local_progressreview.init_delete',
+                                                    array(sesskey(), $summary->sessionname),
+                                                    false,
+                                                    $jsmodule);
             }
         }
 
