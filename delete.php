@@ -57,6 +57,8 @@ if ($confirm) {
         foreach ($progressreviews as $progressreview) {
             try {
                 $progressreview->delete();
+                $info = $session->id.'/'.$course->id.'/'.$teacher->id;
+                add_to_log(SITEID, 'local_progressreview', 'delete', '/local/progressreview', $info);
             } catch (dml_exception $e) {
                 $content .= $OUTPUT->error_text($e->getMessage());
             }
