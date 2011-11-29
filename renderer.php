@@ -49,24 +49,32 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
             if ($summaries) {
                 $table = new html_table();
+                $table->id = $type;
                 $table->head = array(
                     get_string('name', 'local_progressreview'),
                     get_string('teachers', 'local_progressreview'),
                     get_string('reviews', 'local_progressreview'),
                     get_string('completedreviews', 'local_progressreview'),
-                    get_string('outstandingreviews', 'local_progressreview')
+                    get_string('outstandingreviews', 'local_progressreview'),
+                    ''
                 );
 
                 foreach ($summaries as $summary) {
                     $courseattrs = array('courseid' => $summary->courseid, 'teacherid' => $summary->teacherid);
                     $courseurl = new moodle_url('/local/progressreview/index.php', $courseattrs);
+                    $deleteicon = $this->output->pix_icon('t/delete', get_string('delete'));
+                    $deleteattrs = $courseattrs;
+                    $deleteattrs['sessionid'] = $summary->sessionid;
+                    $deleteurl = new moodle_url('/local/progressreview/delete.php', $deleteattrs);
+                    $deletelink = html_writer::link($deleteurl, $deleteicon, array('class' => 'delete'));
 
                     $row = new html_table_row(array(
                         html_writer::link($courseurl, $summary->name),
                         $summary->teacher,
                         $summary->total,
                         $summary->completed,
-                        ($summary->total)-($summary->completed)
+                        ($summary->total)-($summary->completed),
+                        $deletelink
                     ));
 
                     $row->attributes['class'] = 'incomplete';

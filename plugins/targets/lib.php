@@ -84,6 +84,13 @@ class progressreview_targets extends progressreview_plugin {
         return $this->targets;
     } // end of member function get_targets
 
+    public function delete() {
+        global $DB;
+        foreach ($this->targets as $target) {
+            $DB->delete_records('progressreview_tutor', array('id' => $target->id));
+        }
+    }
+
     protected function retrieve_review() {
         global $DB;
         $select = 'SELECT ip.* ';
