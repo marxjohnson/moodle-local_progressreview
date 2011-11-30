@@ -20,7 +20,9 @@ if (!$studentid) {
     }
 }
 $editid = optional_param('editid', false, PARAM_INT);
+$readonly = false;
 $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
+$categorycontext = get_context_instance_by_id(current(get_parent_contexts($coursecontext)));
 
 if (!$session = $DB->get_record('progressreview_session', array('id' => $sessionid))) {
     print_error('invalidsession', 'local_progressreview');
@@ -30,16 +32,38 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
     print_error('invalidcourse', 'local_progressreview');
 }
 
-if (has_capability('moodle/local_progressreview:write', $coursecontext)) {
+$isteacher = has_capability('moodle/local_progressreview:write', $coursecontext);
+$ismanager = has_capability('moodle/local_progressreview:viewall', $categorycontext);
+$indexlink = null;
+if ($isteacher || $ismanager) {
     $mode = PROGRESSREVIEW_TEACHER;
+    if (!$isteacher) {
+        $indexlink = new moodle_url('/local/progressreview/index.php');
+        if ($studentid) {
+            $redirectparams = array(
+                'sessionid' => $sessionid,
+                'userid' => $studentid
+            );
+            redirect(new moodle_url('/local/progressreview/user.php', $redirectparams));
+        }
+    }
 } else if (has_capability('moodle/local_progressreview:viewown', $coursecontext)) {
     $mode = PROGRESSREVIEW_STUDENT;
+    if (!$studentid) {
+        $redirectparams = array(
+            'courseid' => $courseid,
+            'studentid' => $USER->id,
+            'sessionid' => $sessionid
+        );
+        $redirecturl = new moodle_url('/local/progressreview/tutorreview.php', $redirectparams);
+        redirect($redirecturl);
+    }
 } else {
     print_error('noaccess');
 }
 
 require_login($course);
-$PAGE->navbar->add(get_string('pluginname', 'local_progressreview'));
+$PAGE->navbar->add(get_string('pluginname', 'local_progressreview'), $indexlink);
 $listurl = new moodle_url('/local/progressreview/tutorreview.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
 $PAGE->set_url($listurl);
 if ($studentid) {
@@ -88,9 +112,8 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
         });
         $content .= $output->tutorgroup_list($tutorgroup);
     }
-
 }
-add_to_log($course, 'local_progressreview', 'view', $PAGE->url->out(), $studentid);
+add_to_log($course->id, 'local_progressreview', 'view', $PAGE->url->out(), $studentid);
 if (isset($form)) {
     if (!empty($session->deadline_tutor)) {
         $deadline = userdate($session->deadline_tutor);

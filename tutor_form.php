@@ -31,7 +31,7 @@ class progressreview_tutor_form extends moodleform {
             }
             $review = $review->get_plugin('subject')->get_review();
         }
-        $table = $output->subject_review_table($reviews, false, $previousdata);
+        $table = $output->subject_review_table($reviews, false, $previousdata, PROGRESSREVIEW_TEACHER);
         $mform->addElement('html', $table);
 
         $progressreview->get_plugin('tutor')->add_form_fields($mform);

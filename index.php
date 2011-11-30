@@ -6,6 +6,7 @@ require_once($CFG->dirroot.'/local/progressreview/renderer.php');
 $courseid = optional_param('courseid', null, PARAM_INT);
 $sessionid = optional_param('sessionid', null, PARAM_INT);
 $teacherid = optional_param('teacherid', null, PARAM_INT);
+$studentid = optional_param('studentid', null, PARAM_INT);
 
 $controller = 'progressreview_controller';
 
@@ -84,10 +85,16 @@ if (isset($permissions['manager'])) {
                     $reviewdata[] = $review->get_plugin('subject')->get_review();
                 }
                 $content .= $output->subject_review_table($reviewdata, false);
-            } else if ($controller::get_reviews($sessionid, null, $courseid, $teacherid, PROGRESSREVIEW_TUTOR)){
-                coding_error('Tutor Review details not implemented yet!');
+            } else if ($reviews = $controller::get_reviews($session->id, null, $courseid, $teacherid, PROGRESSREVIEW_TUTOR)) {
+                $redirectparams = array(
+                    'teacherid' => $teacherid,
+                    'sessionid' => $session->id,
+                    'courseid' => $courseid
+                );
+                redirect(new moodle_url('/local/progressreview/tutorreview.php', $redirectparams));
             }
         } else {
+            // If no action is selected, display the review summaries by department and review type.
             $PAGE->navbar->add($session->name);
             foreach ($permissions['manager'] as $categoryid) {
                 $category = $DB->get_record('course_categories', array('id' => $categoryid));
