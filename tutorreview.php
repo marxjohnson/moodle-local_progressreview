@@ -90,7 +90,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
     }
 
 }
-add_to_log($course, 'local_progressreview', 'view', $PAGE->url->out(), $studentid);
+add_to_log($course->id, 'local_progressreview', 'view', $PAGE->url->out(), $studentid);
 if (isset($form)) {
     if (!empty($session->deadline_tutor)) {
         $deadline = userdate($session->deadline_tutor);

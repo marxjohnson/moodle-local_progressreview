@@ -57,7 +57,7 @@ if ($tutorreview = current(progressreview_controller::get_reviews($session->id, 
         }
     }
 }
-add_to_log($course, 'local_progressreview', 'view', $PAGE->url->out());
+add_to_log(SITEID, 'local_progressreview', 'view', $PAGE->url->out());
 
 $content = $OUTPUT->heading(fullname($user).' - '.get_string('pluginname', 'local_progressreview'));
 
