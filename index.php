@@ -96,6 +96,9 @@ if (isset($permissions['manager'])) {
         } else {
             // If no action is selected, display the review summaries by department and review type.
             $PAGE->navbar->add($session->name);
+
+            $content .= $output->filter_fields();
+
             foreach ($permissions['manager'] as $categoryid) {
                 $category = $DB->get_record('course_categories', array('id' => $categoryid));
                 $subjectsummaries = $controller::get_course_summaries($session, PROGRESSREVIEW_SUBJECT, $category->id);

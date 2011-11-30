@@ -8,6 +8,8 @@ M.local_progressreview = {
 
     autosave_failed: false,
 
+    filterrows: {},
+
     init_autosave: function (Y, savestring) {
         this.Y = Y;
         this.progress = Y.one('#progressindicator');
@@ -111,5 +113,25 @@ M.local_progressreview = {
         dialog.render( document.body );
         dialog.show();
 
+    },
+
+    init_filters: function(Y) {
+        this.filterrows = Y.all('tbody tr');
+        Y.one('#filterfields').delegate('keypress', function(e) {
+            id = e.currentTarget.get('id');
+            filter = new RegExp(e.currentTarget.get('value'), 'i');
+            if (id == 'filtercourse') {
+                filtercol = 0;
+            } else if (id == 'filterteacher') {
+                filtercol = 1;
+            }
+            this.filterrows.each(function(row) {
+                if (row._node.cells[filtercol].textContent.match(filter) === null) {
+                    row.setStyle('display', 'none');
+                } else {
+                    row.setStyle('display', 'table-row');
+                }
+            });
+        }, 'input', this);
     }
 }

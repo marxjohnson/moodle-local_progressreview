@@ -105,10 +105,29 @@ class local_progressreview_renderer extends plugin_renderer_base {
                                                     array(sesskey(), $summary->sessionname),
                                                     false,
                                                     $jsmodule);
+
+                $this->page->requires->js_init_call('M.local_progressreview.init_filters',
+                                                    null,
+                                                    false,
+                                                    $jsmodule);
             }
         }
 
         return $output;
+    }
+
+    function filter_fields() {
+        $output = '';
+        $strdept = get_string('filterdept', 'local_progressreview');
+        $strcourse = get_string('filtercourse', 'local_progressreview');
+        $strteacher = get_string('filterteacher', 'local_progressreview');
+        //$output .= html_writer::label($strdept, 'filterdept');
+        //$output .= html_writer::empty_tag('input', array('id' => 'filterdept', 'name' => 'filterdept'));
+        $output .= html_writer::label($strcourse, 'filtercourse');
+        $output .= html_writer::empty_tag('input', array('id' => 'filtercourse', 'name' => 'filtercourse'));
+        $output .= html_writer::label($strteacher, 'filterteacher');
+        $output .= html_writer::empty_tag('input', array('id' => 'filterteacher', 'name' => 'filterteacher'));
+        return $this->output->container($output, '', 'filterfields');
     }
 
     function course_table($course) {
