@@ -270,7 +270,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $performancegrade = @$review->scale[$review->performancegrade];
                 $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
             }
-            if (array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
+            if (!empty($previousdata) && array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
                 $p = $previousdata[$key];
                 if (!isset($psession)) {
                     $psession = $p->progressreview->get_session();
