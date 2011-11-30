@@ -56,3 +56,10 @@
     padding-bottom: .8em;
 }
 
+#filterfields {
+    display: none;
+}
+
+.jsenabled #filterfields {
+    display: block;
+}
