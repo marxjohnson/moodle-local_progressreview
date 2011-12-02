@@ -211,10 +211,13 @@ class local_progressreview_renderer extends plugin_renderer_base {
             get_string('homework', 'local_progressreview'),
             get_string('behaviour', 'local_progressreview'),
             get_string('effort', 'local_progressreview'),
-            get_string('minimumgrade', 'local_progressreview'),
-            get_string('targetgrade', 'local_progressreview'),
-            get_string('performancegrade', 'local_progressreview')
         );
+        if ($form) {
+            $table->head[] = get_string('minimumgrade', 'local_progressreview');
+        }
+        $table->head[] = get_string('targetgrade', 'local_progressreview');
+        $table->head[] = get_string('performancegrade', 'local_progressreview');
+
         if (!$form && $displayby == PROGRESSREVIEW_TEACHER) {
             $table->head[0] = get_string('course');
             $table->head[1] = get_string('teacher', 'local_progressreview');
@@ -311,11 +314,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
                     $punctuality,
                     $homework,
                     $behaviour,
-                    $effort,
-                    $mintarget,
-                    $targetgrade,
-                    $performancegrade
+                    $effort
                 ));
+
+                if ($form) {
+                    $row->cells[] = $mintarget;
+                }
+                $row->cells[] = $targetgrade;
+                $row->cells[] = $performancegrade;
 
                 $table->data[] = $row;
                 if (!$session->inductionreview) {
