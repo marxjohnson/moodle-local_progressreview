@@ -44,7 +44,8 @@ $urlparams = array(
 );
 $PAGE->set_url('/local/progressreview/delete.php', $urlparams);
 
-$PAGE->navbar->add(get_string('pluginname', 'local_progressreview'), '/local/progressreview/index.php');
+$PAGE->navbar->add(get_string('pluginname', 'local_progressreview'),
+                   '/local/progressreview/index.php');
 $PAGE->navbar->add(get_string('delete'));
 
 $session = $controller::validate_session($sessionid);

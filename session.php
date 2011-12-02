@@ -57,7 +57,8 @@ if (!$id) {
     if ($data = $form->get_data()) {
         $sessionid = $form->process($data);
         add_to_log(SITEID, 'local_progressreview', 'update', $PAGE->url->out(), $sessionid);
-        redirect($PAGE->url->out(true, array('id' => $sessionid)), get_string('sessioncreated', 'local_progressreview'));
+        $strcreated = get_string('sessioncreated', 'local_progressreview');
+        redirect($PAGE->url->out(true, array('id' => $sessionid)), $strcreated);
         exit();
     }
 
@@ -97,19 +98,25 @@ if (!$id) {
 
     if ($subjects) {
         foreach ($subjects as $subject) {
-            progressreview_controller::generate_reviews_for_course($subject->id, $session->id, PROGRESSREVIEW_SUBJECT);
+            progressreview_controller::generate_reviews_for_course($subject->id,
+                                                                   $session->id,
+                                                                   PROGRESSREVIEW_SUBJECT);
         }
         redirect($PAGE->url->out(), get_string('reviewsgenerated', 'local_progressreview'));
         exit();
     }
 
-    $subject_selector = $output->course_selector_form($potential_subject_selector, $distributed_subject_selector, $session->id);
+    $subject_selector = $output->course_selector_form($potential_subject_selector,
+                                                      $distributed_subject_selector,
+                                                      $session->id);
     $content = $OUTPUT->heading(get_string('subjectreviews', 'local_progressreview'), 2);
     $content .= $subject_selector;
 
     // Tutor group selector
     $potential_tutor_selector = new progressreview_potential_course_selector('potential_tutors');
-    $distributed_tutor_selector = new progressreview_distributed_course_selector('distributed_tutors', $session->id, PROGRESSREVIEW_TUTOR);
+    $distributed_tutor_selector = new progressreview_distributed_course_selector('distributed_tutors',
+                                                                                 $session->id,
+                                                                                 PROGRESSREVIEW_TUTOR);
 
     $excludes = $distributed_tutor_selector->find_users();
     foreach ($excludes as $exclude) {
@@ -125,16 +132,25 @@ if (!$id) {
     }
 
     if ($tutors) {
-        add_to_log(SITEID, 'local_progressreview', 'update reviews', $PAGE->url->out(), count($tutors));
+        add_to_log(SITEID,
+                   'local_progressreview',
+                   'update reviews',
+                   $PAGE->url->out(),
+                   count($tutors));
         foreach ($tutors as $tutor) {
-            progressreview_controller::generate_reviews_for_course($tutor->id, $session->id, PROGRESSREVIEW_TUTOR);
+            progressreview_controller::generate_reviews_for_course($tutor->id,
+                                                                   $session->id,
+                                                                   PROGRESSREVIEW_TUTOR);
         }
         redirect($PAGE->url->out(), get_string('reviewsgenerated', 'local_progressreview'));
         exit();
     }
     add_to_log(SITEID, 'local_progressreview', 'view', $PAGE->url->out());
 
-    $tutor_selector = $output->course_selector_form($potential_tutor_selector, $distributed_tutor_selector, $session->id, PROGRESSREVIEW_TUTOR);
+    $tutor_selector = $output->course_selector_form($potential_tutor_selector,
+                                                    $distributed_tutor_selector,
+                                                    $session->id,
+                                                    PROGRESSREVIEW_TUTOR);
     $content .= $OUTPUT->heading(get_string('tutorreviews', 'local_progressreview'), 2);
     $content .= $tutor_selector;
 }

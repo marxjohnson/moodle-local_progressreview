@@ -146,7 +146,9 @@ if ($generate) {
                 }
             }
 
-            $pdf = $output->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
+            $strtutor = get_string('tutor', 'local_progressreview');
+            $fullname = fullname($tutorreview->get_teacher();
+            $pdf = $output->heading($strtutor.': '.$fullname), 3);
 
             $tutorreviews = '';
             foreach ($pluginrenderers as $key => $pluginrenderer) {
@@ -179,7 +181,10 @@ if ($generate) {
     $content .= $OUTPUT->heading(get_string('selectedreviews', 'local_progressreview'), 3);
     $content .= $output->print_confirmation($sessions, $students, $courses, $teachers);
 } else {
-    $content .= $output->print_selectors($sessionselect, $studentselect, $courseselect, $teacherselect);
+    $content .= $output->print_selectors($sessionselect,
+                                         $studentselect,
+                                         $courseselect,
+                                         $teacherselect);
 }
 
 

@@ -91,7 +91,8 @@ if ($isteacher || $ismanager) {
 
 require_login($course);
 $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'), $indexlink);
-$listurl = new moodle_url('/local/progressreview/tutorreview.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
+$params = array('sessionid' => $sessionid, 'courseid' => $courseid);
+$listurl = new moodle_url('/local/progressreview/tutorreview.php', $params);
 $PAGE->set_url($listurl);
 if ($studentid) {
     $PAGE->navbar->add($session->name, $PAGE->url);
@@ -109,24 +110,43 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
 
     if ($editid) {
         $editstudent = $DB->get_record('user', array('id' => $editid));
-        $editreview = new progressreview($editstudent->id, $sessionid, $courseid, $USER->id, PROGRESSREVIEW_TUTOR);
+        $editreview = new progressreview($editstudent->id,
+                                         $sessionid,
+                                         $courseid,
+                                         $USER->id,
+                                         PROGRESSREVIEW_TUTOR);
         $editform = new progressreview_tutor_form(null, array('progressreview' => $editreview));
         if ($data = $editform->get_data()) {
             $editform->process($data);
-            add_to_log($course, 'local_progressreview', 'update', $PAGE->url->out(), $editstudent->id);
-            $content .= $OUTPUT->notification(get_string('savedreviewfor', 'local_progressreview', fullname($editstudent)));
+            add_to_log($course,
+                       'local_progressreview',
+                       'update',
+                       $PAGE->url->out(),
+                       $editstudent->id);
+            $strsavedreview = get_string('savedreviewfor',
+                                         'local_progressreview',
+                                         fullname($editstudent));
+            $content .= $OUTPUT->notification($strsavedreview);
         }
     }
     if ($editid != $studentid) {
         unset($_POST);
     }
     if ($studentid) {
-        $review = new progressreview($student->id, $sessionid, $courseid, $USER->id, PROGRESSREVIEW_TUTOR);
+        $review = new progressreview($student->id,
+                                     $sessionid,
+                                     $courseid,
+                                     $USER->id,
+                                     PROGRESSREVIEW_TUTOR);
         $form = new progressreview_tutor_form(null, array('progressreview' => $review));
         $data = new stdClass;
         $form->set_data($data);
     } else {
-        $tutorgroup = progressreview_controller::get_reviews($sessionid, null, $courseid, null, PROGRESSREVIEW_TUTOR);
+        $tutorgroup = progressreview_controller::get_reviews($sessionid,
+                                                             null,
+                                                             $courseid,
+                                                             null,
+                                                             PROGRESSREVIEW_TUTOR);
         usort($tutorgroup, function($a, $b) {
             $student_a = $a->get_student();
             $student_b = $b->get_student();

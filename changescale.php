@@ -41,14 +41,16 @@ if (!$course = $DB->get_record('course', array('id' => $courseid))) {
 
 require_login($course);
 require_capability('moodle/local_progressreview:write', $coursecontext);
-$PAGE->set_url('/local/progressreview/changescale.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
+$urlparams = array('sessionid' => $sessionid, 'courseid' => $courseid);
+$PAGE->set_url('/local/progressreview/changescale.php', $urlparams);
 $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'));
 $PAGE->navbar->add($session->name);
 
 $reviews = progressreview_controller::get_reviews($sessionid, null, $courseid);
 $scaleid = current($reviews)->get_plugin('subject')->get_scaleid();
 
-$form = new progressreview_changescale_form('', array('sessionid' => $sessionid, 'courseid' => $courseid, 'scaleid' => $scaleid));
+$formdata = array('sessionid' => $sessionid, 'courseid' => $courseid, 'scaleid' => $scaleid);
+$form = new progressreview_changescale_form('', $formdata);
 
 $content = '';
 
@@ -57,7 +59,8 @@ if ($data = $form->get_data()) {
     foreach($reviews as $review) {
         $review->get_plugin('subject')->update(array('scaleid' => $newscaleid));
     }
-    $redirecturl = new moodle_url('/local/progressreview/subjectreview.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
+    $redirectparams = array('sessionid' => $sessionid, 'courseid' => $courseid);
+    $redirecturl = new moodle_url('/local/progressreview/subjectreview.php', $redirectparams);
     redirect($redirecturl, get_string('changessaved'), 2);
 }
 

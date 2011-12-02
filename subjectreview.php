@@ -50,8 +50,9 @@ if (has_capability('moodle/local_progressreview:write', $coursecontext)) {
 }
 
 require_login($course);
-$PAGE->set_url('/local/progressreview/subjectreview.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
-$PAGE->navbar->add(get_string('pluginname', 'local_progressreview'));
+$params = array('sessionid' => $sessionid, 'courseid' => $courseid);
+$PAGE->set_url('/local/progressreview/subjectreview.php', );
+$PAGE->navbar->add(get_string('pluginname', 'local_progressreview'), $params);
 $PAGE->navbar->add($session->name);
 
 $output = $PAGE->get_renderer('local_progressreview');
@@ -61,30 +62,46 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
     $reviews = array();
     $reviewdata = array();
     $previousdata = array();
-    $students = get_users_by_capability($coursecontext, 'moodle/local_progressreview:viewown', '', 'lastname, firstname');
+    $students = get_users_by_capability($coursecontext,
+                                        'moodle/local_progressreview:viewown',
+                                        '',
+                                        'lastname, firstname');
     foreach ($students as $student) {
-        $reviews[$student->id] = new progressreview($student->id, $sessionid, $courseid, $USER->id, PROGRESSREVIEW_SUBJECT);
+        $reviews[$student->id] = new progressreview($student->id,
+                                                    $sessionid,
+                                                    $courseid,
+                                                    $USER->id,
+                                                    PROGRESSREVIEW_SUBJECT);
         $subjectreview = $reviews[$student->id]->get_plugin('subject');
         if ($submitted) {
-            $submittedreview = $_POST['review'][$subjectreview->id];
+            $post = $_POST['review'][$subjectreview->id];
             $newdata = array(
-                'homeworkdone' => $submittedreview['homeworkdone'] == '' ? null : clean_param($submittedreview['homeworkdone'], PARAM_INT),
-                'homeworktotal' => $submittedreview['homeworktotal'] == '' ? null : clean_param($submittedreview['homeworktotal'], PARAM_INT),
-                'behaviour' => $submittedreview['behaviour'] == '' ? null : clean_param($submittedreview['behaviour'], PARAM_INT),
-                'effort' => $submittedreview['effort'] == '' ? null : clean_param($submittedreview['effort'], PARAM_INT),
-                'targetgrade' => $submittedreview['targetgrade'] == '' ? null : clean_param($submittedreview['targetgrade'], PARAM_INT),
-                'performancegrade' => $submittedreview['performancegrade'] == '' ? null : clean_param($submittedreview['performancegrade'], PARAM_INT)
+                'homeworkdone' => $post['homeworkdone'] == '' ? null : clean_param($post['homeworkdone'], PARAM_INT),
+                'homeworktotal' => $post['homeworktotal'] == '' ? null : clean_param($post['homeworktotal'], PARAM_INT),
+                'behaviour' => $post['behaviour'] == '' ? null : clean_param($post['behaviour'], PARAM_INT),
+                'effort' => $post['effort'] == '' ? null : clean_param($post['effort'], PARAM_INT),
+                'targetgrade' => $post['targetgrade'] == '' ? null : clean_param($post['targetgrade'], PARAM_INT),
+                'performancegrade' => $post['performancegrade'] == '' ? null : clean_param($post['performancegrade'], PARAM_INT)
             );
             if (!$reviews[$student->id]->get_session()->inductionreview) {
-                $newdata['comments'] = $submittedreview['comments'] == '' ? null : clean_param($submittedreview['comments'], PARAM_TEXT);
+                $newdata['comments'] = $post['comments'] == '' ? null : clean_param($post['comments'], PARAM_TEXT);
             }
             try {
                 $subjectreview->update($newdata);
-                add_to_log($course->id, 'local_progressreview', 'update', $PAGE->url->out(), $student->id);
+                add_to_log($course->id,
+                           'local_progressreview',
+                           'update',
+                           $PAGE->url->out(),
+                           $student->id);
                 $content = $OUTPUT->notification(get_string('changessaved'));
             } catch (dml_write_exception $e) {
-                add_to_log($course->id, 'local_progressreview', 'update', $PAGE->url->out(), $student->id.': '.$e->error);
-                $content = $OUTPUT->error_text(get_string('changesnotsaved', 'local_progressreview'));
+                add_to_log($course->id,
+                           'local_progressreview',
+                           'update',
+                           $PAGE->url->out(),
+                           $student->id.': '.$e->error);
+                $strnotsaved = get_string('changesnotsaved', 'local_progressreview');
+                $content = $OUTPUT->error_text($strnotsaved);
             }
         }
         $reviewdata[$student->id] = $subjectreview->get_review();

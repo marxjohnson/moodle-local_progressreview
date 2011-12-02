@@ -39,10 +39,19 @@ class progressreview_tutor_form extends moodleform {
 
         $mform->addElement('hidden', 'reviewid', $progressreview->id, array('id' => 'id_reviewid'));
         $mform->addElement('hidden', 'editid', $student->id, array('id' => 'id_editid'));
-        $mform->addElement('hidden', 'courseid', $progressreview->get_course()->originalid, array('id' => 'id_courseid'));
+        $mform->addElement('hidden',
+                           'courseid',
+                           $progressreview->get_course()->originalid,
+                           array('id' => 'id_courseid'));
         $mform->addElement('hidden', 'sessionid', $session->id, array('id' => 'id_sessionid'));
-        $mform->addElement('hidden', 'teacherid', $progressreview->get_teacher()->originalid, array('id' => 'id_teacherid'));
-        $mform->addElement('hidden', 'reviewtype', PROGRESSREVIEW_TUTOR, array('id' => 'id_reviewtype'));
+        $mform->addElement('hidden',
+                           'teacherid',
+                           $progressreview->get_teacher()->originalid,
+                           array('id' => 'id_teacherid'));
+        $mform->addElement('hidden',
+                           'reviewtype',
+                           PROGRESSREVIEW_TUTOR,
+                           array('id' => 'id_reviewtype'));
         $mform->addElement('header', 'core', fullname($student));
         $mform->addElement('html', $OUTPUT->user_picture($student));
 
@@ -57,7 +66,10 @@ class progressreview_tutor_form extends moodleform {
             }
             $review = $review->get_plugin('subject')->get_review();
         }
-        $table = $output->subject_review_table($reviews, false, $previousdata, PROGRESSREVIEW_TEACHER);
+        $table = $output->subject_review_table($reviews,
+                                               false,
+                                               $previousdata,
+                                               PROGRESSREVIEW_TEACHER);
         $mform->addElement('html', $table);
 
         $progressreview->get_plugin('tutor')->add_form_fields($mform);
@@ -93,7 +105,11 @@ class progressreview_tutor_form extends moodleform {
             $PAGE->requires->js_init_call($modulename.'.init_autosave');
         }
 
-        $tutorgroup = progressreview_controller::get_reviews($progressreview->get_session()->id, null, $progressreview->get_course()->originalid, null, PROGRESSREVIEW_TUTOR);
+        $tutorgroup = progressreview_controller::get_reviews($progressreview->get_session()->id,
+                                                             null,
+                                                             $progressreview->get_course()->originalid,
+                                                             null,
+                                                             PROGRESSREVIEW_TUTOR);
         usort($tutorgroup, function($a, $b) {
             $student_a = $a->get_student();
             $student_b = $b->get_student();
@@ -131,17 +147,31 @@ class progressreview_tutor_form extends moodleform {
         if ($prev) {
             $prevstudent = $prev->get_student();
             $mform->addElement('hidden', 'previd', $prevstudent->id);
-            $buttongroup[] = $mform->createElement('submit', 'prev', $OUTPUT->larrow().' '.fullname($prevstudent));
+            $buttongroup[] = $mform->createElement('submit',
+                                                   'prev',
+                                                   $OUTPUT->larrow().' '.fullname($prevstudent));
         } else {
-            $buttongroup[] = $mform->createElement('submit', 'prev', $OUTPUT->larrow().' '.get_string('startofgroup', 'local_progressreview'), array('disabled' => 'disabled'));
+            $strstartofgroup = get_string('startofgroup', 'local_progressreview');
+            $buttongroup[] = $mform->createElement('submit',
+                                                   'prev',
+                                                   $OUTPUT->larrow().' '.$strstartofgroup,
+                                                   array('disabled' => 'disabled'));
         }
-        $buttongroup[] = $mform->createElement('submit', 'save', get_string('returntolist', 'local_progressreview'));
+        $buttongroup[] = $mform->createElement('submit',
+                                               'save',
+                                               get_string('returntolist', 'local_progressreview'));
         if ($next) {
             $nextstudent = $next->get_student();
             $mform->addElement('hidden', 'nextid', $nextstudent->id);
-            $buttongroup[] = $mform->createElement('submit', 'next', fullname($nextstudent).' '.$OUTPUT->rarrow());
+            $buttongroup[] = $mform->createElement('submit',
+                                                   'next',
+                                                   fullname($nextstudent).' '.$OUTPUT->rarrow());
         } else {
-            $buttongroup[] = $mform->createElement('submit', 'next', get_string('endofgroup', 'local_progressreview').' '.$OUTPUT->rarrow(), array('disabled' => 'disabled'));
+            $strendofgroup = get_string('endofgroup', 'local_progressreview');
+            $buttongroup[] = $mform->createElement('submit',
+                                                   'next',
+                                                   $strendofgroup.' '.$OUTPUT->rarrow(),
+                                                   array('disabled' => 'disabled'));
 
         }
 

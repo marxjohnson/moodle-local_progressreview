@@ -53,7 +53,8 @@ if (has_capability('moodle/local_progressreview:manage', $systemcontext)) {
 
 $categories = $DB->get_records('context', array('contextlevel' => CONTEXT_COURSECAT));
 foreach ($categories as $category) {
-    if (has_capability('moodle/local_progressreview:viewall', get_context_instance_by_id($category->id))) {
+    $catcontext = get_context_instance_by_id($category->id);
+    if (has_capability('moodle/local_progressreview:viewall', $catcontext)) {
         $permissions['manager'][] = $category->instanceid;
     }
 }
@@ -107,13 +108,19 @@ if (isset($permissions['manager'])) {
                 $heading .= ' - '.fullname($teacher);
             }
             $content .= $OUTPUT->heading($heading, 2);
-            if ($reviews = $controller::get_reviews($session->id, null, $courseid, $teacherid)) {
+            $subjectreviews = $controller::get_reviews($session->id, null, $courseid, $teacherid);
+            $tutorreviews = $controller::get_reviews($session->id,
+                                                     null,
+                                                     $courseid,
+                                                     $teacherid,
+                                                     PROGRESSREVIEW_TUTOR);
+            if ($subjectreviews) {
                 $reviewdata = array();
                 foreach ($reviews as $review) {
                     $reviewdata[] = $review->get_plugin('subject')->get_review();
                 }
                 $content .= $output->subject_review_table($reviewdata, false);
-            } else if ($reviews = $controller::get_reviews($session->id, null, $courseid, $teacherid, PROGRESSREVIEW_TUTOR)) {
+            } else if ($tutorreviews) {
                 $redirectparams = array(
                     'teacherid' => $teacherid,
                     'sessionid' => $session->id,
@@ -129,16 +136,23 @@ if (isset($permissions['manager'])) {
 
             foreach ($permissions['manager'] as $categoryid) {
                 $category = $DB->get_record('course_categories', array('id' => $categoryid));
-                $subjectsummaries = $controller::get_course_summaries($session, PROGRESSREVIEW_SUBJECT, $category->id);
-                $tutorsummaries = $controller::get_course_summaries($session, PROGRESSREVIEW_TUTOR, $category->id);
+                $subjectsummaries = $controller::get_course_summaries($session,
+                                                                      PROGRESSREVIEW_SUBJECT,
+                                                                      $category->id);
+                $tutorsummaries = $controller::get_course_summaries($session,
+                                                                    PROGRESSREVIEW_TUTOR,
+                                                                    $category->id);
                 if ($subjectsummaries || $tutorsummaries) {
-                    $department_table = $output->department_table($category, $subjectsummaries, $tutorsummaries);
+                    $department_table = $output->department_table($category,
+                                                                  $subjectsummaries,
+                                                                  $tutorsummaries);
                     $content .= $department_table;
                 }
             }
         }
     } else {
-        $content .= $OUTPUT->box($OUTPUT->error_text(get_string('nosessions', 'local_progressreview')));
+        $error = $OUTPUT->error_text(get_string('nosessions', 'local_progressreview'));
+        $content .= $OUTPUT->box($error);
     }
 }
 
@@ -150,7 +164,8 @@ if (isset($permissions['teacher'])) {
         $courses_table = $output->courses_table($courses);
         $content .= $courses_table;
     }
-} else if (isset($permissions['student'])) { // If user has teacher permissions, ignore student permissons
+} else if (isset($permissions['student'])) {
+    // If user has teacher permissions, ignore student permissons
     $content .= $session_links;
     if (!$sessionid) {
         $sessionid = current($sessions)->id;

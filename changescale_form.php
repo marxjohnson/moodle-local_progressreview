@@ -37,8 +37,8 @@ class progressreview_changescale_form extends moodleform {
         $mform->addElement('hidden', 'sessionid', $this->_customdata['sessionid']);
         $mform->addElement('hidden', 'courseid', $this->_customdata['courseid']);
 
-        $concat_sql = $DB->sql_concat('name', '" ("', 'scale', '")"');
-        $scales = $DB->get_records_menu('scale', array('courseid' => 0), '', 'id, '.$concat_sql.' AS name');
+        $fields = 'id, '.$DB->sql_concat('name', '" ("', 'scale', '")"').' AS name';
+        $scales = $DB->get_records_menu('scale', array('courseid' => 0), '', $fields);
         $mform->addElement('select', 'scaleid', get_string('scale'), $scales);
         $mform->setDefault('scaleid', $this->_customdata['scaleid']);
         $this->add_action_buttons();

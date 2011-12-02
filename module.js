@@ -87,8 +87,18 @@ M.local_progressreview = {
 
     init_delete: function(Y, sesskey, session) {
         this.Y = Y;
-        Y.one('#subjectreviews').delegate('click', this.confirm_delete, '.delete', this, sesskey, session);
-        Y.one('#tutorreviews').delegate('click', this.confirm_delete, '.delete', this, sesskey, session);
+        Y.one('#subjectreviews').delegate('click', 
+                                          this.confirm_delete,
+                                          '.delete',
+                                          this,
+                                          sesskey,
+                                          session);
+        Y.one('#tutorreviews').delegate('click',
+                                        this.confirm_delete,
+                                        '.delete',
+                                        this,
+                                        sesskey,
+                                        session);
     },
 
     confirm_delete: function(e, sesskey, session) {

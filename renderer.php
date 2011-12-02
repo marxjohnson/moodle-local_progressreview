@@ -42,8 +42,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
         );
 
         foreach ($sessions as $session) {
-            $sessionurl = new moodle_url('/local/progressreview/session.php', array('id' => $session->id));
-            $editurl = new moodle_url('/local/progressreview/session.php', array('editid' => $session->id));
+            $params = array('id' => $session->id);
+            $sessionurl = new moodle_url('/local/progressreview/session.php', $params);
+            $params = array('editid' => $session->id);
+            $editurl = new moodle_url('/local/progressreview/session.php', $params);
 
             $subject_deadline = $session->deadline_subject ? date('D d/m/Y', $session->deadline_subject) : '';
             $tutor_deadline = $session->deadline_tutor ? date('D d/m/Y', $session->deadline_tutor) : '';
@@ -61,15 +63,18 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
         $output = $this->output->heading(get_string('sessions', 'local_progressreview'), 2);
         $output .= html_writer::table($table);
-        $output .= $this->output->single_button('/local/progressreview/session.php', get_string('createsession', 'local_progressreview'));
+        $label = get_string('createsession', 'local_progressreview');
+        $output .= $this->output->single_button('/local/progressreview/session.php', $label);
 
         return $output;
     }
 
     function department_table($department, $subjectsummaries, $tutorsummaries) {
-        $output = $this->output->heading(get_string('reviewsfordept', 'local_progressreview', $department->name), 2);
+        $strheading = get_string('reviewsfordept', 'local_progressreview', $department->name);
+        $output = $this->output->heading($strheading, 2);
 
-        foreach (array('subjectreviews' => $subjectsummaries, 'tutorreviews' => $tutorsummaries) as $type => $summaries) {
+        $types = array('subjectreviews' => $subjectsummaries, 'tutorreviews' => $tutorsummaries);
+        foreach ($types as $type => $summaries) {
 
             if ($summaries) {
                 $table = new html_table();
@@ -84,13 +89,17 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 );
 
                 foreach ($summaries as $summary) {
-                    $courseattrs = array('courseid' => $summary->courseid, 'teacherid' => $summary->teacherid);
+                    $courseattrs = array(
+                        'courseid' => $summary->courseid,
+                        'teacherid' => $summary->teacherid
+                    );
                     $courseurl = new moodle_url('/local/progressreview/index.php', $courseattrs);
                     $deleteicon = $this->output->pix_icon('t/delete', get_string('delete'));
                     $deleteattrs = $courseattrs;
                     $deleteattrs['sessionid'] = $summary->sessionid;
                     $deleteurl = new moodle_url('/local/progressreview/delete.php', $deleteattrs);
-                    $deletelink = html_writer::link($deleteurl, $deleteicon, array('class' => 'delete'));
+                    $attrs = array('class' => 'delete');
+                    $deletelink = html_writer::link($deleteurl, $deleteicon, $attrs);
 
                     $row = new html_table_row(array(
                         html_writer::link($courseurl, $summary->name),
@@ -118,7 +127,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $jsmodule = array(
                     'name' => 'local_progressreview',
                     'fullpath' => '/local/progressreview/module.js',
-                    'requires' => array('base', 'node', 'event-delegate', 'yui2-event','yui2-container', 'yui2-button'),
+                    'requires' => array(
+                        'base',
+                        'node',
+                        'event-delegate',
+                        'yui2-event',
+                        'yui2-container',
+                        'yui2-button'
+                    ),
                     'strings' => array(
                         array('confirmdelete', 'local_progressreview'),
                         array('continue', 'moodle'),
@@ -146,11 +162,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $strcourse = get_string('filtercourse', 'local_progressreview');
         $strteacher = get_string('filterteacher', 'local_progressreview');
         //$output .= html_writer::label($strdept, 'filterdept');
-        //$output .= html_writer::empty_tag('input', array('id' => 'filterdept', 'name' => 'filterdept'));
+        //$attrs = array('id' => 'filterdept', 'name' => 'filterdept');
+        //$output .= html_writer::empty_tag('input', $attrs);
         $output .= html_writer::label($strcourse, 'filtercourse');
-        $output .= html_writer::empty_tag('input', array('id' => 'filtercourse', 'name' => 'filtercourse'));
+        $attrs = array('id' => 'filtercourse', 'name' => 'filtercourse');
+        $output .= html_writer::empty_tag('input', $attrs);
         $output .= html_writer::label($strteacher, 'filterteacher');
-        $output .= html_writer::empty_tag('input', array('id' => 'filterteacher', 'name' => 'filterteacher'));
+        $attrs = array('id' => 'filterteacher', 'name' => 'filterteacher');
+        $output .= html_writer::empty_tag('input', $attrs);
         return $this->output->container($output, '', 'filterfields');
     }
 
@@ -159,7 +178,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
     }
 
     function courses_table($courses) {
-        $output = $this->output->heading(get_string('courseswithreviews', 'local_progressreview', 2));
+        $strheading = get_string('courseswithreviews', 'local_progressreview');
+        $output = $this->output->heading($strheading, 2);
 
         $table = new html_table();
         $table->head = array(
@@ -168,7 +188,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
         );
 
         foreach ($courses as $course) {
-            $url = new moodle_url('/local/progressreview/review.php', array('courseid' => $course->id));
+            $params = array('courseid' => $course->id);
+            $url = new moodle_url('/local/progressreview/review.php', $params);
             $row = new html_table_row(array(
                 html_writer::link($url, $course->shortname),
                 html_writer::link($url, $course->fullname)
@@ -189,24 +210,46 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return html_writer::alist($sessionlinks);
     }
 
-    function course_selector_form($potential_selector, $distributed_selector, $sessionid, $type = PROGRESSREVIEW_SUBJECT) {
+    function course_selector_form($potential_selector,
+                                  $distributed_selector,
+                                  $sessionid,
+                                  $type = PROGRESSREVIEW_SUBJECT) {
 
         $buttonsuffix = ($type == PROGRESSREVIEW_SUBJECT) ? '_subject' : '_tutor';
         $output = '';
         $table = new html_table('course_selector');
         $row = new html_table_row();
         $row->cells[] = $distributed_selector->display(true);
-        $cell = html_writer::empty_tag('input', array('class' => 'course_selector_button', 'name' => 'generate'.$buttonsuffix, 'type' => 'submit', 'value' => $this->output->larrow().' '.get_string('createreviews', 'local_progressreview')));
+        $strcreatereviews = get_string('createreviews', 'local_progressreview');
+        $attrs = array(
+            'class' => 'course_selector_button',
+            'name' => 'generate'.$buttonsuffix,
+            'type' => 'submit',
+            'value' => $this->output->larrow().' '.$strcreatereviews
+        );
+        $cell = html_writer::empty_tag('input', $attrs);
         $row->cells[] = $cell;
         $row->cells[] = $potential_selector->display(true);
         $table->data[] = $row;
 
-        $output = html_writer::start_tag('form', array('action' => $this->page->url->out(), 'method' => 'post'));
-        $output .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'id', 'value' => $sessionid));
+        $attrs = array('action' => $this->page->url->out(), 'method' => 'post');
+        $output = html_writer::start_tag('form', $attrs);
+        $attrs = array('type' => 'hidden', 'name' => 'id', 'value' => $sessionid);
+        $output .= html_writer::empty_tag('input', $attrs);
         $output .= html_writer::table($table);
-        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'regenerate'.$buttonsuffix, 'value' => get_string('regenerate', 'local_progressreview')));
+        $attrs = array(
+            'type' => 'submit',
+            'name' => 'regenerate'.$buttonsuffix,
+            'value' => get_string('regenerate', 'local_progressreview')
+        );
+        $output .= html_writer::empty_tag('input', $attrs);
         if ($type == PROGRESSREVIEW_SUBJECT) {
-            $output .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'snapshot', 'value' => get_string('snapshot', 'local_progressreview')));
+            $attrs = array(
+                'type' => 'submit',
+                'name' => 'snapshot',
+                'value' => get_string('snapshot', 'local_progressreview')
+            );
+            $output .= html_writer::empty_tag('input', $attrs);
         }
         $output .= html_writer::end_tag('form');
 
@@ -215,16 +258,22 @@ class local_progressreview_renderer extends plugin_renderer_base {
     }
 
     function changescale_button($sessionid, $courseid) {
-        $url = new moodle_url('/local/progressreview/changescale.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
-        $button = $this->output->single_button($url, get_string('changescale', 'local_progressreview'), 'get');
-        return $this->output->container($button.get_string('savefirst', 'local_progressreview'), array('changescale'));
+        $params = array('sessionid' => $sessionid, 'courseid' => $courseid);
+        $url = new moodle_url('/local/progressreview/changescale.php', $params);
+        $strchangescale = get_string('changescale', 'local_progressreview');
+        $button = $this->output->single_button($url, $strchangescale, 'get');
+        $strsavefirst = get_string('savefirst', 'local_progressreview');
+        return $this->output->container($button.$strsavefirst, array('changescale'));
     }
 
     /**
      * @todo Make option for non-induction review, and allow avgcse to be configured
      * @todo Make pluggable
      */
-    function subject_review_table($reviews, $form = true, $previousdata = array(), $displayby = PROGRESSREVIEW_STUDENT) {
+    function subject_review_table($reviews,
+                                  $form = true,
+                                  $previousdata = array(),
+                                  $displayby = PROGRESSREVIEW_STUDENT) {
 
         $table = new html_table();
         $table->head = array(
@@ -316,7 +365,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $performancegrade = @$review->scale[$review->performancegrade];
                 $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
             }
-            if (!empty($previousdata) && array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
+            $previousexists = array_key_exists($key, $previousdata);
+            if (!empty($previousdata) && $previousexists && !empty($previousdata[$key])) {
                 $p = $previousdata[$key];
                 if (!isset($psession)) {
                     $psession = $p->progressreview->get_session();
@@ -349,7 +399,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
                 $table->data[] = $row;
                 if (!$session->inductionreview) {
-                    $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
+                    $strcomments = get_string('commentstargets', 'local_progressreview');
+                    $headercell = new html_table_cell($strcomments.':');
                     $headercell->header = true;
 
                     $commentscell->colspan = 8;
@@ -360,7 +411,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
         }
 
         $output = '';
-        $output .= html_writer::start_tag('form', array('action' => $this->page->url->out_omit_querystring(), 'method' => 'post'));
+        $params = array('action' => $this->page->url->out_omit_querystring(), 'method' => 'post');
+        $output .= html_writer::start_tag('form', $params);
         $output .= html_writer::input_hidden_params($this->page->url);
         $output .= html_writer::table($table);
 
@@ -393,7 +445,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $jsmodule = array(
                 'name' => 'local_progressreview',
                 'fullpath' => '/local/progressreview/module.js',
-                'requires' => array('base', 'node', 'io', 'json', 'event-valuechange', 'event-delegate'),
+                'requires' => array(
+                    'base',
+                    'node',
+                    'io',
+                    'json',
+                    'event-valuechange',
+                    'event-delegate'
+                ),
                 'strings' => array(
                     array('autosaveactive', 'local_progressreview'),
                     array('autosavefailed', 'local_progressreview'),
@@ -427,7 +486,9 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
     public function tutorgroup_list($progressreviews) {
         $table = new html_table();
-        $table->head = array(get_string('student', 'local_progressreview'), get_string('commentswritten', 'local_progressreview'));
+        $strstudent = get_string('student', 'local_progressreview');
+        $strcomments = get_string('commentswritten', 'local_progressreview');
+        $table->head = array($strstudent, $strcomments);
         foreach($progressreviews as $progressreview) {
 
             $review = $progressreview->get_plugin('tutor')->get_review();
@@ -534,7 +595,11 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $fieldset = $hw::tag('fieldset', $legend.$fields);
 
         $submit = $hw::empty_tag('input', $submitattrs);
-        $formattrs = array('method' => 'post', 'action' => $this->page->url->out(), 'class' => 'mform');
+        $formattrs = array(
+            'method' => 'post',
+            'action' => $this->page->url->out(),
+            'class' => 'mform'
+        );
         $form = $hw::tag('form', $fieldset.$submit, $formattrs);
         return $form;
 
@@ -637,7 +702,8 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
             $effort = @$session->scale_effort[$review->effort];
             $targetgrade = @$review->scale[$review->targetgrade];
             $performancegrade = @$review->scale[$review->performancegrade];
-            if ($session->previoussession && array_key_exists($key, $previousdata) && !empty($previousdata[$key])) {
+            $previousexists = array_key_exists($key, $previousdata);
+            if ($session->previoussession && $previousexists && !empty($previousdata[$key])) {
                 $p = $previousdata[$key];
                 if (!isset($psession)) {
                     $psession = $p->progressreview->get_session();
@@ -667,7 +733,8 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
                 $table->data[] = $row;
             }
             if (!$session->inductionreview) {
-                $headercell = new html_table_cell(get_string('commentstargets', 'local_progressreview').':');
+                $strcomments = get_string('commentstargets', 'local_progressreview');
+                $headercell = new html_table_cell($strcomments.':');
                 $headercell->header = true;
 
                 $commentscell = new html_table_cell($review->comments);
