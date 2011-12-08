@@ -1,4 +1,28 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Allows selection of reviews for printing, then produces of PDF of those selected.
+ *
+ * @package   local_progressreview
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
@@ -122,7 +146,9 @@ if ($generate) {
                 }
             }
 
-            $pdf = $output->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
+            $strtutor = get_string('tutor', 'local_progressreview');
+            $fullname = fullname($tutorreview->get_teacher();
+            $pdf = $output->heading($strtutor.': '.$fullname), 3);
 
             $tutorreviews = '';
             foreach ($pluginrenderers as $key => $pluginrenderer) {
@@ -155,7 +181,10 @@ if ($generate) {
     $content .= $OUTPUT->heading(get_string('selectedreviews', 'local_progressreview'), 3);
     $content .= $output->print_confirmation($sessions, $students, $courses, $teachers);
 } else {
-    $content .= $output->print_selectors($sessionselect, $studentselect, $courseselect, $teacherselect);
+    $content .= $output->print_selectors($sessionselect,
+                                         $studentselect,
+                                         $courseselect,
+                                         $teacherselect);
 }
 
 

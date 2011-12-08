@@ -1,4 +1,31 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Displays and processes form for entering Tutor reviews
+ *
+ * If no student is selected, a summary of review completion for the course is displayed.
+ * If a student is selected, the form is displayed.
+ *
+ * @package   local_progressreview
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/local/progressreview/lib.php');
@@ -64,7 +91,8 @@ if ($isteacher || $ismanager) {
 
 require_login($course);
 $PAGE->navbar->add(get_string('pluginname', 'local_progressreview'), $indexlink);
-$listurl = new moodle_url('/local/progressreview/tutorreview.php', array('sessionid' => $sessionid, 'courseid' => $courseid));
+$params = array('sessionid' => $sessionid, 'courseid' => $courseid);
+$listurl = new moodle_url('/local/progressreview/tutorreview.php', $params);
 $PAGE->set_url($listurl);
 if ($studentid) {
     $PAGE->navbar->add($session->name, $PAGE->url);
@@ -82,24 +110,43 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
 
     if ($editid) {
         $editstudent = $DB->get_record('user', array('id' => $editid));
-        $editreview = new progressreview($editstudent->id, $sessionid, $courseid, $USER->id, PROGRESSREVIEW_TUTOR);
+        $editreview = new progressreview($editstudent->id,
+                                         $sessionid,
+                                         $courseid,
+                                         $USER->id,
+                                         PROGRESSREVIEW_TUTOR);
         $editform = new progressreview_tutor_form(null, array('progressreview' => $editreview));
         if ($data = $editform->get_data()) {
             $editform->process($data);
-            add_to_log($course, 'local_progressreview', 'update', $PAGE->url->out(), $editstudent->id);
-            $content .= $OUTPUT->notification(get_string('savedreviewfor', 'local_progressreview', fullname($editstudent)));
+            add_to_log($course,
+                       'local_progressreview',
+                       'update',
+                       $PAGE->url->out(),
+                       $editstudent->id);
+            $strsavedreview = get_string('savedreviewfor',
+                                         'local_progressreview',
+                                         fullname($editstudent));
+            $content .= $OUTPUT->notification($strsavedreview);
         }
     }
     if ($editid != $studentid) {
         unset($_POST);
     }
     if ($studentid) {
-        $review = new progressreview($student->id, $sessionid, $courseid, $USER->id, PROGRESSREVIEW_TUTOR);
+        $review = new progressreview($student->id,
+                                     $sessionid,
+                                     $courseid,
+                                     $USER->id,
+                                     PROGRESSREVIEW_TUTOR);
         $form = new progressreview_tutor_form(null, array('progressreview' => $review));
         $data = new stdClass;
         $form->set_data($data);
     } else {
-        $tutorgroup = progressreview_controller::get_reviews($sessionid, null, $courseid, null, PROGRESSREVIEW_TUTOR);
+        $tutorgroup = progressreview_controller::get_reviews($sessionid,
+                                                             null,
+                                                             $courseid,
+                                                             null,
+                                                             PROGRESSREVIEW_TUTOR);
         usort($tutorgroup, function($a, $b) {
             $student_a = $a->get_student();
             $student_b = $b->get_student();

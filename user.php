@@ -1,4 +1,28 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Displays current and historic reviews for the specified user
+ *
+ * @package   local_progressreview
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/local/progressreview/lib.php');
@@ -20,14 +44,23 @@ if($sessions = progressreview_controller::get_sessions_for_student($user)) {
 
 $PAGE->set_context(get_context_instance(CONTEXT_USER, $user->id));
 
-if ($user->id == $USER->id) {
-    require_capability('moodle/local_progressreview:viewown', $PAGE->context);
-} else {
-    require_capability('moodle/local_progressreview:view', $PAGE->context);
-}
-
 $params = array('userid' => $userid);
 $PAGE->set_url('/local/progressreview/user.php', $params);
+
+$viewown = $userid == $USER->id && has_capability('moodle/local_intranet:viewownattendance', $PAGE->context);
+$viewany = has_capability('moodle/local_intranet:viewattendance', $PAGE->context);
+if (!$viewown && !$viewany) {
+    // Course managers can be browsed at site level. If not forceloginforprofiles, allow access (bug #4366)
+    $struser = get_string('user');
+    $PAGE->set_title("$SITE->shortname: $struser");  // Do not leak the name
+    $PAGE->set_heading("$SITE->shortname: $struser");
+    $PAGE->navbar->add($struser);
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('usernotavailable', 'error'));
+    echo $OUTPUT->footer();
+    exit;
+}
+
 $PAGE->set_pagelayout('mydashboard');
 $PAGE->set_pagetype('user-profile');
 
@@ -43,8 +76,12 @@ $subjectdata = array();
 foreach ($subjectreviews as $subjectreview) {
     $subjectdata[] = $subjectreview->get_plugin('subject')->get_review();
 }
-
-if ($tutorreview = current(progressreview_controller::get_reviews($session->id, $user->id, null, null, PROGRESSREVIEW_TUTOR))) {
+$tutorreviews = progressreview_controller::get_reviews($session->id,
+                                                       $user->id,
+                                                       null,
+                                                       null,
+                                                       PROGRESSREVIEW_TUTOR);
+if ($tutorreview = @current($tutorreviews)) {
     $tutorplugins = $tutorreview->get_plugins();
 
     $reviewdata = array();
@@ -52,8 +89,8 @@ if ($tutorreview = current(progressreview_controller::get_reviews($session->id, 
     foreach ($tutorplugins as $plugin) {
         $reviewdata[] = $plugin->get_review();
         if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name())) {
-            throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer.  It
-                must have a renderer with at least the review() method defined');
+            throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer. 
+                It must have a renderer with at least the review() method defined');
         }
     }
 }
@@ -63,10 +100,14 @@ $content = $OUTPUT->heading(fullname($user).' - '.get_string('pluginname', 'loca
 
 $content .= $output->user_session_links($user, $sessions, $sessionid);
 
-$content .= $output->subject_review_table($subjectdata, false, $session->inductionreview, PROGRESSREVIEW_TEACHER);
+$content .= $output->subject_review_table($subjectdata,
+                                          false,
+                                          $session->inductionreview,
+                                          PROGRESSREVIEW_TEACHER);
 
 if ($tutorreview) {
-    $content .= $OUTPUT->heading(get_string('tutor', 'local_progressreview').': '.fullname($tutorreview->get_teacher()), 3);
+    $strtutor = get_string('tutor', 'local_progressreview');
+    $content .= $OUTPUT->heading($strtutor.': '.fullname($tutorreview->get_teacher()), 3);
 
     $tutorreviews = '';
     foreach ($pluginrenderers as $key => $pluginrenderer) {

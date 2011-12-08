@@ -1,4 +1,43 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Main library for the plugin
+ *
+ * Defines constants, exceptions, and the following classes:
+ * progressreview
+ * progressreview_controller (static)
+ * progressreview_cache (static)
+ * progressreview_plugin
+ * print_criterion
+ * progressreview_print_selector and subclasses:
+ *  progressreview_session_selector
+ *  progressreview_course_selector
+ *  progressreview_teacher_selector
+ *  progressreview_student_selector
+ * pdf_writer (static)
+ *
+ * @package   local_progressreview
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die;
 
 /**
  * class progressreview
@@ -108,7 +147,12 @@ class progressreview {
             $this->session->scale_effort = explode(',', $this->session->scale_effort);
         }
 
-        $params = array('studentid' => $studentid, 'courseid' => $courseid, 'teacherid' => $teacherid, 'sessionid' => $sessionid);
+        $params = array(
+            'studentid' => $studentid,
+            'courseid' => $courseid,
+            'teacherid' => $teacherid,
+            'sessionid' => $sessionid
+        );
         if ($review = $DB->get_record('progressreview', $params)) {
         	$this->id = $review->id;
         	$this->type = $review->reviewtype;
@@ -180,7 +224,8 @@ class progressreview {
         global $DB;
 
         $this->teacher = $this->retrieve_teacher($teacherid);
-        return $DB->update_record('progressreview', (object)array('id' => $this->id, 'teacherid' => $this->teacher->id));
+        $params = (object)array('id' => $this->id, 'teacherid' => $this->teacher->id);
+        return $DB->update_record('progressreview', $params);
     } // end of member function transfer_to_teacher
 
 
@@ -197,11 +242,12 @@ class progressreview {
      */
     private function init_plugins() {
         global $DB, $CFG;
-        $activeplugins = $DB->get_records('progressreview_activeplugins', array('sessionid' => $this->session->id, 'reviewtype' => $this->type));
+        $params = array('sessionid' => $this->session->id, 'reviewtype' => $this->type);
+        $activeplugins = $DB->get_records('progressreview_activeplugins', $params);
         foreach ($activeplugins as $activeplugin) {
-                require_once($CFG->dirroot.'/local/progressreview/plugins/'.$activeplugin->plugin.'/lib.php');
-                $classname = 'progressreview_'.$activeplugin->plugin;
-        	$this->plugins[$activeplugin->plugin] = new $classname($this);
+            require_once($CFG->dirroot.'/local/progressreview/plugins/'.$activeplugin->plugin.'/lib.php');
+            $classname = 'progressreview_'.$activeplugin->plugin;
+            $this->plugins[$activeplugin->plugin] = new $classname($this);
         }
         return true;
     } // end of member function get_plugins
@@ -241,8 +287,10 @@ class progressreview {
         global $DB;
 
         if (!array_key_exists($id, progressreview_cache::$teachers)) {
-            if (!$teacher = $DB->get_record('progressreview_teachers', array('originalid' => $id))) {
-                if (!$teacher = $DB->get_record('user', array('id' => $id), 'id, firstname, lastname')) {
+            $params = array('originalid' => $id);
+            if (!$teacher = $DB->get_record('progressreview_teachers', $params)) {
+                $params = array('id' => $id);
+                if (!$teacher = $DB->get_record('user', $params, 'id, firstname, lastname')) {
                     throw new progressreview_nouser_exception();
                 }
                 $teacher->originalid = $teacher->id;
@@ -269,10 +317,10 @@ class progressreview {
 
         if (!array_key_exists($id, progressreview_cache::$courses)) {
             if (!$course = $DB->get_record('progressreview_course', array('originalid' => $id))) {
-                    $course = $DB->get_record('course', array('id' => $id), 'id, shortname, fullname');
-                    $course->originalid = $course->id;
-                    unset($course->id);
-                    $course->id = $DB->insert_record('progressreview_course', $course);
+                $course = $DB->get_record('course', array('id' => $id), 'id, shortname, fullname');
+                $course->originalid = $course->id;
+                unset($course->id);
+                $course->id = $DB->insert_record('progressreview_course', $course);
             }
             progressreview_cache::$courses[$id] = $course;
         }
@@ -290,10 +338,12 @@ class progressreview {
                 $plugin->delete();
             }
             if (!$DB->delete_records('progressreview', array('id' => $this->id))) {
-                throw new progressreview_nodelete_exception('Couldn\'t delete review record '.$this->id);
+                $error = 'Couldn\'t delete review record '.$this->id;
+                throw new progressreview_nodelete_exception($error);
             }
         } catch (dml_exception $e) {
-            throw new progressreview_nodelete_exception('Couldn\'t delete review record '.$this->id.': '.$e->getMessage());
+            $error = 'Couldn\'t delete review record '.$this->id.': '.$e->getMessage();
+            throw new progressreview_nodelete_exception($error);
         }
     }
 
@@ -404,12 +454,19 @@ class progressreview_controller {
      * @return
      * @access public
      */
-    public static function get_reviews($sessionid = null,  $studentid = null,  $courseid = null,  $teacherid = null,  $type = PROGRESSREVIEW_SUBJECT) {
+    public static function get_reviews($sessionid = null,
+                                       $studentid = null,
+                                       $courseid = null,
+                                       $teacherid = null,
+                                       $type = PROGRESSREVIEW_SUBJECT) {
+
         if (!$sessionid && !$studentid && !$courseid && !$teacherid) {
-            throw new coding_exception('get_reviews() must be called with at least one ID parameter');
+            $error = 'get_reviews() must be called with at least one ID parameter';
+            throw new coding_exception($error);
         }
         if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
-            throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
+            $error = '$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR';
+            throw new coding_exception($error);
         }
 
         global $DB;
@@ -428,7 +485,10 @@ class progressreview_controller {
         if($review_records = $DB->get_records('progressreview', $params)) {
             foreach ($review_records as $r) {
                 try {
-                    $reviews[$r->id] = new progressreview($r->studentid, $r->sessionid, $r->courseid, $r->teacherid);
+                    $reviews[$r->id] = new progressreview($r->studentid,
+                                                          $r->sessionid,
+                                                          $r->courseid,
+                                                          $r->teacherid);
                 } catch (progressreview_nouser_exception $e) {}
             }
         }
@@ -436,7 +496,12 @@ class progressreview_controller {
 
     } // end of member function get_reviews
 
-    public static function delete_reviews($sessionid, $studentid = null, $courseid = null, $teacherid = null, $type = PROGRESSREVIEW_SUBJECT) {
+    public static function delete_reviews($sessionid,
+                                          $studentid = null,
+                                          $courseid = null,
+                                          $teacherid = null,
+                                          $type = PROGRESSREVIEW_SUBJECT) {
+
         $reviews = self::get_reviews($sessionid, $studentid, $courseid, $teacherid, $type);
         foreach ($reviews as $review) {
             try {
@@ -449,7 +514,8 @@ class progressreview_controller {
 
     public static function get_course_summaries($session, $type, $categoryid = null) {
         if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
-            throw new coding_exception('$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR');
+            $error = '$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR';
+            throw new coding_exception($error);
         }
 
         global $DB;
@@ -665,7 +731,9 @@ class progressreview_controller {
         $limit = ini_get('memory_limit');
         $strerror = get_string('outofmemory', 'local_progressreview', $limit);
         $strlabel = get_string('disablememlimit', 'local_progressreview');
-        register_shutdown_function('progressreview_controller::print_error_handler', $strerror, $strlabel);
+        register_shutdown_function('progressreview_controller::print_error_handler',
+                                   $strerror,
+                                   $strlabel);
     }
 } // end of progressreview_controller
 
@@ -737,12 +805,13 @@ abstract class progressreview_plugin {
             throw new progressreview_invalidfield_exception('Invalid Field Name');
         }
 
+        $params = array('id' => $this->progressreview->id);
         if (!empty($this->id)) {
             $data->id = $this->id;
-            $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
+            $DB->set_field('progressreview', 'datecreated', time(), $params);
             return $DB->update_record('progressreview_'.$this->name, $data);
         } else {
-            $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
+            $DB->set_field('progressreview', 'datemodified', time(), $params);
             $this->id = $DB->insert_record('progressreview_'.$this->name, $data);
             return $this->id;
         }
@@ -888,7 +957,11 @@ if (class_exists('user_selector_base')) {
     class progressreview_session_selector extends progressreview_print_selector {
         public function find_users($search = '') {
             global $DB;
-            $select = 'SELECT DISTINCT s.id AS id, s.name AS lastname, "" AS firstname, "" AS email ';
+            $select = 'SELECT DISTINCT
+                s.id AS id,
+                s.name AS lastname,
+                "" AS firstname,
+                "" AS email ';
             $from = 'FROM {progressreview_session} s JOIN {progressreview} p ON s.id = p.sessionid ';
             $params = array();
             $conditions = array();
@@ -929,7 +1002,11 @@ if (class_exists('user_selector_base')) {
     class progressreview_course_selector extends progressreview_print_selector {
         public function find_users($search) {
             global $DB;
-            $select = 'SELECT DISTINCT c.id, c.shortname AS lastname, "" AS firstname, c.fullname AS email ';
+            $select = 'SELECT DISTINCT
+                c.id,
+                c.shortname AS lastname,
+                "" AS firstname,
+                c.fullname AS email ';
             $from = 'FROM {course} c JOIN {progressreview} p ON c.id = p.courseid ';
             $params = array();
             $conditions = array();
@@ -1039,8 +1116,8 @@ class pdf_writer {
      *  fill - HTML-style hex string of RGB for background colour.
      *  width - the cell width, defaults to 0 (whole page)
      *  height - the cell height, defaults to 0
-     *  border - 0 for no border, 1 for all borders, combination of LTRB for Left, Top, Right, Bottom
-     *      defaults to 0
+     *  border - 0 for no border, 1 for all borders, combination of LTRB for Left, Top, Right,
+     *      Bottom, defaults to 0
      *  align - L for left, C for center, R for right, defaults to L
      *
      */
@@ -1103,7 +1180,13 @@ class pdf_writer {
         return self::$pdf;
     }
 
-    public static function image($path, $x = null, $y = null, $width = 0, $height = 0, $format = null, $url = '') {
+    public static function image($path,
+                                 $x = null,
+                                 $y = null,
+                                 $width = 0,
+                                 $height = 0,
+                                 $format = null,
+                                 $url = '') {
         if (typeof($url) == 'moodle_url') {
             $url = $url->out();
         }
@@ -1159,40 +1242,40 @@ class pdf_writer {
 
     public static function table(html_table $table) {
         $default_header_type = array(
-            'WIDTH' => 6,                      //cell width
-            'T_COLOR' => array(0,0,0),   //text color
-            'T_SIZE' => 8,                     //font size
-            'T_FONT' => 'Arial',               //font family
-            'T_ALIGN' => 'C',                  //horizontal alignment, possible values: LRC (left, right, center)
-            'V_ALIGN' => 'M',                  //vertical alignment, possible values: TMB(top, middle, bottom)
-            'T_TYPE' => 'B',                   //font type
-            'LN_SIZE' => 8,                    //line size for one row
-            'BG_COLOR' => array(255, 255, 255),  //background color
-            'BRD_COLOR' => array(0,0,0),    //border color
-            'BRD_SIZE' => 0.2,                 //border size
-            'BRD_TYPE' => '1',                 //border type, can be: 0, 1 or a combination of: "LRTB"
-            'TEXT' => '',                      //text
+            'WIDTH' => 6, //cell width
+            'T_COLOR' => array(0,0,0), //text color
+            'T_SIZE' => 8, //font size
+            'T_FONT' => 'Arial', //font family
+            'T_ALIGN' => 'C', //horizontal alignment, possible values: LRC (left, right, center)
+            'V_ALIGN' => 'M', //vertical alignment, possible values: TMB(top, middle, bottom)
+            'T_TYPE' => 'B', //font type
+            'LN_SIZE' => 8, //line size for one row
+            'BG_COLOR' => array(255, 255, 255), //background color
+            'BRD_COLOR' => array(0,0,0), //border color
+            'BRD_SIZE' => 0.2, //border size
+            'BRD_TYPE' => '1', //border type, can be: 0, 1 or a combination of: "LRTB"
+            'TEXT' => '', //text
         );
 
         $default_data_type = array(
-            'T_COLOR' => array(0,0,0),         //text color
-            'T_SIZE' => 6,                     //font size
-            'T_FONT' => 'Arial',               //font family
-            'T_ALIGN' => 'L',                  //horizontal alignment, possible values: LRC (left, right, center)
-            'V_ALIGN' => 'M',                  //vertical alignment, possible values: TMB(top, middle, bottom)
-            'T_TYPE' => '',                    //font type
-            'LN_SIZE' => 8,                    //line size for one row
-            'BG_COLOR' => array(255,255,255),  //background color
-            'BRD_COLOR' => array(0,0,0),    //border color
-            'BRD_SIZE' => 0.1,                 //border size
-            'BRD_TYPE' => 'LR',                 //border type, can be: 0, 1 or a combination of: "LRTB"
+            'T_COLOR' => array(0,0,0), //text color
+            'T_SIZE' => 6, //font size
+            'T_FONT' => 'Arial', //font family
+            'T_ALIGN' => 'L', //horizontal alignment, possible values: LRC (left, right, center)
+            'V_ALIGN' => 'M', //vertical alignment, possible values: TMB(top, middle, bottom)
+            'T_TYPE' => '', //font type
+            'LN_SIZE' => 8, //line size for one row
+            'BG_COLOR' => array(255,255,255), //background color
+            'BRD_COLOR' => array(0,0,0), //border color
+            'BRD_SIZE' => 0.1, //border size
+            'BRD_TYPE' => 'LR', //border type, can be: 0, 1 or a combination of: "LRTB"
         );
 
         $table_type = array(
-            'TB_ALIGN' => 'L',                 //table align on page
-            'L_MARGIN' => 25,                  //space to the left margin
-            'BRD_COLOR' => array(0,0,0),    //border color
-            'BRD_SIZE' => '0.3',               //border size
+            'TB_ALIGN' => 'L', //table align on page
+            'L_MARGIN' => 25, //space to the left margin
+            'BRD_COLOR' => array(0,0,0), //border color
+            'BRD_SIZE' => '0.3', //border size
         );
 
         $head = $table->head;
@@ -1333,7 +1416,7 @@ class pdf_writer {
                         $row->cells = array_merge($firstcells, $extracells, $lastcells);
                     }
                 }
-                
+
                 $cells = array();
                 foreach ($row->cells as $key => $cell) {
                     $cells[$key] = $default_data_type;
@@ -1353,7 +1436,7 @@ class pdf_writer {
                     $cells[$key]['TEXT'] = $cell->text;
 
                 }
-                self::$pdf->tbSetDataType($cells); 
+                self::$pdf->tbSetDataType($cells);
                 self::$pdf->tbDrawData($cells);
                 $fill = !$fill;
             }
