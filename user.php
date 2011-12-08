@@ -44,14 +44,23 @@ if($sessions = progressreview_controller::get_sessions_for_student($user)) {
 
 $PAGE->set_context(get_context_instance(CONTEXT_USER, $user->id));
 
-if ($user->id == $USER->id) {
-    require_capability('moodle/local_progressreview:viewown', $PAGE->context);
-} else {
-    require_capability('moodle/local_progressreview:view', $PAGE->context);
-}
-
 $params = array('userid' => $userid);
 $PAGE->set_url('/local/progressreview/user.php', $params);
+
+$viewown = $userid == $USER->id && has_capability('moodle/local_intranet:viewownattendance', $PAGE->context);
+$viewany = has_capability('moodle/local_intranet:viewattendance', $PAGE->context);
+if (!$viewown && !$viewany) {
+    // Course managers can be browsed at site level. If not forceloginforprofiles, allow access (bug #4366)
+    $struser = get_string('user');
+    $PAGE->set_title("$SITE->shortname: $struser");  // Do not leak the name
+    $PAGE->set_heading("$SITE->shortname: $struser");
+    $PAGE->navbar->add($struser);
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('usernotavailable', 'error'));
+    echo $OUTPUT->footer();
+    exit;
+}
+
 $PAGE->set_pagelayout('mydashboard');
 $PAGE->set_pagetype('user-profile');
 
