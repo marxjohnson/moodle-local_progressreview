@@ -379,8 +379,13 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
                 $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
             }
-
-            if ($form || !empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
+            
+            $notblank = !empty($behaviour) ||
+                        !empty($effort) ||
+                        !empty($targetgrade) ||
+                        !empty($performancegrade) ||
+                        !empty($review->comments);
+            if ($form || $notblank) {
                 $row = new html_table_row(array(
                     $picture,
                     $name,
@@ -717,7 +722,7 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
                 $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
             }
 
-            if (!empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade)) {
+            if (!empty($behaviour) || !empty($effort) || !empty($targetgrade) || !empty($performancegrade) || !empty($review->comments)) {
                 $row = array(
                     $coursename,
                     $name,
@@ -731,16 +736,17 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
                 );
 
                 $table->data[] = $row;
-            }
-            if (!$session->inductionreview) {
-                $strcomments = get_string('commentstargets', 'local_progressreview');
-                $headercell = new html_table_cell($strcomments.':');
-                $headercell->header = true;
 
-                $commentscell = new html_table_cell($review->comments);
-                $commentscell->colspan = 7;
-                $row = new html_table_row(array('', $headercell, $commentscell));
-                $table->data[] = $row;
+                if (!$session->inductionreview) {
+                    $strcomments = get_string('commentstargets', 'local_progressreview');
+                    $headercell = new html_table_cell($strcomments.':');
+                    $headercell->header = true;
+
+                    $commentscell = new html_table_cell($review->comments);
+                    $commentscell->colspan = 7;
+                    $row = new html_table_row(array('', $headercell, $commentscell));
+                    $table->data[] = $row;
+                }
             }
         }
 
