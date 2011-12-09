@@ -606,7 +606,7 @@ class progressreview_controller {
     public static function generate_reviews_for_course($courseid, $sessionid, $reviewtype = null) {
         global $DB;
         $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
-        $students = get_users_by_capability($coursecontext, 'moodle/local_progressreview:viewown');
+        $students = get_users_by_capability($coursecontext, 'moodle/local_progressreview:hasreview');
         $teachers = get_users_by_capability($coursecontext, 'moodle/local_progressreview:write');
         foreach ($students as $student) {
             foreach ($teachers as $teacher) {

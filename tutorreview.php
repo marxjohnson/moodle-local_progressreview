@@ -74,7 +74,7 @@ if ($isteacher || $ismanager) {
             redirect(new moodle_url('/local/progressreview/user.php', $redirectparams));
         }
     }
-} else if (has_capability('moodle/local_progressreview:viewown', $coursecontext)) {
+} else if (has_capability('moodle/local_progressreview:hasreview', $coursecontext)) {
     $mode = PROGRESSREVIEW_STUDENT;
     if (!$studentid) {
         $redirectparams = array(

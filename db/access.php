@@ -45,6 +45,15 @@ $capabilities = array(
         )
     ),
 
+    // Generate a review for this user
+    'moodle/local_progressreview:hasreview' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'student' => CAP_ALLOW
+        )
+    ),
+
     // Write reviews within a course
     'moodle/local_progressreview:write' => array(
         'captype' => 'write',

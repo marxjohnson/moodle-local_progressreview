@@ -63,7 +63,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
     $reviewdata = array();
     $previousdata = array();
     $students = get_users_by_capability($coursecontext,
-                                        'moodle/local_progressreview:viewown',
+                                        'moodle/local_progressreview:hasreview',
                                         '',
                                         'lastname, firstname');
     foreach ($students as $student) {
