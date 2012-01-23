@@ -147,8 +147,8 @@ if ($generate) {
             }
 
             $strtutor = get_string('tutor', 'local_progressreview');
-            $fullname = fullname($tutorreview->get_teacher();
-            $pdf = $output->heading($strtutor.': '.$fullname), 3);
+            $fullname = fullname($tutorreview->get_teacher());
+            $pdf = $output->heading($strtutor.': '.$fullname, 3);
 
             $tutorreviews = '';
             foreach ($pluginrenderers as $key => $pluginrenderer) {
