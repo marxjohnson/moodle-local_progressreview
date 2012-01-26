@@ -73,6 +73,18 @@ class progressreview_session_form extends moodleform {
             'previoussession' => PARAM_INT,
             'inductionreview' => PARAM_BOOL
         ));
+
+        $pluginnames = $this->get_plugin_names();
+        $mform->addElement('header', 'plugins', get_string('selectplugins', 'local_progressreview'));
+        foreach ($pluginnames as $pluginname) {
+            $mform->addElement('advcheckbox',
+                               'plugins['.$pluginname.']',
+                               get_string('pluginname', 'progressreview_'.$pluginname));
+        }
+        $mform->setDefault('plugins[tutor]', 1);
+        $mform->setDefault('plugins[subject]', 1);
+        $mform->disabledIf('plugins[tutor]', 'plugins[subject]');
+        $mform->disabledIf('plugins[subject]', 'plugins[tutor]');
         $this->add_action_buttons();
     }
 
@@ -95,28 +107,23 @@ class progressreview_session_form extends moodleform {
             unset($data->editid);
             return $DB->update_record('progressreview_session', $data);
         } else {
-            $id = $DB->insert_record('progressreview_session', $data);
-            $plugins = array(
-                (object)array(
-                    'plugin' => 'subject',
+            $record = clone($data);
+            unset($record->plugins);
+            $record->id = $DB->insert_record('progressreview_session', $record);
+            $plugins = array();
+            foreach (array_filter($data->plugins) as $pluginname) {
+                require_once($CFG->dirroot.'/local/progressreview/plugins/'.$pluginname.'/lib.php');
+                $class = 'progressreview_'.$pluginname;
+                $plugins[] = (object)array(
+                    'plugin' => $pluginname,
                     'sessionid' => $id,
-                    'reviewtype' => PROGRESSREVIEW_SUBJECT
-                ),
-                (object)array(
-                    'plugin' => 'tutor',
-                    'sessionid' => $id,
-                    'reviewtype' => PROGRESSREVIEW_TUTOR
-                ),
-                (object)array(
-                    'plugin' => 'targets',
-                    'sessionid' => $id,
-                    'reviewtype' => PROGRESSREVIEW_TUTOR
-                )
-            );
+                    'reviewtype' => $class::$type
+                );
+            }
             foreach ($plugins as $plugin) {
                 $DB->insert_record('progressreview_activeplugins', $plugin);
             }
-            return $id;
+            return $record;
         }
     }
 }
