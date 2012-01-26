@@ -38,7 +38,7 @@ class progressreview_session_form extends moodleform {
         foreach ($sessions as $session) {
             $sessionoptions[$session->id] = $session->name;
         }
-        $strdealinesubject = get_string('deadline_subject', 'local_progressreview');
+        $strdeadlinesubject = get_string('deadline_subject', 'local_progressreview');
         $strdeadlinetutor = get_string('deadline_tutor', 'local_progressreview');
         $strlockafterdeadline = get_string('lockafterdeadline', 'local_progressreview');
         $strscalebehaviour = get_string('scale_behaviour', 'local_progressreview');
@@ -56,7 +56,7 @@ class progressreview_session_form extends moodleform {
         $mform->addElement('text', 'scale_behaviour', $strscalebehaviour);
         $mform->addElement('text', 'scale_effort', $strscaleeffort);
         $mform->addElement('text', 'scale_homework', $strscalehomework);
-        $mform->addElement('date_time_selector', 'snapshotdate', $snapshotdate);
+        $mform->addElement('date_time_selector', 'snapshotdate', $strsnapshotdate);
         $mform->addElement('select', 'previoussession', $strprevioussession, $sessionoptions);
         $mform->addElement('advcheckbox', 'inductionreview', $strinductionreview);
 
