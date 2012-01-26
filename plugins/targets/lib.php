@@ -11,7 +11,7 @@ class progressreview_targets extends progressreview_plugin {
 
     protected $name = 'targets';
 
-    protected $type = PROGRESSREVIEW_TUTOR;
+    static public $type = PROGRESSREVIEW_TUTOR;
 
     protected $valid_properties = array(
         'id',

@@ -15,7 +15,7 @@ abstract class progressreview_subject_template extends progressreview_plugin {
 
     protected $name = 'subject';
 
-    protected $type = PROGRESSREVIEW_SUBJECT;
+    static public $type = PROGRESSREVIEW_SUBJECT;
 
     /**
      * A reference to the progressreview object for the review that this subject review

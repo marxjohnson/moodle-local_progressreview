@@ -20,6 +20,8 @@ class progressreview_tutor extends progressreview_plugin {
 
     protected $name = 'tutor';
 
+    static public $type = PROGRESSREVIEW_TUTOR;
+
     /**
      * Reference to the progressreview that this plugin belongs to.
      * @access private
