@@ -75,6 +75,15 @@ class progressreview_session_form extends moodleform {
         $this->add_action_buttons();
     }
 
+    private function get_plugin_names() {
+        global $DB;
+        $where = $DB->sql_like('plugin', '?').' AND name = ?';
+        $params = array('progresreview_%', 'version');
+        $plugins = $DB->get_records_select('config_plugins', $where, $params, '', 'plugin');
+        $names = array_keys($plugins);
+        return $names;
+    }
+
     public function process($data) {
         global $DB;
         if ($data->editid) {
