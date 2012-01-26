@@ -6,6 +6,8 @@ if (!defined('MOODLE_INTERNAL')) {
 
 require_once($CFG->dirroot.'/local/progressreview/sessions_form.php');
 
+define('TIME_ONEWEEK', (7*24*60*60));
+
 class sessionform_test extends UnitTestCaseUsingDatabase {
 
     private $testdata = array();
@@ -34,7 +36,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
                 'scale_homework',
                 'inductionreview'),
             array(
-                array('Progress Review 1', time()+(7*24*60*60), time()+(2*7*24*60*60), 0, '', '', '', 0)
+                array('Progress Review 1', time()+TIME_ONEWEEK, time()+(2*TIME_ONEWEEK), 0, '', '', '', 0)
             )
         );
     }
