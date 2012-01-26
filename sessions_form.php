@@ -49,6 +49,7 @@ class progressreview_session_form extends moodleform {
         $strinductionreview = get_string('inductionreview', 'local_progressreview');
 
         $mform->addElement('hidden', 'editid');
+        $mform->addElement('header', 'general', get_string('general'));
         $mform->addElement('text', 'name', get_string('name', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_subject', $strdeadlinesubject);
         $mform->addElement('date_time_selector', 'deadline_tutor', $strdeadlinetutor);
