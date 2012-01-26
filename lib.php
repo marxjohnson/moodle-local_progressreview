@@ -758,7 +758,7 @@ abstract class progressreview_plugin {
      * The type of progressreview plugin this is
      * either PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
      */
-    protected $type;
+    static protected $type;
 
     /**
      * The progressreview object for the review this instance
