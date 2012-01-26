@@ -72,6 +72,7 @@ $string['scale_behaviour'] = 'Behaviour Scale';
 $string['scale_effort'] = 'Effort Scale';
 $string['scale_homework'] = 'Scale Homework';
 $string['selectcriteria'] = 'Select criteria of reviews for printing';
+$string['selectplugins'] = 'Select Plugins';
 $string['selectedreviews'] = 'You have chosen to print the following Progress Reviews';
 $string['sessions'] = 'Sessions';
 $string['showdatafrom'] = 'Show Data From';
