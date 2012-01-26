@@ -81,6 +81,9 @@ class progressreview_session_form extends moodleform {
         $params = array('progressreview_%', 'version');
         $plugins = $DB->get_records_select('config_plugins', $where, $params, 'plugin', 'plugin');
         $names = array_keys($plugins);
+        foreach ($names as &$name) {
+            $name = str_replace('progressreview_', '', $name);
+        }
         return $names;
     }
 
