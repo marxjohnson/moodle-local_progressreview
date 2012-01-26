@@ -111,7 +111,7 @@ class progressreview_session_form extends moodleform {
             unset($record->plugins);
             $record->id = $DB->insert_record('progressreview_session', $record);
             $plugins = array();
-            foreach (array_filter($data->plugins) as $pluginname) {
+            foreach (array_keys(array_filter($data->plugins)) as $pluginname) {
                 require_once($CFG->dirroot.'/local/progressreview/plugins/'.$pluginname.'/lib.php');
                 $class = 'progressreview_'.$pluginname;
                 $plugins[] = (object)array(
