@@ -60,7 +60,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
     }
 
     public function test_process() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/local/progressreview/lib.php');
         $subjectdeadline = time()+(rand(1,4)*TIME_ONEWEEK);
         $tutordeadline = $subjectdeadline+(TIME_ONEWEEK);
