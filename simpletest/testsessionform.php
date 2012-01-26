@@ -39,6 +39,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
                 array('Progress Review 1', time()+TIME_ONEWEEK, time()+(2*TIME_ONEWEEK), 0, '', '', '', 0)
             )
         );
+        $this->testdata['progressreview_activeplugins'] = array();
     }
 
     public function tearDown() {
