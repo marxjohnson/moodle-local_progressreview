@@ -116,14 +116,14 @@ class progressreview_session_form extends moodleform {
                 $class = 'progressreview_'.$pluginname;
                 $plugins[] = (object)array(
                     'plugin' => $pluginname,
-                    'sessionid' => $id,
+                    'sessionid' => $record->id,
                     'reviewtype' => $class::$type
                 );
             }
             foreach ($plugins as $plugin) {
                 $DB->insert_record('progressreview_activeplugins', $plugin);
             }
-            return $record;
+            return $record->id;
         }
     }
 }
