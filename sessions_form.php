@@ -101,7 +101,7 @@ class progressreview_session_form extends moodleform {
     }
 
     public function process($data) {
-        global $DB;
+        global $CFG, $DB;
         if ($data->editid) {
             $data->id = $data->editid;
             unset($data->editid);
