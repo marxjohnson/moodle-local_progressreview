@@ -66,6 +66,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
         $tutordeadline = $subjectdeadline+(TIME_ONEWEEK);
         $form = new progressreview_session_form();
         $data = (object)array(
+            'editid' => 0,
             'name' => 'Progress Review 2',
             'deadline_subject' => $subjectdeadline,
             'deadline_tutor' => $tutordeadline,
@@ -87,6 +88,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
 
         $record = clone($data);
         unset($record->plugins);
+        unset($record->editid);
         $record->id = $form->process($data);
 
         $sessionrecord = $DB->get_record('progressreview_session', array('id' => $record->id));
