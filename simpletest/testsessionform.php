@@ -91,26 +91,15 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
 
         $sessionrecord = $DB->get_record('progressreview_session', array('id' => $record->id));
         $pluginrecords = $DB->count_records('progressreview_activeplugins', array('sessionid' => $record->id));
-        $subjectpluginparams = array(
-            'plugin' => 'subject',
-            'sessionid' => $record->id,
-            'reviewtype' => PROGRESSREVIEW_SUBJECT
-        );
-        $tutorpluginparams = array(
-            'plugin' => 'tutor',
-            'sessionid' => $record->id,
-            'reviewtype' => PROGRESSREVIEW_TUTOR
-        );
-        $targetpluginparams = array(
-            'plugin' => 'target',
-            'sessionid' => $record->id,
-            'reviewtype' => PROGRESSREVIEW_TUTOR
-        );
+        $subjectpluginparams = array($DB->sql_compare_text('subject'), $record->id, PROGRESSREVIEW_SUBJECT);
+        $tutorpluginparams = array($DB->sql_compare_text('tutor'), $record->id, PROGRESSREVIEW_TUTOR);
+        $targetpluginparams = array($DB->sql_compare_text('target'), $record->id, PROGRESSREVIEW_TUTOR);
+        $pluginwhere = 'plugin = ? AND sessionid = ? AND reviewtype = ?';
         $this->assertEqual($record, $sessionrecord);
         $this->assertEqual($pluginrecords, 2);
-        $this->assertTrue($DB->record_exists('progressreview_activeplugins', $subjectpluginparams));
-        $this->assertTrue($DB->record_exists('progressreview_activeplugins', $tutorpluginparams));
-        $this->assertFalse($DB->record_exists('progressreview_activeplugins', $targetpluginparams));
+        $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $subjectpluginparams));
+        $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $tutorpluginparams));
+        $this->assertFalse($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $targetpluginparams));
 
     }
 
