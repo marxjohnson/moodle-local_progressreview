@@ -8,12 +8,12 @@ require_once($CFG->dirroot.'/local/progressreview/lib.php');
 
 class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
 
-    protected function setUp() {
+    public function setUp() {
         $this->switch_to_test_cfg();
         $this->switch_to_test_db();
     }
 
-    protected function tearDown() {
+    public function tearDown() {
         $this->revert_to_real_db();
         $this->revert_to_real_cfg();
     }
