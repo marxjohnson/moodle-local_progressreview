@@ -96,7 +96,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
         $pluginrecords = $DB->count_records('progressreview_activeplugins', array('sessionid' => $record->id));
         $subjectpluginparams = array($DB->sql_compare_text('subject'), $record->id, PROGRESSREVIEW_SUBJECT);
         $tutorpluginparams = array($DB->sql_compare_text('tutor'), $record->id, PROGRESSREVIEW_TUTOR);
-        $targetpluginparams = array($DB->sql_compare_text('target'), $record->id, PROGRESSREVIEW_TUTOR);
+        $targetpluginparams = array($DB->sql_compare_text('targets'), $record->id, PROGRESSREVIEW_TUTOR);
         $pluginwhere = 'plugin = ? AND sessionid = ? AND reviewtype = ?';
         $this->assertEqual($record, $sessionrecord);
         $this->assertEqual($pluginrecords, 2);
