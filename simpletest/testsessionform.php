@@ -34,9 +34,18 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
                 'scale_behaviour',
                 'scale_effort',
                 'scale_homework',
+                'homeworkstart',
                 'inductionreview'),
             array(
-                array('Progress Review 1', time()+TIME_ONEWEEK, time()+(2*TIME_ONEWEEK), 0, '', '', '', 0)
+                array('Progress Review 1',
+                      time()+TIME_ONEWEEK,
+                      time()+(2*TIME_ONEWEEK),
+                      0,
+                      '',
+                      '',
+                      '',
+                      strtotime('2011/09/01'),
+                      0)
             )
         );
         $this->testdata['progressreview_activeplugins'] = array();
@@ -81,6 +90,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
             'template_tutor' => null,
             'snapshotdate' => null,
             'previoussession' => null,
+            'homeworkstart' => strtotime('2011/09/01'),
             'inductionreview' => 0,
             'plugins' => array(
                 'subject' => 1,
@@ -119,6 +129,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
         $data->template_tutor = 'bar';
         $data->snapshotdate = time();
         $data->previoussession = 1;
+        $data->homeworkstart = strtotime('2011/09/02');
         $data->inductionreview = 1;
         $data->plugins['targets'] = 1;
 
