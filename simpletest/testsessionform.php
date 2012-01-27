@@ -6,13 +6,14 @@ if (!defined('MOODLE_INTERNAL')) {
 
 require_once($CFG->dirroot.'/local/progressreview/sessions_form.php');
 
-define('TIME_ONEWEEK', (7*24*60*60));
-
 class sessionform_test extends UnitTestCaseUsingDatabase {
 
     private $testdata = array();
 
+    private $ONEWEEK;
+
     public function setUp() {
+        $this->ONEWEEK = 7*24*60*60;
         $this->switch_to_test_db();
         $this->create_test_table('config_plugins', 'lib');
         $this->create_test_tables(array('progressreview_session', 'progressreview_activeplugins'), 'local/progressreview');
@@ -38,14 +39,14 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
                 'inductionreview'),
             array(
                 array('Progress Review 1',
-                      time()+TIME_ONEWEEK,
-                      time()+(2*TIME_ONEWEEK),
-                      0,
-                      '',
-                      '',
-                      '',
-                      strtotime('2011/09/01'),
-                      0)
+                    time()+$this->ONEWEEK,
+                    time()+(2*$this->ONEWEEK),
+                    0,
+                    '',
+                    '',
+                    '',
+                    strtotime('2011/09/01'),
+                    0)
             )
         );
         $this->testdata['progressreview_activeplugins'] = array();
@@ -72,8 +73,8 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
     public function test_process() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/progressreview/lib.php');
-        $subjectdeadline = time()+(rand(1,4)*TIME_ONEWEEK);
-        $tutordeadline = $subjectdeadline+(TIME_ONEWEEK);
+        $subjectdeadline = time()+(rand(1,4)*$this->ONEWEEK);
+        $tutordeadline = $subjectdeadline+($this->ONEWEEK);
         $form = new progressreview_session_form();
 
         // Test creating a new session
