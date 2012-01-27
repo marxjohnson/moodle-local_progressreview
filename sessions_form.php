@@ -103,9 +103,34 @@ class progressreview_session_form extends moodleform {
     public function process($data) {
         global $CFG, $DB;
         if ($data->editid) {
-            $data->id = $data->editid;
-            unset($data->editid);
-            return $DB->update_record('progressreview_session', $data);
+            $record = clone($data);
+            $record->id = $data->editid;
+            unset($record->editid);
+            foreach ($data->plugins as $pluginname => $active) {
+                $activeparams = array(
+                    'plugin' => $DB->sql_compare_text($pluginname),
+                    'sessionid' => $record->id
+                );
+                $activewhere = 'plugin = :plugin AND sessionid = :sessionid';
+                if ($active) {
+                    if (!$DB->record_exists_select('progressreview_activeplugins', $activewhere, $activeparams)) {
+                        require_once($CFG->dirroot.'/local/progressreview/plugins/'.$pluginname.'/lib.php');
+                        $class = 'progressreview_'.$pluginname;
+                        $activeplugin = (object)$activeparams;
+                        $activeplugin->reviewtype = $class::$type;
+                        if (!$DB->insert_record('progressreview_activeplugins', $activeplugin)) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if ($activerecord = $DB->get_record_select('progressreview_activeplugins', $activewhere, $activeparams)) {
+                        if (!$DB->delete_records('progressreview_activeplugins', array('id' => $activerecord->id))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return $DB->update_record('progressreview_session', $record);
         } else {
             $record = clone($data);
             unset($record->plugins);
