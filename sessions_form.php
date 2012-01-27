@@ -46,6 +46,7 @@ class progressreview_session_form extends moodleform {
         $strscalehomework = get_string('scale_homework', 'local_progressreview');
         $strsnapshotdate = get_string('snapshotdate', 'local_progressreview');
         $strprevioussession = get_string('showdatafrom', 'local_progressreview');
+        $strhomeworkstart = get_string('homeworkstart', 'local_progressreview');
         $strinductionreview = get_string('inductionreview', 'local_progressreview');
 
         $mform->addElement('hidden', 'editid');
@@ -57,9 +58,12 @@ class progressreview_session_form extends moodleform {
         $mform->addElement('text', 'scale_behaviour', $strscalebehaviour);
         $mform->addElement('text', 'scale_effort', $strscaleeffort);
         $mform->addElement('text', 'scale_homework', $strscalehomework);
+        $mform->addElement('date_selector', 'homeworkstart', $strhomeworkstart);
         $mform->addElement('date_time_selector', 'snapshotdate', $strsnapshotdate);
         $mform->addElement('select', 'previoussession', $strprevioussession, $sessionoptions);
         $mform->addElement('advcheckbox', 'inductionreview', $strinductionreview);
+
+        $mform->addHelpButton('homeworkstart', 'homeworkstart', 'local_progressreview');
 
         $mform->setTypes(array(
             'name' => PARAM_TEXT,
@@ -69,6 +73,7 @@ class progressreview_session_form extends moodleform {
             'scale_behaviour' => PARAM_TEXT,
             'scale_effort' => PARAM_TEXT,
             'scale_homework' => PARAM_TEXT,
+            'homeworkstart' => PARAM_INT,
             'snapshotdate' => PARAM_INT,
             'previoussession' => PARAM_INT,
             'inductionreview' => PARAM_BOOL

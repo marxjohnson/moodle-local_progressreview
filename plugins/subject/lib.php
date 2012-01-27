@@ -318,8 +318,17 @@ abstract class progressreview_subject_template extends progressreview_plugin {
                         (SELECT COUNT(*)
                          FROM {grade_grades} AS g
                          WHERE g.itemid = i.id) > ?)
-                    AND a.timedue < ?';
-        $params = array($this->progressreview->get_course()->originalid, 'assignment', 0, 0, time());
+                         AND (a.timedue BETWEEN ? AND ?)
+                         ';
+        $homeworkstart = $this->progressreview->get_session()->homeworkstart;
+        $params = array(
+            $this->progressreview->get_course()->originalid,
+            'assignment',
+            0,
+            0,
+            $homeworkstart,
+            time()
+        );
         $homework->total = $DB->count_records_sql($sql, $params);
 
         $sql = 'SELECT COUNT(*)
@@ -329,8 +338,15 @@ abstract class progressreview_subject_template extends progressreview_plugin {
                 WHERE g.userid = ?
                     AND i.courseid = ?
                     AND g.finalgrade > ?
-                    AND a.timedue < ?';
-        $params = array('mod', $this->progressreview->get_student()->id, $this->progressreview->get_course()->originalid, 1, time());
+                    AND a.timedue BETWEEN ? AND ? ';
+        $params = array(
+            'mod',
+            $this->progressreview->get_student()->id,
+            $this->progressreview->get_course()->originalid,
+            1,
+            $homeworkstart,
+            time()
+        );
         $homework->done = $DB->count_records_sql($sql, $params);
         return $homework;
     } // end of member function retrieve_homework
