@@ -66,6 +66,8 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
         $subjectdeadline = time()+(rand(1,4)*TIME_ONEWEEK);
         $tutordeadline = $subjectdeadline+(TIME_ONEWEEK);
         $form = new progressreview_session_form();
+
+        // Test creating a new session
         $data = (object)array(
             'editid' => 0,
             'name' => 'Progress Review 2',
@@ -99,6 +101,51 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
         $targetpluginparams = array($DB->sql_compare_text('targets'), $record->id, PROGRESSREVIEW_TUTOR);
         $pluginwhere = 'plugin = ? AND sessionid = ? AND reviewtype = ?';
         $this->assertEqual($record, $sessionrecord);
+        $this->assertEqual($pluginrecords, 2);
+        $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $subjectpluginparams));
+        $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $tutorpluginparams));
+        $this->assertFalse($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $targetpluginparams));
+
+        // Test editing a session, and activating a previously inactive plugin.
+        $data->editid = $record->id;
+        $data->name = 'Progress Review 2 Editied';
+        $data->deadline_subject++;
+        $data->deadline_tutor++;
+        $data->lockafterdeadline = 1;
+        $data->scale_behaviour .= ',Fugly';
+        $data->scale_effort .= ',Fugly';
+        $data->scale_homework .= ',Fugly';
+        $data->template_subject = 'foo';
+        $data->template_tutor = 'bar';
+        $data->snapshotdate = time();
+        $data->previoussession = 1;
+        $data->inductionreview = 1;
+        $data->plugins['targets'] = 1;
+
+        $record = clone($data);
+        $record->id = $data->editid;
+        unset($record->plugins);
+        unset($record->editid);
+        $this->assertTrue($form->process($data));
+
+        $sessionrecord = $DB->get_record('progressreview_session', array('id' => $record->id));
+        $pluginrecords = $DB->count_records('progressreview_activeplugins', array('sessionid' => $record->id));
+        $this->assertEqual($record, $sessionrecord);
+        $this->assertEqual($pluginrecords, 3);
+        $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $subjectpluginparams));
+        $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $tutorpluginparams));
+        $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $targetpluginparams));
+
+        // Test deactivating a previously active plugin
+        $data->plugins['targets'] = 0;
+
+        $record = clone($data);
+        $record->id = $data->editid;
+        unset($record->plugins);
+        unset($record->editid);
+        $this->assertTrue($form->process($data));
+
+        $pluginrecords = $DB->count_records('progressreview_activeplugins', array('sessionid' => $record->id));
         $this->assertEqual($pluginrecords, 2);
         $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $subjectpluginparams));
         $this->assertTrue($DB->record_exists_select('progressreview_activeplugins', $pluginwhere, $tutorpluginparams));
