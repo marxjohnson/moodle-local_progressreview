@@ -214,6 +214,39 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
             $result = $this->id = $DB->insert_record('progressreview_subject', $data);
             $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
         }
+
+        $gradeitems = array();
+        if (isset($data->targetgrade)) {
+            $gradeitems['target'] = 'targetgrade';
+        }
+        if (isset($data->performancegrade)) {
+            $gradeitems['cpg'] = 'performancegrade';
+        }
+        if (!empty($gradeitems)) {
+            if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
+                $courseid = $this->progressreview->get_course()->originalid;
+                $studentid = $this->progressreview->get_student()->id;
+                foreach ($gradeitems as $id => $field) {
+                    if ($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$id))) {
+                        if ($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
+                            $grade->rawgrade = $this->$field;
+                            $grade->finalgrade = $this->$field;
+                            $grade->timemodified = time();
+                            $DB->update_record('grade_grades', $grade);
+                        } else {
+                            $grade = (object)array(
+                                'itemid' => $itemrecord->id,
+                                'userid' => $studentid,
+                                'rawgrade' => $this->$field,
+                                'finalgrade' => $this->$field,
+                                'timecreated' => time()
+                            );
+                            $DB->insert_record('grade_grades', $grade);
+                        }
+                    }
+                }
+            }
+        }
         return $result;
     } // end of member function update
 
@@ -432,35 +465,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
     }
 
     public function process_form_fields($data) {
-        global $DB;
-        if ($this->update($data)) {
-            $items = array('target' => 'targetgrade', 'cpg' => 'performancegrade');
-            if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
-                $courseid = $this->progressreview->get_course()->originalid;
-                $studentid = $this->progressreview->get_student()->id;
-                foreach ($items as $id => $field) {
-                    if ($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$id))) {
-                        if ($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
-                            $grade->rawgrade = $this->$field;
-                            $grade->finalgrade = $this->$field;
-                            $grade->timemodified = time();
-                            $DB->update_record('grade_grades', $grade);
-                        } else {
-                            $grade = (object)array(
-                                'itemid' => $itemrecord->id,
-                                'userid' => $studentid,
-                                'rawgrade' => $this->$field,
-                                'finalgrade' => $this->$field,
-                                'timecreated' => time()
-                            );
-                            $DB->insert_record('grade_grades', $grade);
-                        }
-                    }
-                }
-            }
-        } else {
-            return false;
-        }
+        return $this->update($data);
     }
 
     public function add_form_rows() {
