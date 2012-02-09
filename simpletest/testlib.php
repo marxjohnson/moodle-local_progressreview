@@ -18,7 +18,7 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
         $this->DAY = 24*60*60;
         $this->ONEWEEK = 7*$this->DAY;
         $this->switch_to_test_db();
-        $this->create_test_tables(array('grade_grades', 'grade_items', 'course', 'user', 'config_plugins'), 'lib');
+        $this->create_test_tables(array('grade_grades', 'grade_items', 'course', 'user', 'config_plugins', 'scale'), 'lib');
         $this->create_test_table('assignment', 'mod/assignment');
         $tables = array(
             'progressreview',
@@ -37,42 +37,46 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
                 # Exclude - No available or due date, modified before homeworkstart
                 array(2, 'hw2', 'hw', 'offline', 0, 0, strtotime((date('Y')-1).'/08/01')),
                 # Include - due date between homeworkstart and current date
-                array(2, 'hw4', 'hw', 'offline',
+                array(2, 'hw3', 'hw', 'offline',
                 strtotime((date('Y')-1).'/09/02'), strtotime((date('Y')-1).'/09/01'), strtotime((date('Y')-1).'/09/01')),
                 # Include - Due date between homeworkstart and current date
-                array(2, 'hw5', 'hw', 'offline',
+                array(2, 'hw4', 'hw', 'offline',
                 strtotime((date('Y')-1).'/09/10'), strtotime((date('Y')-1).'/09/03'), strtotime((date('Y')-1).'/09/03')),
                 # Include - Due date between homeworkstart and current date
-                array(2, 'hw6', 'hw', 'offline',
+                array(2, 'hw5', 'hw', 'offline',
                 strtotime((date('Y')-1).'/09/11'), strtotime((date('Y')-1).'/09/04'), strtotime((date('Y')-1).'/09/04')),
                 # Include - Due date between homeworkstart and current date
-                array(2, 'hw7', 'hw', 'offline',
+                array(2, 'hw6', 'hw', 'offline',
                 strtotime((date('Y')-1).'/09/12'), strtotime((date('Y')-1).'/09/05'), strtotime((date('Y')-1).'/09/06')),
                 # Exclude - Due date in the future
-                array(2, 'hw8', 'hw', 'offline', (time()+$this->DAY), (time()-$this->DAY), (time()-$this->DAY)),
+                array(2, 'hw7', 'hw', 'offline', (time()+$this->DAY), (time()-$this->DAY), (time()-$this->DAY)),
                 # Exclude - Wrong course
-                array(4, 'hw9', 'hw', 'offline',
+                array(4, 'hw8', 'hw', 'offline',
                 strtotime((date('Y')-1).'/09/11'), strtotime((date('Y')-1).'/09/04'), strtotime((date('Y')-1).'/09/04'))
                 # Total - 5 included, 4 excluded
             )
         );
         $this->testdata['grade_items'] = $this->load_test_data('grade_items',
-            array('courseid', 'itemname', 'itemtype', 'itemmodule', 'iteminstance', 'timecreated', 'timemodified'), array(
+            array('courseid', 'itemname', 'itemtype', 'itemmodule', 'iteminstance', 'timecreated', 'timemodified', 'idnumber', 'scaleid'), array(
                 # Exclude - see above
-                array('2', 'i1', 'mod', 'assignment', 1, time(), time()),
+                array('2', 'i1', 'mod', 'assignment', 1, time(), time(), '', 1),
                 # Exclude - see above
-                array('2', 'i2', 'mod', 'assignment', 2, time(), time()),
-                array('2', 'i4', 'mod', 'assignment', 4, time(), time()),
-                array('2', 'i5', 'mod', 'assignment', 5, time(), time()),
-                array('2', 'i6', 'mod', 'assignment', 6, time(), time()),
-                array('2', 'i7', 'mod', 'assignment', 7, time(), time()),
+                array('2', 'i2', 'mod', 'assignment', 2, time(), time(), '', 1),
+                array('2', 'i3', 'mod', 'assignment', 4, time(), time(), '', 1),
+                array('2', 'i4', 'mod', 'assignment', 5, time(), time(), '', 1),
+                array('2', 'i5', 'mod', 'assignment', 6, time(), time(), '', 1),
+                array('2', 'i6', 'mod', 'assignment', 7, time(), time(), '', 1),
                 # Exclude - see above
-                array('2', 'i8', 'mod', 'assignment', 8, time(), time()),
+                array('2', 'i7', 'mod', 'assignment', 8, time(), time(), '', 1),
                 # Exclude - wrong course - see above
-                array('3', 'i9', 'mod', 'assignment', 9, time(), time()),
+                array('3', 'i8', 'mod', 'assignment', 9, time(), time(), '', 1),
                 # Exclude - wrong module
-                array('2', 'i10', 'mod', 'forum', 1, time(), time())
+                array('2', 'i9', 'mod', 'forum', 1, time(), time(), '', 1),
                 # Total - 4 included, 5 excluded
+                # Target Grade items:
+                array('2', 'Minimum Grade', 'manual', null, null, time(), time(), 'targetgrades_min', 2),
+                array('2', 'Target Grade', 'manual', null, null, time(), time(), 'targetgrades_target', 2),
+                array('2', 'Current Performance Grage', 'manual', null, null, time(), time(), 'targetgrades_cpg', 2)
             )
         );
         $this->testdata['grade_grades'] = $this->load_test_data('grade_grades',
@@ -80,20 +84,22 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
                 # Exclude - Grade for an old assignment (see above)
                 array(1, 2, 3, 3, time(), time()),
                 # include - grade above 1, for an included assignment on this course
-                array(4, 2, 5, 5, time(), time()),
+                array(3, 2, 5, 5, time(), time()),
                 # include - grade above 1, for an included assignment on this course
-                array(5, 2, 6, 6, time(), time()),
+                array(4, 2, 6, 6, time(), time()),
                 # Exclude - Grade too low
-                array(6, 2, 1, 1, time(), time()),
+                array(5, 2, 1, 1, time(), time()),
                 # Exclude - Grade for a different user
-                array(7, 5, 3, 3, time(), time()),
+                array(6, 5, 3, 3, time(), time()),
                 # Exclude - Assignment not due - see above
-                array(8, 2, 1, 1, time(), time()),
+                array(7, 2, 1, 1, time(), time()),
                 # Exclude - Grade for assignment on a different course (see above)
-                array(9, 2, 5, 5, time(), time()),
+                array(8, 2, 5, 5, time(), time()),
                 # Exclude - Grade for a non-assignment module (see above)
-                array(10, 2, 4, 4, time(), time())
+                array(9, 2, 4, 4, time(), time()),
                 # Total - 2 included, 6 excluded
+                # Target grade:
+                array(10, 2, 3, 3, time(), time())
             )
         );
         $this->testdata['user'] = $this->load_test_data('user',
@@ -131,14 +137,26 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
                     'good,bad,ugly',
                     'good,bad,ugly',
                     strtotime((date('Y')-1).'/09/01'),
-                    0)
+                    0),
+                array('Induction Review 1',
+                    time()+$this->ONEWEEK,
+                    time()+(2*$this->ONEWEEK),
+                    0,
+                    'good,bad,ugly',
+                    'good,bad,ugly',
+                    'good,bad,ugly',
+                    strtotime((date('Y')-1).'/09/01'),
+                    1)
             )
         );
         $this->testdata['progressreview_activeplugins'] = $this->load_test_data('progressreview_activeplugins',
             array('plugin', 'sessionid', 'reviewtype'), array(
                 array('subject', 1, PROGRESSREVIEW_SUBJECT),
                 array('tutor', 1, PROGRESSREVIEW_TUTOR),
-                array('targets', 1, PROGRESSREVIEW_TUTOR)
+                array('targets', 1, PROGRESSREVIEW_TUTOR),
+                array('subject', 2, PROGRESSREVIEW_SUBJECT),
+                array('tutor', 2, PROGRESSREVIEW_TUTOR),
+                array('targets', 2, PROGRESSREVIEW_TUTOR)
             )
         );
         $this->testdata['config_plugins'] = $this->load_test_data('config_plugins',
@@ -148,8 +166,9 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
             array('progressreview_tutor', 'foo', 'bar'),
             array('progressreview_targets', 'version', 3456),
             array('block_navigation', 'version', 0001),
-            array('block_navigation', 'foo', 'bar'))
-        );
+            array('block_navigation', 'foo', 'bar'),
+            array('report_targetgrades', 'version', 0001)
+        ));
     }
 
     public function tearDown() {
@@ -166,6 +185,7 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
         $teacher = $DB->get_record('user', array('username' => 'teacher'));
         $course = $DB->get_record('course', array('shortname' => 'course1'));
         $session = $DB->get_record('progressreview_session', array('id' => 1));
+        $inductionsession = $DB->get_record('progressreview_session', array('inductionreview' => 1));
         $session->scale_homework = explode(',', $session->scale_homework);
         $session->scale_behaviour = explode(',', $session->scale_behaviour);
         $session->scale_effort = explode(',', $session->scale_effort);
@@ -265,5 +285,69 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
         $cleaned = $progressreview->get_plugin('subject')->clean_params($post);
         $truecleaned = array_filter($cleaned);
         $this->assertTrue(empty($truecleaned));
+
+        $data = array(
+            'reviewid' => $progressreview->id,
+            'comments' => 'Aliquam eget aliquet elit. Nullam hendrerit risus vel metus.',
+            'behaviour' => 2,
+            'effort' => 3,
+            'homeworkstandard' => 3,
+            'homeworkdone' => 10,
+            'homeworktotal' => 11,
+            'attendance' => 90,
+            'punctuality' => 95,
+            'targetgrade' => 5,
+            'performancegrade' => 4,
+            'sesskey' => 'asd86gd8d8', // Fields that aren't related to subject plugin should be ignored.
+            'foo' => 'bar',
+            'herp' => 'derp'
+        );
+
+        $progressreview->get_plugin('subject')->process_form_fields($data);
+
+        $params = $data;
+        unset($params['sesskey']);
+        unset($params['foo']);
+        unset($params['bar']);
+        $params['comments'] = $DB->sql_compare_text($params['comments']);
+        $where = 'reviewid = :reviewid AND comments = :comments AND behaviour = :behaviour AND
+            effort = :effort AND homeworkstandard = :homeworkstandard AND homeworkdone = :homeworkdone
+            AND attendance = :attendance AND punctuality = :punctuality AND targetgrade = :targetgrade
+            AND performancegrade = :performancegrade';
+
+        $this->assertTrue($DB->record_exists_select('progressreview_subject', $where, $params));
+        $gradeparams = array(
+            'userid' => $progressreview->get_student()->id,
+            'itemid' => 11,
+            'finalgrade' => 5,
+            'rawgrade' => 5
+        );
+        $this->assertTrue($DB->record_exists('grade_grades', $gradeparams));
+        $gradeparams['itemid'] = 12;
+        $gradeparams['finalgrade'] = 4;
+        $gradeparams['rawgrade'] = 4;
+        $this->assertTrue($DB->record_exists('grade_grades', $gradeparams));
+
+        $data['targetgrade'] = 6;
+        $data['performancegrade'] = 7;
+
+        $progressreview->get_plugin('subject')->process_form_fields($data);
+
+        $params = $data;
+        unset($params['sesskey']);
+        unset($params['foo']);
+        unset($params['bar']);
+        $params['comments'] = $DB->sql_compare_text($params['comments']);
+
+        $this->assertTrue($DB->record_exists_select('progressreview_subject', $where, $params));
+
+        $gradeparams['finalgrade'] = 7;
+        $gradeparams['rawgrade'] = 7;
+        $this->assertTrue($DB->record_exists('grade_grades', $gradeparams));
+        $gradeparams['itemid'] = 11;
+        $gradeparams['finalgrade'] = 6;
+        $gradeparams['rawgrade'] = 6;
+        $this->assertTrue($DB->record_exists('grade_grades', $gradeparams));
+
     }
 }
