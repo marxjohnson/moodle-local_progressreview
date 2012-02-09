@@ -216,5 +216,54 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
         $this->assertEqual($subjectreview->homeworktotal, 4);
         // 2 of the homeworks have grades above 1 for this user, 1 has a grade below 1 and 1 has no grade
         $this->assertEqual($subjectreview->homeworkdone, 2);
+
+        $post = array(
+            'homeworkdone' => '5',
+            'homeworktotal' => '6',
+            'behaviour' => '1',
+            'effort' => '2',
+            'targetgrade' => '6',
+            'performancegrade' => '5',
+            'comments' => 1.4556
+        );
+
+        $cleaned = $progressreview->get_plugin('subject')->clean_params($post);
+
+        $this->assertTrue(is_int($cleaned['homeworkdone']));
+        $this->assertTrue(is_int($cleaned['homeworktotal']));
+        $this->assertTrue(is_int($cleaned['behaviour']));
+        $this->assertTrue(is_int($cleaned['effort']));
+        $this->assertTrue(is_int($cleaned['targetgrade']));
+        $this->assertTrue(is_int($cleaned['performancegrade']));
+        $this->assertTrue(is_string($cleaned['comments']));
+
+        $post['comments'] = '<script>alert("XSS alert!")</script>Test';
+
+        $cleaned = $progressreview->get_plugin('subject')->clean_params($post);
+
+        $this->assertFalse(strpos($cleaned['comments'], '<script>'));
+
+        $inductionreview = new progressreview($student->id,
+                                            $inductionsession->id,
+                                            $course->id,
+                                            $teacher->id,
+                                            PROGRESSREVIEW_SUBJECT);
+
+        $cleaned = $inductionreview->get_plugin('subject')->clean_params($post);
+        $this->assertFalse(array_key_exists('comments', $cleaned));
+
+        $post = array(
+            'homeworkdone' => '',
+            'homeworktotal' => '',
+            'behaviour' => '',
+            'effort' => '',
+            'targetgrade' => '',
+            'performancegrade' => '',
+            'comments' => ''
+        );
+
+        $cleaned = $progressreview->get_plugin('subject')->clean_params($post);
+        $truecleaned = array_filter($cleaned);
+        $this->assertTrue(empty($truecleaned));
     }
 }
