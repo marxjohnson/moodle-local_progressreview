@@ -467,7 +467,11 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         global $OUTPUT;
 
         $rows = array();
-        $picture = $OUTPUT->user_picture($this->progressreview->get_student());
+        $session = $this->progressreview->get_session();
+        $student = $this->progressreview->get_student();
+        $picture = $OUTPUT->user_picture($student);
+
+        $fieldarray = 'review['.$this->progressreview->id.']';
         $name = fullname($student);
         $attendance = number_format($this->attendance, 0).'%';
         $punctuality = number_format($this->punctuality, 0).'%';
@@ -507,17 +511,19 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
                                                 array('class' => 'subject'));
 
 
-        $previousdata = $this->progressreview->get_previous()->get_plugin('subject')->get_review();
-        if (!empty($previousdata)) {
-            $p = $previousdata;
-            $psession = $p->progressreview->get_session();
-            $attendance .= $this->previous_data(number_format($p->attendance, 0).'%');
-            $punctuality .= $this->previous_data(number_format($p->punctuality, 0).'%');
-            $homework .= $this->previous_data($p->homeworkdone.'/'.$p->homeworktotal);
-            $behaviour .= $this->previous_data(@$psession->scale_behaviour[$p->behaviour]);
-            $effort .= $this->previous_data(@$psession->scale_effort[$p->effort]);
-            $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
-            $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
+        if ($previousreview = $this->progressreview->get_previous()) {
+            $previousdata = $previousreview->get_plugin('subject')->get_review();
+            if (!empty($previousdata)) {
+                $p = $previousdata;
+                $psession = $p->progressreview->get_session();
+                $attendance .= $this->previous_data(number_format($p->attendance, 0).'%');
+                $punctuality .= $this->previous_data(number_format($p->punctuality, 0).'%');
+                $homework .= $this->previous_data($p->homeworkdone.'/'.$p->homeworktotal);
+                $behaviour .= $this->previous_data(@$psession->scale_behaviour[$p->behaviour]);
+                $effort .= $this->previous_data(@$psession->scale_effort[$p->effort]);
+                $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
+                $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
+            }
         }
 
         $row = new html_table_row(array(
@@ -530,9 +536,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
             $effort
         ));
 
-        if ($form) {
-            $row->cells[] = $mintarget;
-        }
+        $row->cells[] = $mintarget;
         $row->cells[] = $targetgrade;
         $row->cells[] = $performancegrade;
 
@@ -560,14 +564,19 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         global $OUTPUT;
         $rows = array();
         $row = new html_table_row();
+
+        $session = $this->progressreview->get_session();
+        $student = $this->progressreview->get_student();
         if ($bystudent) {
-            $row->cells[] = $this->output->user_picture($student);
+            $row->cells[] = $OUTPUT->user_picture($student);
             $row->cells[] = fullname($student);
         } else {
-            $row->cells[] = $this->progressthis->get_course()->fullname;
-            $row->cells[] = fullname($this->progressthis->get_teacher());
+            $row->cells[] = $this->progressreview->get_course()->fullname;
+            $row->cells[] = fullname($this->progressreview->get_teacher());
         }
 
+        $row->cells[] = number_format($this->attendance, 0).'%';
+        $row->cells[] = number_format($this->punctuality, 0).'%';
         $row->cells[] = $this->homeworkdone.'/'.$this->homeworktotal;
         $row->cells[] = @$session->scale_behaviour[$this->behaviour];
         $row->cells[] = @$session->scale_effort[$this->effort];
@@ -575,9 +584,9 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $row->cells[] = @$this->scale[$this->performancegrade];
         $rows[] = $row;
 
-        if (!$this->progressthis->get_session()->inductionthis) {
+        if (!$this->progressreview->get_session()->inductionreview) {
             $commentscell = new html_table_cell(str_replace("\n", "<br />", $this->comments));
-            $strcomments = get_string('commentstargets', 'local_progressthis');
+            $strcomments = get_string('commentstargets', 'local_progressreview');
             $headercell = new html_table_cell($strcomments.':');
             $headercell->header = true;
 
@@ -591,7 +600,8 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
     }
 
     public function previous_data($data) {
-        return $this->output->container('('.$data.')', 'previous');
+        global $OUTPUT;
+        return $OUTPUT->container('('.$data.')', 'previous');
     }
 
 } // end of progressreview_subject
