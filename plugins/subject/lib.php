@@ -416,12 +416,183 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         return $this->scaleid;
     }
 
-    // TODO implement these methods properly
-    public function add_form_fields(&$mform) {}
+    public function clean_params($post) {
+        $cleaned = array(
+            'homeworkdone' => $post['homeworkdone'] == '' ? null : clean_param($post['homeworkdone'], PARAM_INT),
+            'homeworktotal' => $post['homeworktotal'] == '' ? null : clean_param($post['homeworktotal'], PARAM_INT),
+            'behaviour' => $post['behaviour'] == '' ? null : clean_param($post['behaviour'], PARAM_INT),
+            'effort' => $post['effort'] == '' ? null : clean_param($post['effort'], PARAM_INT),
+            'targetgrade' => $post['targetgrade'] == '' ? null : clean_param($post['targetgrade'], PARAM_INT),
+            'performancegrade' => $post['performancegrade'] == '' ? null : clean_param($post['performancegrade'], PARAM_INT)
+        );
+        if (!$this->progressreview->get_session()->inductionreview) {
+            $cleaned['comments'] = $post['comments'] == '' ? null : clean_param($post['comments'], PARAM_TEXT);
+        }
+        return $cleaned;
+    }
 
-    public function process_form_fields($data) {}
+    public function process_form_fields($data) {
+        global $DB;
+        if ($this->update($data)) {
+            $items = array('target' => 'targetgrade', 'cpg' => 'performancegrade');
+            if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
+                $courseid = $this->progressreview->get_course()->originalid;
+                $studentid = $this->progressreview->get_student()->id;
+                foreach ($items as $id => $field) {
+                    if ($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$id))) {
+                        if ($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
+                            $grade->rawgrade = $this->$field;
+                            $grade->finalgrade = $this->$field;
+                            $grade->timemodified = time();
+                            $DB->update_record('grade_grades', $grade);
+                        } else {
+                            $grade = (object)array(
+                                'itemid' => $itemrecord->id,
+                                'userid' => $studentid,
+                                'rawgrade' => $this->$field,
+                                'finalgrade' => $this->$field,
+                                'timecreated' => time()
+                            );
+                            $DB->insert_record('grade_grades', $grade);
+                        }
+                    }
+                }
+            }
+        } else {
+            return false;
+        }
+    }
 
-    public function add_form_data($data) {}
+    public function add_form_rows() {
+        global $OUTPUT;
+
+        $rows = array();
+        $picture = $OUTPUT->user_picture($this->progressreview->get_student());
+        $name = fullname($student);
+        $attendance = number_format($this->attendance, 0).'%';
+        $punctuality = number_format($this->punctuality, 0).'%';
+        $mintarget = @$this->scale[$this->minimumgrade-1];
+        $homeworkdoneattrs = array(
+            'class' => 'subject homework',
+            'name' => $fieldarray.'[homeworkdone]',
+            'value' => $this->homeworkdone
+        );
+        $homeworktotalattrs = array(
+            'class' => 'subject homework',
+            'name' => $fieldarray.'[homeworktotal]',
+            'value' => $this->homeworktotal
+        );
+        $homework = html_writer::empty_tag('input', $homeworkdoneattrs);
+        $homework .= ' / ';
+        $homework .= html_writer::empty_tag('input', $homeworktotalattrs);
+        $behaviour = html_writer::select($session->scale_behaviour,
+                                         $fieldarray.'[behaviour]',
+                                         $this->behaviour,
+                                         array('' => get_string('choosedots')),
+                                         array('class' => 'subject'));
+        $effort = html_writer::select($session->scale_effort,
+                                      $fieldarray.'[effort]',
+                                      $this->effort,
+                                      array('' => get_string('choosedots')),
+                                      array('class' => 'subject'));
+        $targetgrade = html_writer::select($this->scale,
+                                           $fieldarray.'[targetgrade]',
+                                           $this->targetgrade,
+                                           array('' => get_string('choosedots')),
+                                           array('class' => 'subject'));
+        $performancegrade = html_writer::select($this->scale,
+                                                $fieldarray.'[performancegrade]',
+                                                $this->performancegrade,
+                                                array('' => get_string('choosedots')),
+                                                array('class' => 'subject'));
+
+
+        $previousdata = $this->progressreview->get_previous()->get_plugin('subject')->get_review();
+        if (!empty($previousdata)) {
+            $p = $previousdata;
+            $psession = $p->progressreview->get_session();
+            $attendance .= $this->previous_data(number_format($p->attendance, 0).'%');
+            $punctuality .= $this->previous_data(number_format($p->punctuality, 0).'%');
+            $homework .= $this->previous_data($p->homeworkdone.'/'.$p->homeworktotal);
+            $behaviour .= $this->previous_data(@$psession->scale_behaviour[$p->behaviour]);
+            $effort .= $this->previous_data(@$psession->scale_effort[$p->effort]);
+            $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
+            $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
+        }
+
+        $row = new html_table_row(array(
+            $picture,
+            $name,
+            $attendance,
+            $punctuality,
+            $homework,
+            $behaviour,
+            $effort
+        ));
+
+        if ($form) {
+            $row->cells[] = $mintarget;
+        }
+        $row->cells[] = $targetgrade;
+        $row->cells[] = $performancegrade;
+
+        $rows[] = $row;
+        if (!$this->progressreview->get_session()->inductionreview) {
+            $commentsattrs = array(
+                'class' => 'subject',
+                'name' => $fieldarray.'[comments]'
+            );
+            $commentsfield = html_writer::tag('textarea', $this->comments, $commentsattrs);
+            $commentscell = new html_table_cell($commentsfield);
+            $strcomments = get_string('commentstargets', 'local_progressreview');
+            $headercell = new html_table_cell($strcomments.':');
+            $headercell->header = true;
+
+            $commentscell->colspan = 8;
+            $row = new html_table_row(array('', $headercell, $commentscell));
+            $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
+    public function add_table_rows($bystudent = true) {
+        global $OUTPUT;
+        $rows = array();
+        $row = new html_table_row();
+        if ($bystudent) {
+            $row->cells[] = $this->output->user_picture($student);
+            $row->cells[] = fullname($student);
+        } else {
+            $row->cells[] = $this->progressthis->get_course()->fullname;
+            $row->cells[] = fullname($this->progressthis->get_teacher());
+        }
+
+        $row->cells[] = $this->homeworkdone.'/'.$this->homeworktotal;
+        $row->cells[] = @$session->scale_behaviour[$this->behaviour];
+        $row->cells[] = @$session->scale_effort[$this->effort];
+        $row->cells[] = @$this->scale[$this->targetgrade];
+        $row->cells[] = @$this->scale[$this->performancegrade];
+        $rows[] = $row;
+
+        if (!$this->progressthis->get_session()->inductionthis) {
+            $commentscell = new html_table_cell(str_replace("\n", "<br />", $this->comments));
+            $strcomments = get_string('commentstargets', 'local_progressthis');
+            $headercell = new html_table_cell($strcomments.':');
+            $headercell->header = true;
+
+            $commentscell->colspan = 8;
+            $row = new html_table_row(array('', $headercell, $commentscell));
+            $rows[] = $row;
+        }
+
+        return $rows;
+
+    }
+
+    public function previous_data($data) {
+        return $this->output->container('('.$data.')', 'previous');
+    }
 
 } // end of progressreview_subject
 
