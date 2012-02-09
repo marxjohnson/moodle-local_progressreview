@@ -72,10 +72,6 @@ $PAGE->navigation->extend_for_user($user);
 $output = $PAGE->get_renderer('local_progressreview');
 
 $subjectreviews = progressreview_controller::get_reviews($session->id, $user->id);
-$subjectdata = array();
-foreach ($subjectreviews as $subjectreview) {
-    $subjectdata[] = $subjectreview->get_plugin('subject')->get_review();
-}
 $tutorreviews = progressreview_controller::get_reviews($session->id,
                                                        $user->id,
                                                        null,
@@ -100,9 +96,8 @@ $content = $OUTPUT->heading(fullname($user).' - '.get_string('pluginname', 'loca
 
 $content .= $output->user_session_links($user, $sessions, $sessionid);
 
-$content .= $output->subject_review_table($subjectdata,
+$content .= $output->subject_review_table($subjectreviews,
                                           false,
-                                          $session->inductionreview,
                                           PROGRESSREVIEW_TEACHER);
 
 if ($tutorreview) {

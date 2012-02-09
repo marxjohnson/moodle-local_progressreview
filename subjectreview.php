@@ -60,8 +60,6 @@ $content = '';
 
 if ($mode == PROGRESSREVIEW_TEACHER) {
     $reviews = array();
-    $reviewdata = array();
-    $previousdata = array();
     $students = get_users_by_capability($coursecontext,
                                         'moodle/local_progressreview:hasreview',
                                         '',
@@ -72,22 +70,15 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                                                     $courseid,
                                                     $USER->id,
                                                     PROGRESSREVIEW_SUBJECT);
-        $subjectreview = $reviews[$student->id]->get_plugin('subject');
+        $plugins = $reviews[$student->id]->get_plugins();
+
         if ($submitted) {
-            $post = $_POST['review'][$subjectreview->id];
-            $newdata = array(
-                'homeworkdone' => $post['homeworkdone'] == '' ? null : clean_param($post['homeworkdone'], PARAM_INT),
-                'homeworktotal' => $post['homeworktotal'] == '' ? null : clean_param($post['homeworktotal'], PARAM_INT),
-                'behaviour' => $post['behaviour'] == '' ? null : clean_param($post['behaviour'], PARAM_INT),
-                'effort' => $post['effort'] == '' ? null : clean_param($post['effort'], PARAM_INT),
-                'targetgrade' => $post['targetgrade'] == '' ? null : clean_param($post['targetgrade'], PARAM_INT),
-                'performancegrade' => $post['performancegrade'] == '' ? null : clean_param($post['performancegrade'], PARAM_INT)
-            );
-            if (!$reviews[$student->id]->get_session()->inductionreview) {
-                $newdata['comments'] = $post['comments'] == '' ? null : clean_param($post['comments'], PARAM_TEXT);
-            }
+            $post = $_POST['review'][$plugins['subject']->id];
             try {
-                $subjectreview->update($newdata);
+                foreach ($plugins as $plugin) {
+                    // Clean data as a seperate call rather than as part of process_form_fields() to enforce its use
+                    $plugin->process_form_fields($plugin->clean_params($post));
+                }
                 add_to_log($course->id,
                            'local_progressreview',
                            'update',
@@ -104,12 +95,6 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                 $content = $OUTPUT->error_text($strnotsaved);
             }
         }
-        $reviewdata[$student->id] = $subjectreview->get_review();
-        if ($session->previoussession) {
-            if($previousreview = $reviews[$student->id]->get_previous()) {
-                $previousdata[$student->id] = $previousreview->get_plugin('subject')->get_review();
-            }
-        }
     }
 
     $content .= $output->changescale_button($sessionid, $courseid);
@@ -124,7 +109,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
         $content .= $OUTPUT->container($strprevious, 'reviewnotes');
     }
     $content .= $output->container('', 'clearfix');
-    $content .= $output->subject_review_table($reviewdata, true, $previousdata);
+    $content .= $output->subject_review_table($reviews, true);
     add_to_log($course->id, 'local_progressreview', 'view subjectreview', $PAGE->url->out());
 }
 
