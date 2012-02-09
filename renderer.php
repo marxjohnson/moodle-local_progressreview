@@ -266,15 +266,11 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return $this->output->container($button.$strsavefirst, array('changescale'));
     }
 
-    /**
-     * @todo Make option for non-induction review, and allow avgcse to be configured
-     * @todo Make pluggable
-     */
-    function subject_review_table($reviews,
-                                  $form = true,
-                                  $previousdata = array(),
-                                  $displayby = PROGRESSREVIEW_STUDENT) {
+    public function subject_review_table($reviews,
+                                         $form = true,
+                                         $displayby = PROGRESSREVIEW_STUDENT) {
 
+        $output = '';
         $table = new html_table();
         $table->head = array(
             '',
@@ -296,126 +292,48 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $table->head[1] = get_string('teacher', 'local_progressreview');
         }
 
-        foreach ($reviews as $key => $review) {
-            $student = $review->progressreview->get_student();
-            $session = $review->progressreview->get_session();
-            if ($form || $displayby == PROGRESSREVIEW_STUDENT) {
-                $picture = $this->output->user_picture($student);
-                $name = fullname($student);
-            } else {
-                $picture = $review->progressreview->get_course()->fullname;
-                $name = fullname($review->progressreview->get_teacher());
-            }
-            $attendance = number_format($review->attendance, 0).'%';
-            $punctuality = number_format($review->punctuality, 0).'%';
-            $mintarget = @$review->scale[$review->minimumgrade-1];
-            $fieldarray = 'review['.$review->id.']';
+        $rows = array();
+        foreach ($reviews as $review) {
+            $student = $review->get_student();
+            $session = $review->get_session();
+            $plugins = $review->get_plugins();
             if ($form) {
+
                 $idattrs = array(
                     'type' => 'hidden',
                     'id' => 'id_student_'.$review->id,
                     'value' => $student->id
                 );
 
-                $name .= html_writer::empty_tag('input', $idattrs);
-                $homeworkdoneattrs = array(
-                    'class' => 'subject homework',
-                    'name' => $fieldarray.'[homeworkdone]',
-                    'value' => $review->homeworkdone
-                );
-                $homeworktotalattrs = array(
-                    'class' => 'subject homework',
-                    'name' => $fieldarray.'[homeworktotal]',
-                    'value' => $review->homeworktotal
-                );
-                $homework = html_writer::empty_tag('input', $homeworkdoneattrs);
-                $homework .= ' / ';
-                $homework .= html_writer::empty_tag('input', $homeworktotalattrs);
-                $behaviour = html_writer::select($session->scale_behaviour,
-                                                 $fieldarray.'[behaviour]',
-                                                 $review->behaviour,
-                                                 array('' => get_string('choosedots')),
-                                                 array('class' => 'subject'));
-                $effort = html_writer::select($session->scale_effort,
-                                              $fieldarray.'[effort]',
-                                              $review->effort,
-                                              array('' => get_string('choosedots')),
-                                              array('class' => 'subject'));
-                $targetgrade = html_writer::select($review->scale,
-                                                   $fieldarray.'[targetgrade]',
-                                                   $review->targetgrade,
-                                                   array('' => get_string('choosedots')),
-                                                   array('class' => 'subject'));
-                $performancegrade = html_writer::select($review->scale,
-                                                        $fieldarray.'[performancegrade]',
-                                                        $review->performancegrade,
-                                                        array('' => get_string('choosedots')),
-                                                        array('class' => 'subject'));
-                $commentsattrs = array(
-                    'class' => 'subject',
-                    'name' => $fieldarray.'[comments]'
-                );
-                $commentsfield = html_writer::tag('textarea', $review->comments, $commentsattrs);
-                $commentscell = new html_table_cell($commentsfield);
+                $output .= html_writer::empty_tag('input', $idattrs);
+                foreach ($plugins as $pluginnname => $plugin) {
+                    $newrows = $plugin->add_form_rows();
+                    foreach ($newrows as $newrow) {
+                        if (get_class($newrow) != 'html_table_row') {
+                            throw new coding_exception('add_form_rows must return an
+                                array of html_table_row objects. The '.$pluginname.' plugin
+                                didn\'t do this.');
+                        }
+                    }
+                    $rows = array_merge($rows, $newrows);
+                }
+
             } else {
-                $homework = $review->homeworkdone.'/'.$review->homeworktotal;
-                $behaviour = @$session->scale_behaviour[$review->behaviour];
-                $effort = @$session->scale_effort[$review->effort];
-                $targetgrade = @$review->scale[$review->targetgrade];
-                $performancegrade = @$review->scale[$review->performancegrade];
-                $commentscell = new html_table_cell(str_replace("\n", "<br />", $review->comments));
-            }
-            $previousexists = array_key_exists($key, $previousdata);
-            if (!empty($previousdata) && $previousexists && !empty($previousdata[$key])) {
-                $p = $previousdata[$key];
-                if (!isset($psession)) {
-                    $psession = $p->progressreview->get_session();
-                }
-                $attendance .= $this->previous_data(number_format($p->attendance, 0).'%');
-                $punctuality .= $this->previous_data(number_format($p->punctuality, 0).'%');
-                $homework .= $this->previous_data($p->homeworkdone.'/'.$p->homeworktotal);
-                $behaviour .= $this->previous_data(@$psession->scale_behaviour[$p->behaviour]);
-                $effort .= $this->previous_data(@$psession->scale_effort[$p->effort]);
-                $targetgrade .= $this->previous_data(@$p->scale[$p->targetgrade]);
-                $performancegrade .= $this->previous_data(@$p->scale[$p->performancegrade]);
-            }
-            
-            $notblank = !empty($behaviour) ||
-                        !empty($effort) ||
-                        !empty($targetgrade) ||
-                        !empty($performancegrade) ||
-                        !empty($review->comments);
-            if ($form || $notblank) {
-                $row = new html_table_row(array(
-                    $picture,
-                    $name,
-                    $attendance,
-                    $punctuality,
-                    $homework,
-                    $behaviour,
-                    $effort
-                ));
-
-                if ($form) {
-                    $row->cells[] = $mintarget;
-                }
-                $row->cells[] = $targetgrade;
-                $row->cells[] = $performancegrade;
-
-                $table->data[] = $row;
-                if (!$session->inductionreview) {
-                    $strcomments = get_string('commentstargets', 'local_progressreview');
-                    $headercell = new html_table_cell($strcomments.':');
-                    $headercell->header = true;
-
-                    $commentscell->colspan = 8;
-                    $row = new html_table_row(array('', $headercell, $commentscell));
-                    $table->data[] = $row;
+                foreach ($plugins as $pluginname => $plugin) {
+                    $newrows = $plugin->add_table_rows($displayby == PROGRESSREVIEW_STUDENT);
+                    foreach ($newrows as $newrow) {
+                        if (get_class($newrow) != 'html_table_row') {
+                            throw new coding_exception('add_table_rows must return an
+                                array of html_table_row objects. The '.$pluginname.' plugin
+                                didn\'t do this.');
+                        }
+                    }
+                    $rows = array_merge($rows, $newrows);
                 }
             }
         }
 
-        $output = '';
+        $table->data = $rows;
         $params = array('action' => $this->page->url->out_omit_querystring(), 'method' => 'post');
         $output .= html_writer::start_tag('form', $params);
         $output .= html_writer::input_hidden_params($this->page->url);
@@ -423,10 +341,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
         if ($form) {
             $hiddens = array(
-                'sessionid' => $review->progressreview->get_session()->id,
-                'courseid' => $review->progressreview->get_course()->originalid,
-                'teacherid' => $review->progressreview->get_teacher()->originalid,
-                'reviewtype' => $review->progressreview->get_type(),
+                'sessionid' => $review->get_session()->id,
+                'courseid' => $review->get_course()->originalid,
+                'teacherid' => $review->get_teacher()->originalid,
+                'reviewtype' => $review->get_type(),
                 'editid' => ''
             );
             $hiddenparams = array(
@@ -470,7 +388,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                                                 false,
                                                 $jsmodule);
 
-            foreach ($review->progressreview->get_plugins() as $plugin) {
+            foreach ($review->get_plugins() as $plugin) {
                 $modulename = 'M.progressreview_'.$plugin->get_name();
                 $this->page->requires->js_init_call($modulename.'.init_autosave');
             }
@@ -532,9 +450,6 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return html_writer::alist($links);
     }
 
-    public function previous_data($data) {
-        return $this->output->container('('.$data.')', 'previous');
-    }
 
     public function progress_indicator() {
         $loader = $this->output->pix_icon('i/loading_small', '');

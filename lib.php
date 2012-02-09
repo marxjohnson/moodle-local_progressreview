@@ -849,19 +849,53 @@ abstract class progressreview_plugin {
     abstract function delete();
 
     /**
-     * Adds the fields this plugin needs to the review form
-     */
-    abstract function add_form_fields(&$mform);
-
-    /**
      * Processes the data for this plugin returned from the form
      */
     abstract function process_form_fields($data);
 
+}
+
+/**
+ * Class to define template for tutor review plugins
+ *
+ * Tutor plugins need a couple of extra functions for adding fields and data
+ * to the mform.
+ */
+abstract class progressreview_plugin_tutor extends progressreview_plugin {
+
+    /**
+     * Adds the fields this plugin needs to the review form
+     */
+    abstract public function add_form_fields($mform);
+
     /**
      * Add data for fields to $data
      */
-    abstract function add_form_data($data);
+    abstract public function add_form_data($data);
+
+}
+
+/**
+ * Class to define template for subject review plugins
+ *
+ * Subject review plugins need a couple of extra functions as they don't use mform
+ */
+abstract class progressreview_plugin_subject extends progressreview_plugin {
+
+    /**
+     * Cleans data posted from the plugin's fields
+     */
+    abstract function clean_params($post);
+
+    /**
+     * Returns an array of html_table_rows containing form fields to be added to the form table
+     */
+    abstract function add_form_rows();
+
+    /**
+     * Returns an array of html_table_rows to be added to report tables
+     */
+    abstract function add_table_rows();
 
 }
 
