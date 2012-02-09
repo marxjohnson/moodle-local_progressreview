@@ -4,7 +4,7 @@
  * class progressreview_subject
  * Interface to core data for Subject reviews
  */
-abstract class progressreview_subject_template extends progressreview_plugin {
+abstract class progressreview_subject_template extends progressreview_plugin_subject {
     /*** Attributes: ***/
 
     /**

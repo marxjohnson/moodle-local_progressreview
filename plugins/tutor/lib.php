@@ -4,7 +4,7 @@
  * class progressreview_tutor
  * Interface for the tutor review
  */
-class progressreview_tutor extends progressreview_plugin {
+class progressreview_tutor extends progressreview_plugin_tutor {
 
     /** Aggregations: */
 
@@ -86,7 +86,7 @@ class progressreview_tutor extends progressreview_plugin {
         }
     } // end of member function retrieve_review
 
-    public function add_form_fields(&$mform) {
+    public function add_form_fields($mform) {
         $mform->addElement('textarea',
                            'comments',
                            get_string('comments', 'local_progressreview'),
