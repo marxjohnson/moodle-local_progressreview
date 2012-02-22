@@ -60,26 +60,31 @@ try {
 
     $plugin = $progressreview->get_plugin($plugin);
 
+    $plugin->validate(array($field => $value));
     $plugin->autosave($field, $value);
 
 } catch (moodle_exception $e) {
     add_to_log($courseid, 'local_progressreview', 'update failed', '', get_class($e));
     header('HTTP/1.1 400 Bad Request');
-    die($e->getMessage());
+    progressreview_controller::xhr_response($e);
 } catch (progressreview_invalidfield_exception $e) {
     add_to_log($courseid, 'local_progressreview', 'update failed', '', get_class($e));
     header('HTTP/1.1 400 Bad Request');
-    die($e->getMessage());
+    progressreview_controller::xhr_response($e);
 } catch (dml_write_exception $e) {
     add_to_log($courseid, 'local_progressreview', 'update failed', '', get_class($e));
     header('HTTP/1.1 400 Bad Request');
-    die($e->getMessage());
+    progressreview_controller::xhr_response($e);
 } catch (require_login_exception $e) {
     add_to_log($courseid, 'local_progressreview', 'update failed', '', get_class($e));
-    header('HTTP/1.1 403 Bad Request');
-    die($e->getMessage());
+    header('HTTP/1.1 403 Forbidden');
+    progressreview_controller::xhr_response($e);
 } catch (required_capability_exception $e) {
     add_to_log($courseid, 'local_progressreview', 'update failed', '', get_class($e));
-    header('HTTP/1.1 403 Bad Request');
-    die($e->getMessage());
+    header('HTTP/1.1 403 Forbidden');
+    progressreview_controller::xhr_response($e);
+} catch (progressreview_invalidvalue_exception $e) {
+    add_to_log($courseid, 'local_progressreview', 'update failed', '', get_class($e));
+    header('HTTP/1.1 400 Bad Request');
+    progressreview_controller::xhr_response($e);
 }

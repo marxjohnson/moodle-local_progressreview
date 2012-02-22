@@ -57,6 +57,6 @@ M.progressreview_targets = {
 
         field = field+targetnumber;
 
-        M.local_progressreview.autosave('targets', field, value);
+        M.local_progressreview.autosave('targets', field, value, target);
     }
 }

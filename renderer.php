@@ -372,6 +372,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                     'base',
                     'node',
                     'io',
+                    'io-queue',
                     'json',
                     'event-valuechange',
                     'event-delegate'
@@ -393,6 +394,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 $this->page->requires->js_init_call($modulename.'.init_autosave');
             }
             $output .= $this->progress_indicator();
+            $output .= $this->error_indicator();
 
         }
         return $output;
@@ -457,6 +459,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $label = html_writer::tag('span', $strautosave, array('id' => 'autosavelabel'));
 
         return $this->output->container($loader.$label, '', 'progressindicator');
+    }
+
+    public function error_indicator() {
+        $message = html_writer::tag('span', '', array('id' => 'errormessage'));
+
+        return $this->output->container($message, '', 'errorindicator');
     }
 
     public function tabs($active) {

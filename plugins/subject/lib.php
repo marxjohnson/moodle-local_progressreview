@@ -505,12 +505,14 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $homeworkdoneattrs = array(
             'class' => 'subject homework',
             'name' => $fieldarray.'[homeworkdone]',
-            'value' => $this->homeworkdone
+            'value' => $this->homeworkdone,
+            'id' => 'review_'.$this->progressreview->id.'_homeworkdone'
         );
         $homeworktotalattrs = array(
             'class' => 'subject homework',
             'name' => $fieldarray.'[homeworktotal]',
-            'value' => $this->homeworktotal
+            'value' => $this->homeworktotal,
+            'id' => 'review_'.$this->progressreview->id.'_homeworktotal'
         );
         $homework = html_writer::empty_tag('input', $homeworkdoneattrs);
         $homework .= ' / ';

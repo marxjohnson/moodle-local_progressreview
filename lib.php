@@ -735,6 +735,14 @@ class progressreview_controller {
                                    $strerror,
                                    $strlabel);
     }
+
+    public static function xhr_response($e) {
+        $response = json_encode((object)array(
+            'errortype' => get_class($e),
+            'message' => $e->getMessage())
+        );
+        die($response);
+    }
 } // end of progressreview_controller
 
 class progressreview_cache {
@@ -827,7 +835,9 @@ abstract class progressreview_plugin {
 
     public function autosave($field, $value) {
         try {
-            $success = $this->update(array($field => $value));
+            $data = array($field => $value);
+            $this->validate($data);
+            $success = $this->update($data);
         } catch (progressreview_invalidfield_exception $e) {
             throw $e;
         } catch (dml_write_exception $e) {
