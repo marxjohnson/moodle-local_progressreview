@@ -780,6 +780,12 @@ abstract class progressreview_plugin {
     public function get_name() {
         return $this->name;
     }
+
+
+    public function validate($data) {
+        return true;
+    }
+
     /**
      * Updates the object's properties and the record for this plugin instance with the given data
      */

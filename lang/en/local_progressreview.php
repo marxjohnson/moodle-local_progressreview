@@ -33,6 +33,7 @@ $string['filtercourse'] = 'Filter Course';
 $string['filterteacher'] = 'Filter Teacher';
 $string['homework'] = 'Homework Completion';
 $string['homeworkstart'] = 'Homework Start Date';
+$string['homeworktotallessthandone'] = 'Homework Total was less than Homework Done for {$a}.';
 $string['homeworkstart_help'] = 'Homework statistics will use this date as a start date when calculating completion';
 $string['generate'] = 'Generate PDF';
 $string['generateandview'] = 'Generate PDF and View';

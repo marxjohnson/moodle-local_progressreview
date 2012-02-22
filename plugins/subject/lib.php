@@ -164,6 +164,30 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $DB->delete_records('progressreview_subject', array('id' => $this->id));
     }
 
+    public function validate($data) {
+        if (is_object($data)) {
+            $data = (array)$data;
+        }
+
+        $studentname = fullname($this->progressreview->get_student());
+        $homeworkerror = get_string('homeworktotallessthandone', 'local_progressreview', $studentname);
+        if (array_key_exists('homeworkdone', $data)) {
+            if (array_key_exists('homeworktotal', $data)) {
+                if ($data['homeworktotal'] < $data['homeworkdone']) {
+                    throw new progressreview_invalidvalue_exception($homeworkerror);
+                }
+            } else {
+                if ($this->homeworktotal < $data['homeworkdone']) {
+                    throw new progressreview_invalidvalue_exception($homeworkerror);
+                }
+            }
+        } else if (array_key_exists('homeworktotal', $data)) {
+            if ($data['homeworktotal'] < $this->homeworkdone) {
+                throw new progressreview_invalidvalue_exception($homeworkerror);
+            }
+        }
+    }
+
     /**
      * Updates the attributes with the passed values and saves the values to the
      * database.
@@ -433,6 +457,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
 
     public function process_form_fields($data) {
         global $DB;
+        $this->validate($data);
         if ($this->update($data)) {
             $items = array('target' => 'targetgrade', 'cpg' => 'performancegrade');
             if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
@@ -458,6 +483,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
                     }
                 }
             }
+            return true;
         } else {
             return false;
         }
