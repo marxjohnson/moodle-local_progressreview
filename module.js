@@ -29,6 +29,10 @@ M.local_progressreview = {
 
     progress: '',
 
+    errorindicator: '',
+
+    errorcontainer: '',
+
     savebutton: '',
 
     autosave_failed: false,
@@ -38,6 +42,8 @@ M.local_progressreview = {
     init_autosave: function (Y, savestring) {
         this.Y = Y;
         this.progress = Y.one('#progressindicator');
+        this.errorindicator = Y.one('#errorindicator');
+        this.errorcontainer = this.errorindicator.one('#errormessage');
         strautosave = M.util.get_string('autosaving', 'local_progressreview');
         this.progress.one('#autosavelabel').setContent(strautosave);
         this.progress.setStyle('display', 'none');
@@ -48,10 +54,11 @@ M.local_progressreview = {
         this.savestring = savestring;
     },
 
-    autosave: function(plugin, field, value) {
+    autosave: function(plugin, field, value, element) {
 
         if (!this.autosave_failed) {
             Y = this.Y;
+            this.errorindicator.setStyle('display', 'none');
             this.progress.setStyle('display', 'block');
             var studentid = Y.one('#id_editid').get('value');
             var sessionid = Y.one('#id_sessionid').get('value');
@@ -60,7 +67,7 @@ M.local_progressreview = {
             var reviewtype = Y.one('#id_reviewtype').get('value');
 
             var url = M.cfg.wwwroot+'/local/progressreview/autosave.php';
-            Y.io(url, {
+            Y.io.queue(url, {
                 data: 'studentid='+studentid+'&sessionid='+sessionid
                     +'&courseid='+courseid+'&teacherid='+teacherid
                     +'&reviewtype='+reviewtype+'&plugin='+plugin
@@ -70,15 +77,24 @@ M.local_progressreview = {
                 on: {
                     success: function(id, o) {
                         this.progress.setStyle('display', 'none');
+                        if (element.getStyle('color') == 'red') {
+                            element.setStyle('color', null);
+                        }
                     },
 
                     failure: function(id, o) {
-                        var message = o.responseText;
-                        alert(M.util.get_string('autosavefailed', 'local_progressreview', message));
-                        this.savebutton.set('disabled', false);
-                        this.savebutton.set('value', this.savestring);
+                        var response = Y.JSON.parse(o.responseText);
+                        if (response.errortype == 'progressreview_invalidvalue_exception') {
+                            this.errorcontainer.setContent(response.message);
+                            this.errorindicator.setStyle('display', 'block');
+                            element.setStyle('color', 'red');
+                        } else {
+                            alert(M.util.get_string('autosavefailed', 'local_progressreview', response.message));
+                            this.savebutton.set('disabled', false);
+                            this.savebutton.set('value', this.savestring);
+                            this.autosave_failed = true;
+                        }
                         this.progress.setStyle('display', 'none');
-                        this.autosave_failed = true;
                     }
                 }
             });

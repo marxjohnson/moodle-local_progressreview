@@ -1,7 +1,7 @@
 <?php
 
 
-class progressreview_targets extends progressreview_plugin {
+class progressreview_targets extends progressreview_plugin_tutor {
 
     /** Aggregations: */
 
@@ -11,7 +11,7 @@ class progressreview_targets extends progressreview_plugin {
 
     protected $name = 'targets';
 
-    protected $type = PROGRESSREVIEW_TUTOR;
+    static public $type = PROGRESSREVIEW_TUTOR;
 
     protected $valid_properties = array(
         'id',
@@ -100,7 +100,7 @@ class progressreview_targets extends progressreview_plugin {
         $this->targets = array_merge($DB->get_records_sql($select.$from.$where, array($this->progressreview->id)));
     }
 
-    public function add_form_fields(&$mform) {
+    public function add_form_fields($mform) {
         $count = 0;
         while ($count < 3) {
             $count++;

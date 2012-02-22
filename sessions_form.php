@@ -38,7 +38,7 @@ class progressreview_session_form extends moodleform {
         foreach ($sessions as $session) {
             $sessionoptions[$session->id] = $session->name;
         }
-        $strdealinesubject = get_string('deadline_subject', 'local_progressreview');
+        $strdeadlinesubject = get_string('deadline_subject', 'local_progressreview');
         $strdeadlinetutor = get_string('deadline_tutor', 'local_progressreview');
         $strlockafterdeadline = get_string('lockafterdeadline', 'local_progressreview');
         $strscalebehaviour = get_string('scale_behaviour', 'local_progressreview');
@@ -46,9 +46,11 @@ class progressreview_session_form extends moodleform {
         $strscalehomework = get_string('scale_homework', 'local_progressreview');
         $strsnapshotdate = get_string('snapshotdate', 'local_progressreview');
         $strprevioussession = get_string('showdatafrom', 'local_progressreview');
+        $strhomeworkstart = get_string('homeworkstart', 'local_progressreview');
         $strinductionreview = get_string('inductionreview', 'local_progressreview');
 
         $mform->addElement('hidden', 'editid');
+        $mform->addElement('header', 'general', get_string('general'));
         $mform->addElement('text', 'name', get_string('name', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_subject', $strdeadlinesubject);
         $mform->addElement('date_time_selector', 'deadline_tutor', $strdeadlinetutor);
@@ -56,9 +58,12 @@ class progressreview_session_form extends moodleform {
         $mform->addElement('text', 'scale_behaviour', $strscalebehaviour);
         $mform->addElement('text', 'scale_effort', $strscaleeffort);
         $mform->addElement('text', 'scale_homework', $strscalehomework);
-        $mform->addElement('date_time_selector', 'snapshotdate', $snapshotdate);
+        $mform->addElement('date_selector', 'homeworkstart', $strhomeworkstart);
+        $mform->addElement('date_time_selector', 'snapshotdate', $strsnapshotdate);
         $mform->addElement('select', 'previoussession', $strprevioussession, $sessionoptions);
         $mform->addElement('advcheckbox', 'inductionreview', $strinductionreview);
+
+        $mform->addHelpButton('homeworkstart', 'homeworkstart', 'local_progressreview');
 
         $mform->setTypes(array(
             'name' => PARAM_TEXT,
@@ -68,42 +73,87 @@ class progressreview_session_form extends moodleform {
             'scale_behaviour' => PARAM_TEXT,
             'scale_effort' => PARAM_TEXT,
             'scale_homework' => PARAM_TEXT,
+            'homeworkstart' => PARAM_INT,
             'snapshotdate' => PARAM_INT,
             'previoussession' => PARAM_INT,
             'inductionreview' => PARAM_BOOL
         ));
+
+        $pluginnames = $this->get_plugin_names();
+        $mform->addElement('header', 'plugins', get_string('selectplugins', 'local_progressreview'));
+        foreach ($pluginnames as $pluginname) {
+            $mform->addElement('advcheckbox',
+                               'plugins['.$pluginname.']',
+                               get_string('pluginname', 'progressreview_'.$pluginname));
+        }
+        $mform->setDefault('plugins[tutor]', 1);
+        $mform->setDefault('plugins[subject]', 1);
+        $mform->disabledIf('plugins[tutor]', 'plugins[subject]');
+        $mform->disabledIf('plugins[subject]', 'plugins[tutor]');
         $this->add_action_buttons();
     }
 
-    public function process($data) {
+    private function get_plugin_names() {
         global $DB;
+        $where = $DB->sql_like('plugin', '?').' AND name = ?';
+        $params = array('progressreview_%', 'version');
+        $plugins = $DB->get_records_select('config_plugins', $where, $params, 'plugin', 'plugin');
+        $names = array_keys($plugins);
+        foreach ($names as &$name) {
+            $name = str_replace('progressreview_', '', $name);
+        }
+        return $names;
+    }
+
+    public function process($data) {
+        global $CFG, $DB;
         if ($data->editid) {
-            $data->id = $data->editid;
-            unset($data->editid);
-            return $DB->update_record('progressreview_session', $data);
+            $record = clone($data);
+            $record->id = $data->editid;
+            unset($record->editid);
+            foreach ($data->plugins as $pluginname => $active) {
+                $activeparams = array(
+                    'plugin' => $DB->sql_compare_text($pluginname),
+                    'sessionid' => $record->id
+                );
+                $activewhere = 'plugin = :plugin AND sessionid = :sessionid';
+                if ($active) {
+                    if (!$DB->record_exists_select('progressreview_activeplugins', $activewhere, $activeparams)) {
+                        require_once($CFG->dirroot.'/local/progressreview/plugins/'.$pluginname.'/lib.php');
+                        $class = 'progressreview_'.$pluginname;
+                        $activeplugin = (object)$activeparams;
+                        $activeplugin->reviewtype = $class::$type;
+                        if (!$DB->insert_record('progressreview_activeplugins', $activeplugin)) {
+                            return false;
+                        }
+                    }
+                } else {
+                    if ($activerecord = $DB->get_record_select('progressreview_activeplugins', $activewhere, $activeparams)) {
+                        if (!$DB->delete_records('progressreview_activeplugins', array('id' => $activerecord->id))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return $DB->update_record('progressreview_session', $record);
         } else {
-            $id = $DB->insert_record('progressreview_session', $data);
-            $plugins = array(
-                (object)array(
-                    'plugin' => 'subject',
-                    'sessionid' => $id,
-                    'reviewtype' => PROGRESSREVIEW_SUBJECT
-                ),
-                (object)array(
-                    'plugin' => 'tutor',
-                    'sessionid' => $id,
-                    'reviewtype' => PROGRESSREVIEW_TUTOR
-                ),
-                (object)array(
-                    'plugin' => 'targets',
-                    'sessionid' => $id,
-                    'reviewtype' => PROGRESSREVIEW_TUTOR
-                )
-            );
+            $record = clone($data);
+            unset($record->plugins);
+            $record->id = $DB->insert_record('progressreview_session', $record);
+            $plugins = array();
+            foreach (array_keys(array_filter($data->plugins)) as $pluginname) {
+                require_once($CFG->dirroot.'/local/progressreview/plugins/'.$pluginname.'/lib.php');
+                $class = 'progressreview_'.$pluginname;
+                $plugins[] = (object)array(
+                    'plugin' => $pluginname,
+                    'sessionid' => $record->id,
+                    'reviewtype' => $class::$type
+                );
+            }
             foreach ($plugins as $plugin) {
                 $DB->insert_record('progressreview_activeplugins', $plugin);
             }
-            return $id;
+            return $record->id;
         }
     }
 }

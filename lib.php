@@ -735,6 +735,14 @@ class progressreview_controller {
                                    $strerror,
                                    $strlabel);
     }
+
+    public static function xhr_response($e) {
+        $response = json_encode((object)array(
+            'errortype' => get_class($e),
+            'message' => $e->getMessage())
+        );
+        die($response);
+    }
 } // end of progressreview_controller
 
 class progressreview_cache {
@@ -758,7 +766,7 @@ abstract class progressreview_plugin {
      * The type of progressreview plugin this is
      * either PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
      */
-    protected $type;
+    static protected $type;
 
     /**
      * The progressreview object for the review this instance
@@ -780,6 +788,12 @@ abstract class progressreview_plugin {
     public function get_name() {
         return $this->name;
     }
+
+
+    public function validate($data) {
+        return true;
+    }
+
     /**
      * Updates the object's properties and the record for this plugin instance with the given data
      */
@@ -821,7 +835,9 @@ abstract class progressreview_plugin {
 
     public function autosave($field, $value) {
         try {
-            $success = $this->update(array($field => $value));
+            $data = array($field => $value);
+            $this->validate($data);
+            $success = $this->update($data);
         } catch (progressreview_invalidfield_exception $e) {
             throw $e;
         } catch (dml_write_exception $e) {
@@ -849,19 +865,53 @@ abstract class progressreview_plugin {
     abstract function delete();
 
     /**
-     * Adds the fields this plugin needs to the review form
-     */
-    abstract function add_form_fields(&$mform);
-
-    /**
      * Processes the data for this plugin returned from the form
      */
     abstract function process_form_fields($data);
 
+}
+
+/**
+ * Class to define template for tutor review plugins
+ *
+ * Tutor plugins need a couple of extra functions for adding fields and data
+ * to the mform.
+ */
+abstract class progressreview_plugin_tutor extends progressreview_plugin {
+
+    /**
+     * Adds the fields this plugin needs to the review form
+     */
+    abstract public function add_form_fields($mform);
+
     /**
      * Add data for fields to $data
      */
-    abstract function add_form_data($data);
+    abstract public function add_form_data($data);
+
+}
+
+/**
+ * Class to define template for subject review plugins
+ *
+ * Subject review plugins need a couple of extra functions as they don't use mform
+ */
+abstract class progressreview_plugin_subject extends progressreview_plugin {
+
+    /**
+     * Cleans data posted from the plugin's fields
+     */
+    abstract function clean_params($post);
+
+    /**
+     * Returns an array of html_table_rows containing form fields to be added to the form table
+     */
+    abstract function add_form_rows();
+
+    /**
+     * Returns an array of html_table_rows to be added to report tables
+     */
+    abstract function add_table_rows();
 
 }
 

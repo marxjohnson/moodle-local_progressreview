@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/progressreview/db" VERSION="20110926" COMMENT="Core tables for progressreview"
+<XMLDB PATH="local/progressreview/db" VERSION="20120127" COMMENT="Core tables for progressreview"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -30,8 +30,9 @@
         <FIELD NAME="deadline_subject" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="name" NEXT="deadline_tutor"/>
         <FIELD NAME="deadline_tutor" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="deadline_subject" NEXT="lockafterdeadline"/>
         <FIELD NAME="lockafterdeadline" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" PREVIOUS="deadline_tutor" NEXT="scale_behaviour"/>
-        <FIELD NAME="scale_behaviour" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="lockafterdeadline" NEXT="scale_effort"/>
-        <FIELD NAME="scale_effort" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_behaviour" NEXT="scale_homework"/>
+        <FIELD NAME="scale_behaviour" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="lockafterdeadline" NEXT="homeworkstart"/>
+        <FIELD NAME="homeworkstart" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Start date for homework completion and total stats" PREVIOUS="scale_behaviour" NEXT="scale_effort"/>
+        <FIELD NAME="scale_effort" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="homeworkstart" NEXT="scale_homework"/>
         <FIELD NAME="scale_homework" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="scale_effort" NEXT="template_subject"/>
         <FIELD NAME="template_subject" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="scale_homework" NEXT="template_tutor"/>
         <FIELD NAME="template_tutor" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" PREVIOUS="template_subject" NEXT="snapshotdate"/>

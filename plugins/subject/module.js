@@ -13,7 +13,18 @@ M.progressreview_subject = {
             studentid = Y.one('#id_student_'+reviewid).get('value');
             Y.one('#id_editid').set('value', studentid);
 
-            M.local_progressreview.autosave('subject', field, value);
+            M.local_progressreview.autosave('subject', field, value, e.target);
+
+            console.log(field);
+            if (field == 'homeworkdone') {
+                var totalfield = Y.one('#review_'+reviewid+'_homeworktotal');
+                var total = totalfield.get('value');
+                M.local_progressreview.autosave('subject', 'homeworktotal', total, totalfield);
+            } else if (field == 'homeworktotal') {
+                var donefield = Y.one('#review_'+reviewid+'_homeworkdone');
+                var done = donefield.get('value');
+                M.local_progressreview.autosave('subject', 'homeworkdone', done, donefield);
+            }
         });
     }
 }
