@@ -164,6 +164,30 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $DB->delete_records('progressreview_subject', array('id' => $this->id));
     }
 
+    public function validate($data) {
+        if (is_object($data)) {
+            $data = (array)$data;
+        }
+
+        $studentname = fullname($this->progressreview->get_student());
+        $homeworkerror = get_string('homeworktotallessthandone', 'local_progressreview', $studentname);
+        if (array_key_exists('homeworkdone', $data)) {
+            if (array_key_exists('homeworktotal', $data)) {
+                if ($data['homeworktotal'] < $data['homeworkdone']) {
+                    throw new progressreview_invalidvalue_exception($homeworkerror);
+                }
+            } else {
+                if ($this->homeworktotal < $data['homeworkdone']) {
+                    throw new progressreview_invalidvalue_exception($homeworkerror);
+                }
+            }
+        } else if (array_key_exists('homeworktotal', $data)) {
+            if ($data['homeworktotal'] < $this->homeworkdone) {
+                throw new progressreview_invalidvalue_exception($homeworkerror);
+            }
+        }
+    }
+
     /**
      * Updates the attributes with the passed values and saves the values to the
      * database.
@@ -465,7 +489,37 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
     }
 
     public function process_form_fields($data) {
-        return $this->update($data);
+        global $DB;
+        $this->validate($data);
+        if ($this->update($data)) {
+            $items = array('target' => 'targetgrade', 'cpg' => 'performancegrade');
+            if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
+                $courseid = $this->progressreview->get_course()->originalid;
+                $studentid = $this->progressreview->get_student()->id;
+                foreach ($items as $id => $field) {
+                    if ($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$id))) {
+                        if ($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
+                            $grade->rawgrade = $this->$field;
+                            $grade->finalgrade = $this->$field;
+                            $grade->timemodified = time();
+                            $DB->update_record('grade_grades', $grade);
+                        } else {
+                            $grade = (object)array(
+                                'itemid' => $itemrecord->id,
+                                'userid' => $studentid,
+                                'rawgrade' => $this->$field,
+                                'finalgrade' => $this->$field,
+                                'timecreated' => time()
+                            );
+                            $DB->insert_record('grade_grades', $grade);
+                        }
+                    }
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function add_form_rows() {
@@ -484,12 +538,14 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $homeworkdoneattrs = array(
             'class' => 'subject homework',
             'name' => $fieldarray.'[homeworkdone]',
-            'value' => $this->homeworkdone
+            'value' => $this->homeworkdone,
+            'id' => 'review_'.$this->progressreview->id.'_homeworkdone'
         );
         $homeworktotalattrs = array(
             'class' => 'subject homework',
             'name' => $fieldarray.'[homeworktotal]',
-            'value' => $this->homeworktotal
+            'value' => $this->homeworktotal,
+            'id' => 'review_'.$this->progressreview->id.'_homeworktotal'
         );
         $homework = html_writer::empty_tag('input', $homeworkdoneattrs);
         $homework .= ' / ';

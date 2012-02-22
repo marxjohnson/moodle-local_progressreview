@@ -84,7 +84,6 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                            'update',
                            $PAGE->url->out(),
                            $student->id);
-                $content = $OUTPUT->notification(get_string('changessaved'));
             } catch (dml_write_exception $e) {
                 add_to_log($course->id,
                            'local_progressreview',
@@ -92,9 +91,15 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
                            $PAGE->url->out(),
                            $student->id.': '.$e->error);
                 $strnotsaved = get_string('changesnotsaved', 'local_progressreview');
-                $content = $OUTPUT->error_text($strnotsaved);
+                $content .= $OUTPUT->error_text($strnotsaved);
+            } catch (progressreview_invalidvalue_exception $e) {
+                $strnotsaved = get_string('changesnotsaved', 'local_progressreview');
+                $content .= $OUTPUT->error_text($strnotsaved.' '.$e->getMessage());
             }
         }
+    }
+    if ($submitted && empty($content)) {
+        $content = $OUTPUT->notification(get_string('changessaved'));
     }
 
     $content .= $output->changescale_button($sessionid, $courseid);

@@ -73,6 +73,19 @@
     padding-bottom: .8em;
 }
 
+.path-local-progressreview #errorindicator {
+    height: 2em;
+    position:fixed;
+    right: 1em;
+    bottom: 1em;
+    background-color: #FAA !important;
+    border: 2px solid #F66;
+    padding-left: 1em;
+    padding-right: 1em;
+    padding-top: .8em;
+    display: none;
+}
+
 #filterfields {
     display: none;
 }

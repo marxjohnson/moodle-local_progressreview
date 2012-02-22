@@ -21,7 +21,7 @@ M.progressreview_tutor = {
             field = e.target.get('name');
             value = e.target.get('value');
 
-            M.local_progressreview.autosave('tutor', field, value);
+            M.local_progressreview.autosave('tutor', field, value, e.target);
         });
     }
 }
