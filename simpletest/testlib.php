@@ -349,5 +349,11 @@ class local_progressreview_lib_test extends UnitTestCaseUsingDatabase {
         $gradeparams['rawgrade'] = 6;
         $this->assertTrue($DB->record_exists('grade_grades', $gradeparams));
 
+        $data['homeworkdone'] = 10;
+        $data['homeworktotal'] = 5;
+        $this->expectException('progressreview_invalidvalue_exception');
+
+        $progressreview->get_plugin('subject')->process_form_fields($data);
+
     }
 }
