@@ -272,20 +272,28 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
         $output = '';
         $table = new html_table();
+        $attendanceicon = $this->output->help_icon('attendance', 'local_progressreview');
+        $punctualityicon = $this->output->help_icon('punctuality', 'local_progressreview');
+        $homeworkicon = $this->output->help_icon('homework', 'local_progressreview');
+        $behaviouricon = $this->output->help_icon('behaviour', 'local_progressreview');
+        $efforticon = $this->output->help_icon('effort', 'local_progressreview');
+        $minimumicon = $this->output->help_icon('minimumgrade', 'local_progressreview');
+        $targeticon = $this->output->help_icon('targetgrade', 'local_progressreview');
+        $performanceicon = $this->output->help_icon('performancegrade', 'local_progressreview');
         $table->head = array(
             '',
             '',
-            get_string('attendance', 'local_progressreview'),
-            get_string('punctuality', 'local_progressreview'),
-            get_string('homework', 'local_progressreview'),
-            get_string('behaviour', 'local_progressreview'),
-            get_string('effort', 'local_progressreview'),
+            get_string('attendance', 'local_progressreview').$attendanceicon,
+            get_string('punctuality', 'local_progressreview').$punctualityicon,
+            get_string('homework', 'local_progressreview').$homeworkicon,
+            get_string('behaviour', 'local_progressreview').$behaviouricon,
+            get_string('effort', 'local_progressreview').$efforticon,
         );
         if ($form) {
-            $table->head[] = get_string('minimumgrade', 'local_progressreview');
+            $table->head[] = get_string('minimumgrade', 'local_progressreview').$minimumicon;
         }
-        $table->head[] = get_string('targetgrade', 'local_progressreview');
-        $table->head[] = get_string('performancegrade', 'local_progressreview');
+        $table->head[] = get_string('targetgrade', 'local_progressreview').$targeticon;
+        $table->head[] = get_string('performancegrade', 'local_progressreview').$performanceicon;
 
         if (!$form && $displayby == PROGRESSREVIEW_TEACHER) {
             $table->head[0] = get_string('course');

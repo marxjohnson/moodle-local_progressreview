@@ -2,12 +2,15 @@
 
 $string['all'] = 'All';
 $string['attendance'] = 'Attendance';
+$string['attendance_help'] = 'Attendance is calculated since the start of the academic year, using
+    the formula published on the Registry Page';
 $string['autosaving'] = 'Autosaving';
 $string['autosaveactive'] = 'Autosave Active';
 $string['autosavefailed'] = 'Autosave Failed. Autosaving will now be disabled. Please ensure that
-you manually save using the button at the bottom of the page. The server returned the following 
+you manually save using the button at the bottom of the page. The server returned the following
 message: {$a}';
 $string['behaviour'] = 'Behaviour';
+$string['behaviour_help'] = 'Behaviour';
 $string['changescale'] = 'Change Grade Scale';
 $string['changesnotsaved'] = 'Changes Not Saved';
 $string['comments'] = 'Comments';
@@ -27,11 +30,13 @@ $string['deadline_tutor'] = 'Tutor Review Deadline';
 $string['deleted'] = 'Progressreviews Deleted Successfully';
 $string['disablememlimit'] = 'Try again with Memory Limit disabled';
 $string['effort'] = 'Effort';
+$string['effort_help'] = 'Effort';
 $string['endofgroup'] = 'End of Group';
 $string['filterdept'] = 'Filter Department';
 $string['filtercourse'] = 'Filter Course';
 $string['filterteacher'] = 'Filter Teacher';
 $string['homework'] = 'Homework Completion';
+$string['homework_help'] = '<help>';
 $string['homeworkstart'] = 'Homework Start Date';
 $string['homeworktotallessthandone'] = 'Homework Total was less than Homework Done for {$a}.';
 $string['homeworkstart_help'] = 'Homework statistics will use this date as a start date when calculating completion';
@@ -46,6 +51,9 @@ $string['inductionreview'] = 'Induction Review?';
 $string['lockafterdeadline'] = 'Lock reviews after deadline?';
 $string['manage'] = 'Manage';
 $string['minimumgrade'] = 'Minimum Grade';
+$string['minimumgrade_help'] = 'Minimum Grade is calculated based on the student\'s average GCSE
+    score, and results statistics from previous years. Full details of the calculations and
+    statistics can be found on the Registry Page.';
 $string['name'] = 'Name';
 $string['nodeletereviews'] = 'No reviews were selected for deletion';
 $string['nosessions'] = 'There are currently no Review Sessions';
@@ -57,8 +65,11 @@ $string['outofmemory'] = 'ERROR: While fetching the progress reviews for printin
                     disabled.';
 $string['outstandingreviews'] = 'Outstanding Reviews';
 $string['performancegrade'] = 'Performance Grade';
+$string['performancegrade_help'] = 'Performance Grade';
 $string['pluginname'] = 'Progress Review';
 $string['punctuality'] = 'Punctuality';
+$string['punctuality_help'] = 'Punctuality is calculated from the start of the academic year, using
+    the formula published on the Registry Page';
 $string['previousfigures'] = 'Figures in (brackets) are from {$a}';
 $string['print'] = 'Print';
 $string['printheading'] = 'Printing and PDF Generation';
@@ -87,6 +98,7 @@ $string['startofgroup'] = 'Start of Group';
 $string['student'] = 'Student';
 $string['students'] = 'Students';
 $string['targetgrade'] = 'Target Grade';
+$string['targetgrade_help'] = 'Target Grade';
 $string['teacher'] = 'Teacher';
 $string['teachers'] = 'Teachers';
 $string['tutor'] = 'Tutor';
