@@ -577,7 +577,8 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
             $commentsfield = html_writer::tag('textarea', $this->comments, $commentsattrs);
             $commentscell = new html_table_cell($commentsfield);
             $strcomments = get_string('commentstargets', 'local_progressreview');
-            $headercell = new html_table_cell($strcomments.':');
+            $helpicon = $OUTPUT->help_icon('comments', 'local_progressreview');
+            $headercell = new html_table_cell($strcomments.':'.$helpicon);
             $headercell->header = true;
 
             $commentscell->colspan = 8;

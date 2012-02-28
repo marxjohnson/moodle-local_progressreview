@@ -10,10 +10,13 @@ $string['autosavefailed'] = 'Autosave Failed. Autosaving will now be disabled. P
 you manually save using the button at the bottom of the page. The server returned the following
 message: {$a}';
 $string['behaviour'] = 'Behaviour';
-$string['behaviour_help'] = 'Behaviour';
+$string['behaviour_help'] = 'Refers to behaviour in class i.e. Disruptive, not attendance as the
+    percentage speaks for itself';
 $string['changescale'] = 'Change Grade Scale';
 $string['changesnotsaved'] = 'Changes Not Saved';
 $string['comments'] = 'Comments';
+$string['comments_help'] = 'Write a short comment in the **third person** about the student\'s
+    progress, or action that you have agreed with the student.';
 $string['commentstargets'] = 'Comments/Targets';
 $string['commentswritten'] = 'Comments Written?';
 $string['completedreviews'] = 'Completed Reviews';
@@ -30,13 +33,17 @@ $string['deadline_tutor'] = 'Tutor Review Deadline';
 $string['deleted'] = 'Progressreviews Deleted Successfully';
 $string['disablememlimit'] = 'Try again with Memory Limit disabled';
 $string['effort'] = 'Effort';
-$string['effort_help'] = 'Effort';
+$string['effort_help'] = 'Refers to both effort in class and homework/coursework produced';
 $string['endofgroup'] = 'End of Group';
 $string['filterdept'] = 'Filter Department';
 $string['filtercourse'] = 'Filter Course';
 $string['filterteacher'] = 'Filter Teacher';
 $string['homework'] = 'Homework Completion';
-$string['homework_help'] = '<help>';
+$string['homework_help'] = 'Data will be supplied from your Moodle gradebook. It should be a
+    fraction which represents a cumulative total of homework/coursework from the beginning of the
+    academic year e.g.18/18. The figures are editable in case your gradebook doesn\'t reflect the
+    true picture. As a guide, 2/3 homeworks is unsatisfactory and should be reflected in the
+    Effort section.';
 $string['homeworkstart'] = 'Homework Start Date';
 $string['homeworktotallessthandone'] = 'Homework Total was less than Homework Done for {$a}.';
 $string['homeworkstart_help'] = 'Homework statistics will use this date as a start date when calculating completion';
@@ -51,9 +58,9 @@ $string['inductionreview'] = 'Induction Review?';
 $string['lockafterdeadline'] = 'Lock reviews after deadline?';
 $string['manage'] = 'Manage';
 $string['minimumgrade'] = 'Minimum Grade';
-$string['minimumgrade_help'] = 'Minimum Grade is calculated based on the student\'s average GCSE
-    score, and results statistics from previous years. Full details of the calculations and
-    statistics can be found on the Registry Page.';
+$string['minimumgrade_help'] = 'Minimum Grade is calculated based on national data for students
+    with similar GCSE scores. Full details of the calculations and statistics can be found on the
+    Registry Page.';
 $string['name'] = 'Name';
 $string['nodeletereviews'] = 'No reviews were selected for deletion';
 $string['nosessions'] = 'There are currently no Review Sessions';
@@ -65,7 +72,13 @@ $string['outofmemory'] = 'ERROR: While fetching the progress reviews for printin
                     disabled.';
 $string['outstandingreviews'] = 'Outstanding Reviews';
 $string['performancegrade'] = 'Performance Grade';
-$string['performancegrade_help'] = 'Performance Grade';
+$string['performancegrade_help'] = 'CPG is the subject teacher’s professional judgement of the
+    grade the student is most likely to achieve should they continue to work at their current
+    rate and effectiveness.  This grade can be a ‘U’ or ‘Fail’ where accurate assessment supports
+    that view. This can be chosen from a drop down menu of grades. If the scale displayed is not
+    correct for this class, please click the Override Grade Scale button for other options
+    e.g. P, M, D, Unsatisfactory, Satisfactory, Good, and Excellent, IB and Art endorsement
+    grades. ';
 $string['pluginname'] = 'Progress Review';
 $string['punctuality'] = 'Punctuality';
 $string['punctuality_help'] = 'Punctuality is calculated from the start of the academic year, using
@@ -98,7 +111,8 @@ $string['startofgroup'] = 'Start of Group';
 $string['student'] = 'Student';
 $string['students'] = 'Students';
 $string['targetgrade'] = 'Target Grade';
-$string['targetgrade_help'] = 'Target Grade';
+$string['targetgrade_help'] = 'This is the grade that the student sets for themselves after
+    discussion with you ';
 $string['teacher'] = 'Teacher';
 $string['teachers'] = 'Teachers';
 $string['tutor'] = 'Tutor';
