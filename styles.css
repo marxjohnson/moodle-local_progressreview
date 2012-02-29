@@ -86,6 +86,10 @@
     display: none;
 }
 
+.path-local-progressreview .mintargetcell {
+    text-align: center;
+}
+
 #filterfields {
     display: none;
 }
