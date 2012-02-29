@@ -564,7 +564,9 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
             $effort
         ));
 
-        $row->cells[] = $mintarget;
+        $mintargetcell = new html_table_cell($mintarget);
+        $mintargetcell->attributes['class'] = 'mintargetcell';
+        $row->cells[] = $mintargetcell;
         $row->cells[] = $targetgrade;
         $row->cells[] = $performancegrade;
 
