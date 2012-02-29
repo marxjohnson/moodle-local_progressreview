@@ -266,7 +266,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
             throw new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
         }
         $skeleton['scaleid'] = $this->retrieve_scaleid();
-        $targetgrades = $this->retrieve_targetgrades();
+        $targetgrades = $this->retrieve_targetgrades(array('min'));
         $skeleton['minimumgrade'] = $targetgrades->min;
         $skeleton['targetgrade'] = $targetgrades->target;
         $skeleton['performancegrade'] = $targetgrades->cpg;
