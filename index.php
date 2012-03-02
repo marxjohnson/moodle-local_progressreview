@@ -115,11 +115,7 @@ if (isset($permissions['manager'])) {
                                                      $teacherid,
                                                      PROGRESSREVIEW_TUTOR);
             if ($subjectreviews) {
-                $reviewdata = array();
-                foreach ($reviews as $review) {
-                    $reviewdata[] = $review->get_plugin('subject')->get_review();
-                }
-                $content .= $output->subject_review_table($reviewdata, false);
+                $content .= $output->subject_review_table($subjectreviews, false);
             } else if ($tutorreviews) {
                 $redirectparams = array(
                     'teacherid' => $teacherid,
