@@ -73,7 +73,7 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
         $plugins = $reviews[$student->id]->get_plugins();
 
         if ($submitted) {
-            $post = $_POST['review'][$plugins['subject']->id];
+            $post = $_POST['review'][$reviews[$student->id]->id];
             try {
                 foreach ($plugins as $plugin) {
                     // Clean data as a seperate call rather than as part of process_form_fields() to enforce its use
