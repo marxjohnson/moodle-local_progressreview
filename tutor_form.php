@@ -166,6 +166,7 @@ class progressreview_tutor_form extends moodleform {
         $mform->addGroup($buttongroup, 'buttons');
 
         $mform->addElement('html', $output->progress_indicator());
+        $mform->addElement('html', $output->error_indicator());
 
     }
 
