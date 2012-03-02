@@ -131,6 +131,9 @@ class progressreview_targets extends progressreview_plugin_tutor {
             unset($data->$fieldname);
         }
 
+        $this->validate($data);
+$string['deadlineinpast'] = 'Deadlines must be in the future. Deadline {$a} is in the past.';
+
         foreach ($data->targets as $number => $target) {
             if (!empty($this->targets[$number])) {
                 $update = (object)array(
@@ -190,6 +193,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
                 $field1 = 'deadline';
                 $field2 = 'targetset';
                 $value2 = '';
+                $this->validate(array('deadlines' => array($number => $value)));
             }
             $targets = array();
             if (!empty($this->targets[$number])) {
@@ -220,6 +224,21 @@ class progressreview_targets extends progressreview_plugin_tutor {
             throw $e;
         } catch (progressreview_autosave_exception $e) {
             throw $e;
+        }
+    }
+
+    public function validate($data) {
+        if (is_object($data)) {
+            $data = (array)$data;
+        }
+
+        if (array_key_exists('deadlines', $data)) {
+            foreach ($data['deadlines'] as $number => $deadline) {
+                if ($deadline < time()) {
+                    $error = get_string('deadlineinpast', 'progressreview_targets', $number+1);
+                    throw new progressreview_invalidvalue_exception($error);
+                }
+            }
         }
     }
 
