@@ -65,6 +65,11 @@ if (!$id) {
     if ($editid) {
         $session = $DB->get_record('progressreview_session', array('id' => $editid));
         $session->editid = $session->id;
+        $activeplugins = $DB->get_records('progressreview_activeplugins', array('sessionid' => $session->id));
+        $session->plugins = array();
+        foreach ($activeplugins as $activeplugin) {
+            $session->plugins[$activeplugin->plugin] = 1;
+        }
         $form->set_data($session);
     }
 
