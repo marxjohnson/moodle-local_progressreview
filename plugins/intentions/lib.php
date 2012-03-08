@@ -38,7 +38,7 @@ class progressreview_intentions extends progressreview_plugin_tutor {
                 }
             }
             foreach ((array)$intention as $field => $datum) {
-                $this->currentcoursese[$key]->progression->intention->$field = $datum;
+                $this->currentcourses[$key]->progression->intention->$field = $datum;
             }
         }
         return true;
