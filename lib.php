@@ -758,11 +758,14 @@ class progressreview_controller {
     }
 
     public static function xhr_response($e) {
-        $response = json_encode((object)array(
+        $response = (object)array(
             'errortype' => get_class($e),
-            'message' => $e->getMessage())
+            'message' => $e->getMessage()
         );
-        die($response);
+        if ($e instanceof dml_write_exception) {
+            $response->message .= ' '.$e->error;
+        }
+        die(json_encode($response));
     }
 } // end of progressreview_controller
 
