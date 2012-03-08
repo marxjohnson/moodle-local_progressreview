@@ -58,6 +58,7 @@ $string['outofmemory'] = 'ERROR: While fetching the progress reviews for printin
 $string['outstandingreviews'] = 'Outstanding Reviews';
 $string['performancegrade'] = 'Performance Grade';
 $string['pluginname'] = 'Progress Review';
+$string['plugins'] = 'Plugins';
 $string['punctuality'] = 'Punctuality';
 $string['previousfigures'] = 'Figures in (brackets) are from {$a}';
 $string['print'] = 'Print';

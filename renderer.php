@@ -475,7 +475,27 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $tabs[] = new tabobject(2,
                 new moodle_url('/local/progressreview/print.php'),
                 get_string('print', 'local_progressreview'));
+        $admin = has_capability('moodle/local_progressreview:manage', get_context_instance(CONTEXT_SYSTEM));
+        $plugins = progressreview_controller::get_plugins_with_config();
+        if ($admin && !empty($plugins)) {
+            $tabs[] = new tabobject(3,
+                new moodle_url('/local/progressreview/plugins/index.php'),
+                get_string('plugins', 'local_progressreview'));
+        }
         print_tabs(array($tabs), $active);
+    }
+
+    public function plugin_config_links($plugins) {
+        $links = array();
+        foreach($plugins as $plugin) {
+            $params = array('plugin' => $plugin);
+            $url = new moodle_url('/local/progressreview/plugins/index.php', $params);
+            $name = get_string('pluginname', 'progressreview_'.$plugin);
+            $links[] = html_writer::link($url, $name);
+        }
+
+        return html_writer::alist($links);
+
     }
 
     public function print_selectors($session, $student, $course, $teacher) {
