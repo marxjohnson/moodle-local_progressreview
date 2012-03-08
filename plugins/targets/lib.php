@@ -132,7 +132,6 @@ class progressreview_targets extends progressreview_plugin_tutor {
         }
 
         $this->validate($data);
-$string['deadlineinpast'] = 'Deadlines must be in the future. Deadline {$a} is in the past.';
 
         foreach ($data->targets as $number => $target) {
             if (!empty($this->targets[$number])) {
