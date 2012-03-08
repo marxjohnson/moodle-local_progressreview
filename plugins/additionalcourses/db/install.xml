@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/progressreview/plugins/additionalcourses/db" VERSION="20120308" COMMENT="XMLDB file for Moodle local/progressreview/plugins/additionalcourses"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="progressreview_addition" COMMENT="Names and codes of additional courses available for selection." NEXT="progressreview_addition_sel">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="name" PREVIOUS="id" NEXT="code"/>
+        <FIELD NAME="code" TYPE="char" LENGTH="3" NOTNULL="false" SEQUENCE="false" PREVIOUS="name" NEXT="active"/>
+        <FIELD NAME="active" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" COMMENT="Flag to mark this course as active (available for selection) or inactive (archived for display/reporting)" PREVIOUS="code"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="progressreview_addition_sel" COMMENT="Selected additional courses" PREVIOUS="progressreview_addition">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="reviewid"/>
+        <FIELD NAME="reviewid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="additionid"/>
+        <FIELD NAME="additionid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="reviewid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
