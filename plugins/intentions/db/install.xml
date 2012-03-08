@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/progressreview/plugins/intentions/db" VERSION="20120306" COMMENT="XMLDB file for Moodle local/progressreview/plugins/intentions"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="progressreview_intent" COMMENT="Intentions lookup table" NEXT="progressreview_intent_select">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="currentcode"/>
+        <FIELD NAME="currentcode" TYPE="char" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Code to match against current courses" PREVIOUS="id" NEXT="newcode"/>
+        <FIELD NAME="newcode" TYPE="char" LENGTH="3" NOTNULL="false" SEQUENCE="false" COMMENT="Code mask for new course" PREVIOUS="currentcode" NEXT="newname"/>
+        <FIELD NAME="newname" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name of progression course" PREVIOUS="newcode" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="newname" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="timecreated"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="progressreview_intent_select" COMMENT="Default comment for the table, please edit me" PREVIOUS="progressreview_intent">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="reviewid"/>
+        <FIELD NAME="reviewid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="intentid"/>
+        <FIELD NAME="intentid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" COMMENT="ID of the progression course" PREVIOUS="reviewid" NEXT="istop"/>
+        <FIELD NAME="istop" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Is this one of the top 3 choices?" PREVIOUS="intentid" NEXT="cont"/>
+        <FIELD NAME="cont" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="istop"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="reviewid-id"/>
+        <KEY NAME="reviewid-id" TYPE="foreign" FIELDS="reviewid" REFTABLE="progressreview" REFFIELDS="id" PREVIOUS="primary" NEXT="intentid-id"/>
+        <KEY NAME="intentid-id" TYPE="foreign" FIELDS="intentid" REFTABLE="progressreview_intent" REFFIELDS="id" PREVIOUS="reviewid-id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
