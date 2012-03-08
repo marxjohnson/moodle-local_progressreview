@@ -77,6 +77,7 @@ $string['scale_homework'] = 'Scale Homework';
 $string['selectcriteria'] = 'Select criteria of reviews for printing';
 $string['selectplugins'] = 'Select Plugins';
 $string['selectedreviews'] = 'You have chosen to print the following Progress Reviews';
+$string['sessioncreated'] = 'Session Saved';
 $string['sessions'] = 'Sessions';
 $string['showdatafrom'] = 'Show Data From';
 $string['snapshot'] = 'Snapshot data';
