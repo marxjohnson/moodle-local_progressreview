@@ -80,6 +80,7 @@ $string['performancegrade_help'] = 'CPG is the subject teacher’s professional 
     e.g. P, M, D, Unsatisfactory, Satisfactory, Good, and Excellent, IB and Art endorsement
     grades. ';
 $string['pluginname'] = 'Progress Review';
+$string['plugins'] = 'Plugins';
 $string['punctuality'] = 'Punctuality';
 $string['punctuality_help'] = 'Punctuality is calculated from the start of the academic year, using
     the formula published on the Registry Page';
@@ -101,6 +102,7 @@ $string['scale_homework'] = 'Scale Homework';
 $string['selectcriteria'] = 'Select criteria of reviews for printing';
 $string['selectplugins'] = 'Select Plugins';
 $string['selectedreviews'] = 'You have chosen to print the following Progress Reviews';
+$string['sessioncreated'] = 'Session Saved';
 $string['sessions'] = 'Sessions';
 $string['showdatafrom'] = 'Show Data From';
 $string['snapshot'] = 'Snapshot data';

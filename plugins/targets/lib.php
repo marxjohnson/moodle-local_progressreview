@@ -72,6 +72,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
                 $this->target[$number]->$field = $datum;
             }
         }
+        return true;
     } // end of member function update
 
     /**
@@ -95,7 +96,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
         global $DB;
         $select = 'SELECT ip.* ';
         $from = 'FROM {ilptarget_posts} ip
-        	JOIN {progressreview_targets} pt ON ip.id = pt.targetid ';
+            JOIN {progressreview_targets} pt ON ip.id = pt.targetid ';
         $where = 'WHERE pt.reviewid = ?';
         $this->targets = array_merge($DB->get_records_sql($select.$from.$where, array($this->progressreview->id)));
     }
@@ -132,7 +133,6 @@ class progressreview_targets extends progressreview_plugin_tutor {
         }
 
         $this->validate($data);
-$string['deadlineinpast'] = 'Deadlines must be in the future. Deadline {$a} is in the past.';
 
         foreach ($data->targets as $number => $target) {
             if (!empty($this->targets[$number])) {
@@ -159,7 +159,7 @@ $string['deadlineinpast'] = 'Deadlines must be in the future. Deadline {$a} is i
                 }
             }
         }
-        $this->update($targets);
+        return $this->update($targets);
     }
 
     public function add_form_data($data) {

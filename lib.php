@@ -690,6 +690,27 @@ class progressreview_controller {
         return $criteria;
     }
 
+    public static function get_plugins_with_config() {
+        global $CFG;
+
+        $basedir = $CFG->dirroot.'/local/progressreview/plugins';
+        $files = scandir($basedir);
+        $pluginswithconfig = array();
+
+        foreach ($files as $plugin) {
+            if (substr($plugin, 0, 1) != '' && is_dir($basedir.'/'.$plugin)) {
+                $configlib = $basedir.'/'.$plugin.'/config_form.php';
+                if (is_file($configlib)) {
+                    require_once($configlib);
+                    if (class_exists('progressreview_'.$plugin.'_config_form')) {
+                        $pluginswithconfig[] = $plugin;
+                    }
+                }
+            }
+        }
+        return $pluginswithconfig;
+    }
+
     public static function print_error_handler($strerror, $strlabel) {
         global $OUTPUT;
         $isError = false;
@@ -737,11 +758,14 @@ class progressreview_controller {
     }
 
     public static function xhr_response($e) {
-        $response = json_encode((object)array(
+        $response = (object)array(
             'errortype' => get_class($e),
-            'message' => $e->getMessage())
+            'message' => $e->getMessage()
         );
-        die($response);
+        if ($e instanceof dml_write_exception) {
+            $response->message .= ' '.$e->error;
+        }
+        die(json_encode($response));
     }
 } // end of progressreview_controller
 
