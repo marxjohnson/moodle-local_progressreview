@@ -85,7 +85,7 @@ class progressreview_tutor_form extends moodleform {
             $pluginname = $plugin->get_name();
             $legend = get_string('pluginname', 'progressreview_'.$pluginname);
             if ($pluginname != 'tutor') {
-                $mform->addElement('header', $pluginname, $legend);
+                $mform->addElement('header', $pluginname.'_header', $legend);
                 $plugin->add_form_fields($mform);
             }
             $plugin->require_js();
