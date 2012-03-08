@@ -72,6 +72,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
                 $this->target[$number]->$field = $datum;
             }
         }
+        return true;
     } // end of member function update
 
     /**
@@ -158,7 +159,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
                 }
             }
         }
-        $this->update($targets);
+        return $this->update($targets);
     }
 
     public function add_form_data($data) {
