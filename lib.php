@@ -818,11 +818,8 @@ abstract class progressreview_plugin {
         return true;
     }
 
-    /**
-     * Updates the object's properties and the record for this plugin instance with the given data
-     */
-    public function update($data) {
-        global $DB;
+
+    protected function filter_properties($data) {
         if (is_object($data)) {
             $data = (array)$data;
         }
@@ -838,6 +835,23 @@ abstract class progressreview_plugin {
         $data = (object)array_filter($data, function($datum) {
             return $datum !== false;
         });
+        return $data;
+    }
+
+    protected function update_timestamp() {
+        global $DB;
+        if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+            throw new progressreview_autosave_exception('Timestamp Update Failed');
+        }
+    }
+
+    /**
+     * Updates the object's properties and the record for this plugin instance with the given data
+     */
+    public function update($data) {
+        global $DB;
+
+        $data = $this->filter_properties($data);
 
         if (empty($data)) {
             throw new progressreview_invalidfield_exception('Invalid Field Name');
@@ -846,10 +860,10 @@ abstract class progressreview_plugin {
         $params = array('id' => $this->progressreview->id);
         if (!empty($this->id)) {
             $data->id = $this->id;
-            $DB->set_field('progressreview', 'datecreated', time(), $params);
+            $this->update_timestamp();
             return $DB->update_record('progressreview_'.$this->name, $data);
         } else {
-            $DB->set_field('progressreview', 'datemodified', time(), $params);
+            $this->update_timestamp();
             $this->id = $DB->insert_record('progressreview_'.$this->name, $data);
             return $this->id;
         }
