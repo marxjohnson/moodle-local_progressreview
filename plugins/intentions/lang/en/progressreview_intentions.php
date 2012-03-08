@@ -21,9 +21,13 @@ $string['istop_help'] = 'Please ask the student to name the three courses they m
 $string['musthavefile'] = 'You must select a file';
 $string['newcode'] = 'New Code';
 $string['newname'] = 'New Name';
+$string['notrequired'] = 'This section is not required for this student';
 $string['pluginname'] = 'Intentions';
 $string['progressioncourse'] = 'Progression Course';
 $string['progressioncourse_help'] = 'These are the continuation options for next year.';
+$string['tutormask'] = 'Tutor Group Mask';
+$string['tutormask_help'] = 'Only display this plugin on reviews for reviews where the course shortname
+    matches this mask (must be a valid regular expression). Leave blank to match all.';
 $string['toomanytop'] = 'You can only select 3 Timetable Priorities. Click the (?) Icon form more information';
 $string['wrongcolcount'] = 'Wrong number of columns on line {$a->line}. Expected 3, got {$a->num}';
 

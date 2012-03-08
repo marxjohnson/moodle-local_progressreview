@@ -110,49 +110,54 @@ class progressreview_intentions extends progressreview_plugin_tutor {
 
     public function add_form_fields($mform) {
         global $OUTPUT;
-        $strcurrentcourse = get_string('currentcourse', 'progressreview_intentions');
-        $currentcoursehelp = $OUTPUT->help_icon('currentcourse', 'progressreview_intentions');
-        $strprogressioncourse = get_string('progressioncourse', 'progressreview_intentions');
-        $progressioncoursehelp = $OUTPUT->help_icon('progressioncourse', 'progressreview_intentions');
-        $strcontinue = get_string('continue', 'progressreview_intentions');
-        $continuehelp = $OUTPUT->help_icon('continue', 'progressreview_intentions');
-        $stristop = get_string('istop', 'progressreview_intentions');
-        $istophelp = $OUTPUT->help_icon('istop', 'progressreview_intentions');
-        $hw = 'html_writer';
-        $table = $hw::start_tag('table');
-        $headings = $hw::tag('th', $strcurrentcourse.$currentcoursehelp)
-            .$hw::tag('th', $strprogressioncourse.$progressioncoursehelp)
-            .$hw::tag('th', $strcontinue.$continuehelp)
-            .$hw::tag('th', $stristop.$istophelp);
-        $table .= $hw::tag('tr', $headings);
+        $tutormask = get_config('progressreview_intentions', 'tutormask');
+        if (empty($tutormask) || preg_match($tutormask, $this->progressreview->get_course()->shortname) > 0) {
+            $strcurrentcourse = get_string('currentcourse', 'progressreview_intentions');
+            $currentcoursehelp = $OUTPUT->help_icon('currentcourse', 'progressreview_intentions');
+            $strprogressioncourse = get_string('progressioncourse', 'progressreview_intentions');
+            $progressioncoursehelp = $OUTPUT->help_icon('progressioncourse', 'progressreview_intentions');
+            $strcontinue = get_string('continue', 'progressreview_intentions');
+            $continuehelp = $OUTPUT->help_icon('continue', 'progressreview_intentions');
+            $stristop = get_string('istop', 'progressreview_intentions');
+            $istophelp = $OUTPUT->help_icon('istop', 'progressreview_intentions');
+            $hw = 'html_writer';
+            $table = $hw::start_tag('table');
+            $headings = $hw::tag('th', $strcurrentcourse.$currentcoursehelp)
+                .$hw::tag('th', $strprogressioncourse.$progressioncoursehelp)
+                .$hw::tag('th', $strcontinue.$continuehelp)
+                .$hw::tag('th', $stristop.$istophelp);
+            $table .= $hw::tag('tr', $headings);
 
-        $mform->addElement('html', $table);
+            $mform->addElement('html', $table);
 
-        $contattrs = array('group' => null, 'class' => 'intentions cont');
-        $istopattrs = array('group' => null, 'class' => 'intentions istop');
+            $contattrs = array('group' => null, 'class' => 'intentions cont');
+            $istopattrs = array('group' => null, 'class' => 'intentions istop');
 
-        foreach ($this->currentcourses as $key => $currentcourse) {
-            $mform->addElement('html', $hw::start_tag('tr'));
-            $mform->addElement('html', $hw::tag('td', $currentcourse->fullname));
-            if ($currentcourse->progression) {
-                $progression = $currentcourse->progression->newname;
-                $cells = $hw::tag('td', $progression).$hw::start_tag('td');
-                $mform->addElement('html', $cells);
-                $mform->addElement('advcheckbox', 'intentions['.$key.'][cont]', '', '', $contattrs);
-                $mform->addElement('html', $hw::end_tag('td').$hw::start_tag('td'));
-                $mform->addElement('advcheckbox', 'intentions['.$key.'][istop]', '', '', $istopattrs);
-                $mform->addElement('html', $hw::end_tag('td'));
-            } else {
-                $cells = $hw::tag('td', 'None').$hw::empty_tag('td').$hw::empty_tag('td');
-                $mform->addElement('html', $cells);
+            foreach ($this->currentcourses as $key => $currentcourse) {
+                $mform->addElement('html', $hw::start_tag('tr'));
+                $mform->addElement('html', $hw::tag('td', $currentcourse->fullname));
+                if ($currentcourse->progression) {
+                    $progression = $currentcourse->progression->newname;
+                    $cells = $hw::tag('td', $progression).$hw::start_tag('td');
+                    $mform->addElement('html', $cells);
+                    $mform->addElement('advcheckbox', 'intentions['.$key.'][cont]', '', '', $contattrs);
+                    $mform->addElement('html', $hw::end_tag('td').$hw::start_tag('td'));
+                    $mform->addElement('advcheckbox', 'intentions['.$key.'][istop]', '', '', $istopattrs);
+                    $mform->addElement('html', $hw::end_tag('td'));
+                } else {
+                    $cells = $hw::tag('td', 'None').$hw::empty_tag('td').$hw::empty_tag('td');
+                    $mform->addElement('html', $cells);
+                }
+                $mform->addElement('html', $hw::end_tag('tr'));
+
+                $mform->setType('intentions['.$key.'][cont]', PARAM_BOOL);
+                $mform->setType('intentions['.$key.'][istop]', PARAM_BOOL);
+                $mform->disabledIf('intentions['.$key.'][istop]', 'intentions['.$key.'][cont]');
             }
-            $mform->addElement('html', $hw::end_tag('tr'));
-
-            $mform->setType('intentions['.$key.'][cont]', PARAM_BOOL);
-            $mform->setType('intentions['.$key.'][istop]', PARAM_BOOL);
-            $mform->disabledIf('intentions['.$key.'][istop]', 'intentions['.$key.'][cont]');
+            $mform->addElement('html', $hw::end_tag('table'));
+        } else {
+            $mform->addElement('static', 'notrequired', '', get_string('notrequired', 'progressreview_intentions'));
         }
-        $mform->addElement('html', $hw::end_tag('table'));
     }
 
     public function add_form_data($data) {
