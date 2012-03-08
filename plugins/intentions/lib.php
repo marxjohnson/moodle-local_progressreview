@@ -18,40 +18,23 @@ class progressreview_intentions extends progressreview_plugin_tutor {
 
     public function __construct(&$review) {
         parent::__construct($review);
-
     }
 
     public function update($intentions) {
         global $DB;
         foreach ($intentions as $key => $intention) {
-            if (is_object($intention)) {
-                $intention = (array)$intention;
-            }
-
-            foreach ($intention as $field => $datum) {
-                if(!in_array($field, $this->valid_properties)) {
-                    $intention[$field] = false;
-                }
-            }
-
-            $intention = (object)array_filter($intention, function($datum) {
-                return $datum !== false;
-            });
+            $intention = $this->filter_properties($intention);
 
             if (!empty($intention->id)) {
                 if (!$DB->update_record('progressreview_intent_select', $intention)) {
                     throw new progressreview_autosave_exception('Intention Update Failed');
                 }
-                if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
-                    throw new progressreview_autosave_exception('Timestamp Update Failed');
-                }
+                $this->update_timestamp();
             } else {
                 $intention->id = $DB->insert_record('progressreview_intent_select', $intention);
 
                 if ($intention->id) {
-                    if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
-                        throw new progressreview_autosave_exception('Timestamp Update Failed');
-                    }
+                    $this->update_timestamp();
                 }
             }
             foreach ((array)$intention as $field => $datum) {
