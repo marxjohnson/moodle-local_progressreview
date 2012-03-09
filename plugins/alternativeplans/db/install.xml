@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/progressreview/plugins/alternativeplans/db" VERSION="20120308" COMMENT="XMLDB file for Moodle local/progressreview/plugins/alternativeplans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="progressreview_altplan" COMMENT="Default comment for alternativeplans, please edit me" NEXT="progressreview_altplan_sel">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="description"/>
+        <FIELD NAME="description" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="progressreview_altplan_sel" COMMENT="Default comment for the table, please edit me" PREVIOUS="progressreview_altplan">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="reviewid"/>
+        <FIELD NAME="reviewid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="altplanid"/>
+        <FIELD NAME="altplanid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="reviewid" NEXT="comments"/>
+        <FIELD NAME="comments" TYPE="text" LENGTH="small" NOTNULL="true" SEQUENCE="false" PREVIOUS="altplanid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
