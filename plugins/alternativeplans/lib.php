@@ -70,6 +70,8 @@ class progressreview_alternativeplans extends progressreview_plugin_tutor {
         $mform->setType('alternativeplan', PARAM_INT);
         $mform->setType('alternativeplan_comments', PARAM_TEXT);
         $mform->disabledIf('alternativeplan_comments', 'alternativeplan', 'eq', 0);
+            $strquestion = get_string('question', 'progressreview_alternativeplans');
+            $mform->addElement('static', 'question', '', $strquestion);
     }
 
     public function add_form_data($data) {

@@ -12,3 +12,4 @@ $string['description'] = 'Description';
 $string['id'] = 'ID';
 $string['noblankcomments'] = 'If an Alternative Plan is selected, you must enter further details';
 $string['pluginname'] = 'Alternative Plans';
+$string['question'] = 'What is this student planning to do next year?';
