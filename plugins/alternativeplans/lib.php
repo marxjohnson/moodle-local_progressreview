@@ -102,8 +102,9 @@ class progressreview_alternativeplans extends progressreview_plugin_tutor {
                 $alternativeplan['id'] = $this->alternativeplan->id;
             }
 
-            $this->update($alternativeplan);
+            return $this->update($alternativeplan);
         }
+        return true;
     }
 
     public function autosave($field, $value) {
@@ -121,8 +122,8 @@ class progressreview_alternativeplans extends progressreview_plugin_tutor {
                 $alternativeplan['id'] = $this->alternativeplan->id;
             }
 
-            $this->update($alternativeplan);
+            return $this->update($alternativeplan);
         }
-
+        return true;
     }
 }
