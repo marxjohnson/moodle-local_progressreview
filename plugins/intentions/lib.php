@@ -180,28 +180,32 @@ class progressreview_intentions extends progressreview_plugin_tutor {
     }
 
     public function process_form_fields($data) {
-        $intentions = array();
 
-        $this->validate($data);
-        foreach ($data->intentions as $key => $intention) {
+        if (isset($data->intentions)) {
+            $intentions = array();
+            $this->validate($data);
+            foreach ($data->intentions as $key => $intention) {
 
-            if (!$intention['cont'] && $intention['istop']) {
-                $intention['istop'] = false;
+                if (!$intention['cont'] && $intention['istop']) {
+                    $intention['istop'] = false;
+                }
+
+                $progression = $this->currentcourses[$key]->progression;
+                $intentions[$key] = array(
+                    'reviewid' => $this->progressreview->id,
+                    'intentid' => $progression->id,
+                    'istop' => $intention['istop'],
+                    'cont' => $intention['cont']
+                );
+                if (!empty($progression->intention)) {
+                    $intentions[$key]['id'] = $progression->intention->id;
+                }
+
             }
-
-            $progression = $this->currentcourses[$key]->progression;
-            $intentions[$key] = array(
-                'reviewid' => $this->progressreview->id,
-                'intentid' => $progression->id,
-                'istop' => $intention['istop'],
-                'cont' => $intention['cont']
-            );
-            if (!empty($progression->intention)) {
-                $intentions[$key]['id'] = $progression->intention->id;
-            }
-
+            return $this->update($intentions);
+        } else {
+            return true;
         }
-        return $this->update($intentions);
     }
 
     public function autosave($field, $value) {

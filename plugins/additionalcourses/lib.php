@@ -99,25 +99,29 @@ class progressreview_additionalcourses extends progressreview_plugin_tutor {
     }
 
     public function process_form_fields($data) {
-        $additions = array();
 
-        if (!empty($this->additions)) {
-            foreach ($this->additions as $addition) {
-                $key = $addition->id;
-                if (array_key_exists($key, $data->additionalcourse)) {
-                    $additions[$key] = clone($addition);
-                    $additions[$key]->additionid = $data->additionalcourse[$key];
-                    unset($data->additionalcourse[$key]);
+        if (isset($data->additionalcourse)) {
+            $additions = array();
+            if (!empty($this->additions)) {
+                foreach ($this->additions as $addition) {
+                    $key = $addition->id;
+                    if (array_key_exists($key, $data->additionalcourse)) {
+                        $additions[$key] = clone($addition);
+                        $additions[$key]->additionid = $data->additionalcourse[$key];
+                        unset($data->additionalcourse[$key]);
+                    }
                 }
             }
+            foreach ($data->additionalcourse as $additionalcourse) {
+                $additions[] = array(
+                    'reviewid' => $this->progressreview->id,
+                    'additionid' => $additionalcourse
+                );
+            }
+            return $this->update($additions);
+        } else {
+            return true;
         }
-        foreach ($data->additionalcourse as $additionalcourse) {
-            $additions[] = array(
-                'reviewid' => $this->progressreview->id,
-                'additionid' => $additionalcourse
-            );
-        }
-        return $this->update($additions);
     }
 
     public function autosave($field, $value) {

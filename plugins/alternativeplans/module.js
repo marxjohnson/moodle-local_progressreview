@@ -1,10 +1,12 @@
 
 M.progressreview_alternativeplans = {
   Y: null,
+  intentions: null,
   init_autosave: function(Y) {
     this.Y = Y;
-    this.check_intentions();
-    Y.all('.intentions.cont').on('click', function(e) {
+    this.intentions = Y.all('.intentions.cont');
+    if (this.intentions.size > 0) this.check_intentions();
+    this.intentions.on('click', function(e) {
       return this.check_intentions();
     }, this);
     return Y.all('.alternativeplan').on('change', function(e) {
@@ -33,7 +35,7 @@ M.progressreview_alternativeplans = {
   check_intentions: function() {
     var alternativeplan, checked, comments;
     alternativeplan = this.Y.one('#id_alternativeplan');
-    checked = this.Y.all('.intentions.cont').get('checked').indexOf(true) >= 0;
+    checked = this.intentions.get('checked').indexOf(true) >= 0;
     if (checked) {
       alternativeplan.one('option').set('selected', true);
       comments = this.Y.one('#id_alternativeplan_comments');

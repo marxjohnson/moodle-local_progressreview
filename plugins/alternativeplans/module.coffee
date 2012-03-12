@@ -1,12 +1,15 @@
 M.progressreview_alternativeplans =
 
     Y: null
+    intentions: null
 
     init_autosave: (Y) ->
         @Y = Y
-        @check_intentions()
+        @intentions = Y.all '.intentions.cont'
+        if @intentions.size > 0
+            @check_intentions()
 
-        Y.all('.intentions.cont').on 'click', (e) ->
+        @intentions.on 'click', (e) ->
             @check_intentions()
         , @
 
@@ -32,7 +35,7 @@ M.progressreview_alternativeplans =
 
     check_intentions: ->
         alternativeplan = @Y.one('#id_alternativeplan')
-        checked = @Y.all('.intentions.cont').get('checked').indexOf(true) >= 0
+        checked = @intentions.get('checked').indexOf(true) >= 0
         if checked
             alternativeplan.one('option').set 'selected', true
             comments = @Y.one('#id_alternativeplan_comments')

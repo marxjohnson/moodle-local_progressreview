@@ -57,21 +57,26 @@ class progressreview_alternativeplans extends progressreview_plugin_tutor {
 
     public function add_form_fields($mform) {
         global $DB;
-        $options = $DB->get_records_menu('progressreview_altplan', array(), 'description');
-        array_unshift($options, get_string('choosedots'));
-        $attrs = array('class' => 'alternativeplan');
-        $stralternativeplan = get_string('alternativeplan', 'progressreview_alternativeplans');
-        $strcomments = get_string('comments', 'progressreview_alternativeplans');
-        $mform->addElement('select', 'alternativeplan', $stralternativeplan, $options, $attrs);
-        $attrs['rows'] = 4;
-        $attrs['cols'] = 50;
-        $mform->addElement('textarea', 'alternativeplan_comments', $strcomments, $attrs);
-        $mform->addHelpButton('alternativeplan_comments', 'comments', 'progressreview_alternativeplans');
-        $mform->setType('alternativeplan', PARAM_INT);
-        $mform->setType('alternativeplan_comments', PARAM_TEXT);
-        $mform->disabledIf('alternativeplan_comments', 'alternativeplan', 'eq', 0);
+        $tutormask = get_config('progressreview_intentions', 'tutormask');
+        if (empty($tutormask) || preg_match($tutormask, $this->progressreview->get_course()->shortname) > 0) {
+            $options = $DB->get_records_menu('progressreview_altplan', array(), 'description');
+            array_unshift($options, get_string('choosedots'));
+            $attrs = array('class' => 'alternativeplan');
+            $stralternativeplan = get_string('alternativeplan', 'progressreview_alternativeplans');
+            $strcomments = get_string('comments', 'progressreview_alternativeplans');
             $strquestion = get_string('question', 'progressreview_alternativeplans');
             $mform->addElement('static', 'question', '', $strquestion);
+            $mform->addElement('select', 'alternativeplan', $stralternativeplan, $options, $attrs);
+            $attrs['rows'] = 4;
+            $attrs['cols'] = 50;
+            $mform->addElement('textarea', 'alternativeplan_comments', $strcomments, $attrs);
+            $mform->addHelpButton('alternativeplan_comments', 'comments', 'progressreview_alternativeplans');
+            $mform->setType('alternativeplan', PARAM_INT);
+            $mform->setType('alternativeplan_comments', PARAM_TEXT);
+            $mform->disabledIf('alternativeplan_comments', 'alternativeplan', 'eq', 0);
+        } else {
+            $mform->addElement('static', 'notrequired', '', get_string('notrequired', 'progressreview_intentions'));
+        }
     }
 
     public function add_form_data($data) {
