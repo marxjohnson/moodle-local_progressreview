@@ -31,7 +31,7 @@ class progressreview_intentions_renderer extends plugin_renderer_base {
     }
 }
 
-class progressreview_intentions_print_handler extends plugin_print_renderer_base {
+class progressreview_intentions_print_renderer extends plugin_print_renderer_base {
     public function review($currentcourses) {
         $this->output->heading(get_string('pluginname', 'progressreview_intentions'));
         $table = new html_table();

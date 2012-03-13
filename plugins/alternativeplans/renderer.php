@@ -10,7 +10,7 @@ class progressreview_alternativeplans_renderer extends plugin_renderer_base {
     }
 }
 
-class progressreview_alternativeplans_print_handler extends plugin_print_renderer_base {
+class progressreview_alternativeplans_print_renderer extends plugin_print_renderer_base {
     public function review($alternativeplans) {
         if ($alternativeplan) {
             $this->output->heading(get_string('pluginname', 'progressreview_alternativeplans'), 4);
