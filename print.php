@@ -34,6 +34,7 @@ $sort = optional_param('sort', null, PARAM_TEXT);
 $generate = optional_param('generate', false, PARAM_BOOL);
 $continue = optional_param('continue', false, PARAM_BOOL);
 $disablememlimit = optional_param('disablememlimit', false, PARAM_BOOL);
+$groupby = optional_param('groupby', PROGRESSREVIEW_STUDENT, PARAM_INT);
 
 require_login($SITE);
 $systemcontext = get_context_instance(CONTEXT_SYSTEM);
@@ -94,11 +95,16 @@ if ($generate) {
     foreach ($tutorreviews as $tutorreview) {
         $sessid = $tutorreview->get_session()->id;
         $student = $tutorreview->get_student();
+        $course = $tutorreview->get_course()->shortname;
         $studentname = $student->lastname.$student->firstname.$student->id;
         if (!array_key_exists($sessid, $sortedtutorreviews)) {
             $sortedtutorreviews[$sessid] = array();
         }
-        $sortedtutorreviews[$sessid][$studentname] = $tutorreview;
+        if ($groupby == PROGRESSREVIEW_STUDENT) {
+            $sortedtutorreviews[$sessid][$studentname] = $tutorreview;
+        } else {
+            $sortedtutorreviews[$sessid][$course][$studentname] = $tutorreview;
+        }
     }
 
     foreach ($subjectreviews as $subjectreview) {
@@ -111,50 +117,70 @@ if ($generate) {
         if (!array_key_exists($sessid, $sortedsubjectreviews)) {
             $sortedsubjectreviews[$sessid] = array();
         }
-        if (!array_key_exists($studentname, $sortedsubjectreviews[$sessid])) {
-            $sortedsubjectreviews[$sessid][$studentname] = array();
+        if ($groupby == PROGRESSREVIEW_STUDENT) {
+            if (!array_key_exists($studentname, $sortedsubjectreviews[$sessid])) {
+                $sortedsubjectreviews[$sessid][$studentname] = array();
+            }
+            $sortedsubjectreviews[$sessid][$studentname][] = $subjectreview;
+        } else {
+            $sortedsubjectreviews[$sessid][$course][$studentname] = $subjectreview;
         }
-        $sortedsubjectreviews[$sessid][$studentname][] = $subjectreview->get_plugin('subject')->get_review();
     }
 
-    ksort($sortedtutorreviews);
     $html = '';
     $pdf = pdf_writer::init('A4', 'L');
     $output = $PAGE->get_renderer('local_progressreview_print');
-    foreach ($sortedtutorreviews as $sessionreviews) {
-        ksort($sessionreviews);
-        foreach ($sessionreviews as $student => $tutorreview) {
-            $session = $tutorreview->get_session();
-            $heading = fullname($tutorreview->get_student()).' - '.$session->name;
-            $pdf = $output->heading($heading, 1);
-            $subjectdata = array();
-            if (isset($sortedsubjectreviews[$session->id][$student])) {
-                $subjectdata = $sortedsubjectreviews[$session->id][$student];
-                $pdf = $output->subject_review_table($subjectdata);
-            }
 
-            $tutorplugins = $tutorreview->get_plugins();
-
-            $reviewdata = array();
-            $pluginrenderers = array();
-            foreach ($tutorplugins as $plugin) {
-                require_once($CFG->dirroot.'/local/progressreview/plugins/'.$plugin->get_name().'/renderer.php');
-                $reviewdata[] = $plugin->get_review();
-                if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name().'_print')) {
-                    throw new coding_exception('The progressreview_'.$plugin->get_name().' has no print renderer.
-                        It must have a print renderer with at least the review() method defined');
+    if ($groupby == PROGRESSREVIEW_STUDENT) {
+        ksort($sortedtutorreviews);
+        foreach ($sortedtutorreviews as $sessionreviews) {
+            ksort($sessionreviews);
+            foreach ($sessionreviews as $student => $tutorreview) {
+                $session = $tutorreview->get_session();
+                $heading = fullname($tutorreview->get_student()).' - '.$session->name;
+                $output->heading($heading, 1);
+                $subjectdata = array();
+                if (isset($sortedsubjectreviews[$session->id][$student])) {
+                    $subjectreviews = $sortedsubjectreviews[$session->id][$student];
+                    $output->subject_review_table($subjectreviews, PROGRESSREVIEW_STUDENT);
                 }
-            }
 
-            $strtutor = get_string('tutor', 'local_progressreview');
-            $fullname = fullname($tutorreview->get_teacher());
-            $pdf = $output->heading($strtutor.': '.$fullname, 3);
+                $tutorplugins = $tutorreview->get_plugins();
 
-            $tutorreviews = '';
-            foreach ($pluginrenderers as $key => $pluginrenderer) {
-                $pdf = $pluginrenderer->review($reviewdata[$key]);
+                $reviewdata = array();
+                $pluginrenderers = array();
+                foreach ($tutorplugins as $plugin) {
+                    require_once($CFG->dirroot.'/local/progressreview/plugins/'.$plugin->get_name().'/renderer.php');
+                    $reviewdata[] = $plugin->get_review();
+                    if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name().'_print')) {
+                        throw new coding_exception('The progressreview_'.$plugin->get_name().' has no print renderer.
+                            It must have a print renderer with at least the review() method defined');
+                    }
+                }
+
+                $strtutor = get_string('tutor', 'local_progressreview');
+                $fullname = fullname($tutorreview->get_teacher());
+                $output->heading($strtutor.': '.$fullname, 3);
+
+                $tutorreviews = '';
+                foreach ($pluginrenderers as $key => $pluginrenderer) {
+                    $pluginrenderer->review($reviewdata[$key]);
+                }
+            pdf_writer::page_break();
             }
-        $pdf = pdf_writer::page_break();
+        }
+    } else {
+        ksort($sortedsubjectreviews);
+        foreach ($sortedsubjectreviews as $sessionreviews) {
+            ksort($sessionreviews);
+            foreach($sessionreviews as $shortname => $coursereviews) {
+                ksort($coursereviews);
+                $firstreview = current($coursereviews);
+                $session = $firstreview->get_session();
+                $heading = $firstreview->get_course()->fullname.' - '.$session->name;
+                $output->heading($heading, 1);
+                $output->subject_review_table($coursereviews, PROGRESSREVIEW_SUBJECT);
+            }
         }
     }
 
@@ -179,7 +205,7 @@ if ($generate) {
     $teachers = $teacherselect->get_selected_users();
 
     $content .= $OUTPUT->heading(get_string('selectedreviews', 'local_progressreview'), 3);
-    $content .= $output->print_confirmation($sessions, $students, $courses, $teachers);
+    $content .= $output->print_confirmation($sessions, $students, $courses, $teachers, $groupby);
 } else {
     $content .= $output->print_selectors($sessionselect,
                                          $studentselect,
