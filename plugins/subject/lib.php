@@ -591,7 +591,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         return $rows;
     }
 
-    public function add_table_rows($groupby, $showincomplete = true) {
+    public function add_table_rows($displayby, $showincomplete = true) {
         global $OUTPUT;
         $rows = array();
         $row = new html_table_row();
@@ -612,7 +612,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
 
         $session = $this->progressreview->get_session();
         $student = $this->progressreview->get_student();
-        if ($groupby == PROGRESSREVIEW_STUDENT) {
+        if ($displayby == PROGRESSREVIEW_SUBJECT) {
             $row->cells[] = $this->progressreview->get_course()->fullname;
             $row->cells[] = fullname($this->progressreview->get_teacher());
         } else {

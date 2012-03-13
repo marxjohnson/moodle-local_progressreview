@@ -295,7 +295,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $table->head[] = get_string('targetgrade', 'local_progressreview').$targeticon;
         $table->head[] = get_string('performancegrade', 'local_progressreview').$performanceicon;
 
-        if (!$form && $displayby == PROGRESSREVIEW_TEACHER) {
+        if (!$form && $displayby == PROGRESSREVIEW_SUBJECT) {
             $table->head[0] = get_string('course');
             $table->head[1] = get_string('teacher', 'local_progressreview');
         }
@@ -328,7 +328,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
             } else {
                 foreach ($plugins as $pluginname => $plugin) {
-                    $newrows = $plugin->add_table_rows($displayby == PROGRESSREVIEW_STUDENT);
+                    $newrows = $plugin->add_table_rows($displayby);
                     foreach ($newrows as $newrow) {
                         if (get_class($newrow) != 'html_table_row') {
                             throw new coding_exception('add_table_rows must return an
