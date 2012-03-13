@@ -38,7 +38,17 @@ class progressreview_alternativeplans extends progressreview_plugin_tutor {
     }
 
     public function get_review() {
-        return $this->alternativeplan;
+        global $DB;
+        if ($this->alternativeplan) {
+            $altplans = $DB->get_records_menu('progressreview_altplan');
+            $plan = (object)array(
+                'plan' => $altplans[$this->alternativeplan->altplanid],
+                'comments' => $this->alternativeplan->comments
+            );
+            return $plan;
+        } else {
+            return false;
+        }
     }
 
     public function delete() {
@@ -60,7 +70,7 @@ class progressreview_alternativeplans extends progressreview_plugin_tutor {
         $tutormask = get_config('progressreview_intentions', 'tutormask');
         if (empty($tutormask) || preg_match($tutormask, $this->progressreview->get_course()->shortname) > 0) {
             $options = $DB->get_records_menu('progressreview_altplan', array(), 'description');
-            array_unshift($options, get_string('choosedots'));
+            $options = array(get_string('choosedots')) + $options;
             $attrs = array('class' => 'alternativeplan');
             $stralternativeplan = get_string('alternativeplan', 'progressreview_alternativeplans');
             $strcomments = get_string('comments', 'progressreview_alternativeplans');

@@ -49,7 +49,17 @@ class progressreview_additionalcourses extends progressreview_plugin_tutor {
     }
 
     public function get_review() {
-        return $this->additions;
+        global $DB;
+        if ($this->additions) {
+            $courses = array();
+            $additionalcourses = $DB->get_records_menu('progressreview_addition', array('active' => 1));
+            foreach ($this->additions as $addition) {
+                $courses[] = $additionalcourses[$addition->additionid];
+            }
+            return $courses;
+        } else {
+            return false;
+        }
     }
 
     public function delete() {
@@ -76,7 +86,7 @@ class progressreview_additionalcourses extends progressreview_plugin_tutor {
 
             $attrs = array('class' => 'additionalcourse');
             $options = $DB->get_records_menu('progressreview_addition', array('active' => 1), 'name');
-            array_unshift($options, get_string('choosedots'));
+            $options = array(get_string('choosedots')) + $options;
             $stradditional = get_string('additionalcourse', 'progressreview_additionalcourses');
             for ($i=0,$j=1;$i<$j;$i++) {
                 $mform->addElement('select', 'additionalcourse['.$i.']', $stradditional, $options, $attrs);

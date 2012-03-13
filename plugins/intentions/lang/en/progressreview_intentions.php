@@ -21,6 +21,7 @@ $string['istop_help'] = 'Please ask the student to name the three courses they m
 $string['musthavefile'] = 'You must select a file';
 $string['newcode'] = 'New Code';
 $string['newname'] = 'New Name';
+$string['none'] = 'None';
 $string['notrequired'] = 'This section is not required for this student';
 $string['pluginname'] = 'Intentions';
 $string['progressioncourse'] = 'Progression Course';

@@ -38,7 +38,17 @@ class progressreview_ultimateplans extends progressreview_plugin_tutor {
     }
 
     public function get_review() {
-        return $this->ultimateplan;
+        global $DB;
+        if ($this->ultimateplan) {
+            $ultplans = $DB->get_records_menu('progressreview_ultplan');
+            $plan = (object)array(
+                'plan' => $ultplans[$this->ultimateplan->ultplanid],
+                'comments' => $this->ultimateplan->comments
+            );
+            return $plan;
+        } else {
+            return false;
+        }
     }
 
     public function delete() {
@@ -60,7 +70,7 @@ class progressreview_ultimateplans extends progressreview_plugin_tutor {
         $tutormask = get_config('progressreview_intentions', 'tutormask');
         if (empty($tutormask) || preg_match($tutormask, $this->progressreview->get_course()->shortname) > 0) {
             $options = $DB->get_records_menu('progressreview_ultplan', array(), 'description');
-            array_unshift($options, get_string('choosedots'));
+            $options = array(get_string('choosedots')) + $options;
             $attrs = array('class' => 'ultimateplan');
             $strultimateplan = get_string('ultimateplan', 'progressreview_ultimateplans');
             $strcomments = get_string('comments', 'progressreview_ultimateplans');

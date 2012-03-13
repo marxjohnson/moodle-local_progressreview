@@ -51,7 +51,7 @@ class progressreview_intentions extends progressreview_plugin_tutor {
      * @access public
      */
     public function get_review() {
-        return $this->intentions;
+        return $this->currentcourses;
     } // end of member function get_intentions
 
     public function delete() {
@@ -103,6 +103,7 @@ class progressreview_intentions extends progressreview_plugin_tutor {
             $continuehelp = $OUTPUT->help_icon('continue', 'progressreview_intentions');
             $stristop = get_string('istop', 'progressreview_intentions');
             $istophelp = $OUTPUT->help_icon('istop', 'progressreview_intentions');
+            $strnone = get_string('none', 'progressreview_intentions');
             $hw = 'html_writer';
             $table = $hw::start_tag('table');
             $headings = $hw::tag('th', $strcurrentcourse.$currentcoursehelp)
@@ -128,7 +129,7 @@ class progressreview_intentions extends progressreview_plugin_tutor {
                     $mform->addElement('advcheckbox', 'intentions['.$key.'][istop]', '', '', $istopattrs);
                     $mform->addElement('html', $hw::end_tag('td'));
                 } else {
-                    $cells = $hw::tag('td', 'None').$hw::empty_tag('td').$hw::empty_tag('td');
+                    $cells = $hw::tag('td', $strnone).$hw::empty_tag('td').$hw::empty_tag('td');
                     $mform->addElement('html', $cells);
                 }
                 $mform->addElement('html', $hw::end_tag('tr'));

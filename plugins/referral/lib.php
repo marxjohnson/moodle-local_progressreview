@@ -14,9 +14,11 @@ class progressreview_referral extends progressreview_plugin_tutor {
 
     public function get_review() {
         global $DB;
-        $referral = $this->referral;
-        $referral->user = $DB->get_record('user', array('id' => $referral->userid));
-        return $referral;
+        if ($this->referral) {
+            $referral = $this->referral;
+            $referral->user = $DB->get_record('user', array('id' => $referral->userid));
+            return $referral;
+        }
     }
 
     public function retrieve_review() {
