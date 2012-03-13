@@ -98,7 +98,7 @@ $content .= $output->user_session_links($user, $sessions, $sessionid);
 
 $content .= $output->subject_review_table($subjectreviews,
                                           false,
-                                          PROGRESSREVIEW_TEACHER);
+                                          PROGRESSREVIEW_SUBJECT);
 
 if ($tutorreview) {
     $strtutor = get_string('tutor', 'local_progressreview');
