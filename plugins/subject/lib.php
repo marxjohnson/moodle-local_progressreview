@@ -591,19 +591,33 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         return $rows;
     }
 
-    public function add_table_rows($bystudent = true) {
+    public function add_table_rows($groupby, $showincomplete = true) {
         global $OUTPUT;
         $rows = array();
         $row = new html_table_row();
 
+        $inductionreview = $this->progressreview->get_session()->inductionreview;
+
+        if (!$showincomplete) {
+            $incomplete = empty($this->homeworkdone) || empty($this->homeworktotal)
+                || empty($this->behaviour) || empty($this->effort) || empty($this->targetgrade)
+                || empty($this->performancegrade);
+            if (!$inductionreview) {
+                $incomplete = $incomplete || empty($this->comments);
+            }
+            if ($incomplete) {
+                return $rows;
+            }
+        }
+
         $session = $this->progressreview->get_session();
         $student = $this->progressreview->get_student();
-        if ($bystudent) {
-            $row->cells[] = $OUTPUT->user_picture($student);
-            $row->cells[] = fullname($student);
-        } else {
+        if ($groupby == PROGRESSREVIEW_STUDENT) {
             $row->cells[] = $this->progressreview->get_course()->fullname;
             $row->cells[] = fullname($this->progressreview->get_teacher());
+        } else {
+            $row->cells[] = '';//$OUTPUT->user_picture($student);
+            $row->cells[] = fullname($student);
         }
 
         $row->cells[] = number_format($this->attendance, 0).'%';
@@ -615,13 +629,13 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $row->cells[] = @$this->scale[$this->performancegrade];
         $rows[] = $row;
 
-        if (!$this->progressreview->get_session()->inductionreview) {
+        if (!$inductionreview) {
             $commentscell = new html_table_cell(str_replace("\n", "<br />", $this->comments));
             $strcomments = get_string('commentstargets', 'local_progressreview');
             $headercell = new html_table_cell($strcomments.':');
             $headercell->header = true;
 
-            $commentscell->colspan = 8;
+            $commentscell->colspan = 7;
             $row = new html_table_row(array('', $headercell, $commentscell));
             $rows[] = $row;
         }

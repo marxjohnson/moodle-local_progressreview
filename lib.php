@@ -735,6 +735,7 @@ class progressreview_controller {
                     'students' => $_POST['students'],
                     'courses' => $_POST['courses'],
                     'teachers' => $_POST['teachers'],
+                    'groupby' => $_POST['groupby'],
                     'generate' => true,
                     'disablememlimit' => true,
                     'sesskey' => sesskey()
@@ -742,7 +743,7 @@ class progressreview_controller {
                 $url = new moodle_url('/local/progressreview/print.php', $params);
                 echo html_writer::link($url, $strlabel);
             } else {
-                echo "Script execution halted ({$error['message']})";
+                echo "Script execution halted ({$error['message']} on line {$error['line']} of {$error['file']})";
             }
         }
     }
@@ -949,7 +950,7 @@ abstract class progressreview_plugin_subject extends progressreview_plugin {
     /**
      * Returns an array of html_table_rows to be added to report tables
      */
-    abstract function add_table_rows();
+    abstract function add_table_rows($groupby, $showincomplete = true);
 
 }
 
@@ -1484,9 +1485,13 @@ class pdf_writer {
                     $newrow = new html_table_row();
 
                     foreach ($row as $item) {
-                        $cell = new html_table_cell();
-                        $cell->text = $item;
-                        $newrow->cells[] = $cell;
+                        if (!($item instanceof html_table_cell)) {
+                            $cell = new html_table_cell();
+                            $cell->text = $item;
+                            $newrow->cells[] = $cell;
+                        } else {
+                            $newrow->cells[] = $item;
+                        }
                     }
                     $row = $newrow;
                 }
@@ -1524,6 +1529,7 @@ class pdf_writer {
                     $cells[$key]['TEXT'] = $cell->text;
 
                 }
+
                 self::$pdf->tbSetDataType($cells);
                 self::$pdf->tbDrawData($cells);
                 $fill = !$fill;
