@@ -13,9 +13,10 @@ class progressreview_referral_renderer extends plugin_renderer_base {
 class progressreview_referral_print_renderer extends plugin_print_renderer_base {
     public function review($referral) {
         if ($referral) {
-            $this->output->heading(get_string('pluginname', 'progressreview_referral'), 2);
+            $this->output->heading(get_string('pluginname', 'progressreview_referral'), 4);
             $this->output->heading(fullname($referral->user), 4);
-            pdf_writer::div($referral->message);
+            $options = array('font' => (object)array('size' => 12));
+            pdf_writer::div($referral->message, $options);
             return pdf_writer::$pdf;
         }
     }

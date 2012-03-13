@@ -33,7 +33,7 @@ class progressreview_intentions_renderer extends plugin_renderer_base {
 
 class progressreview_intentions_print_renderer extends plugin_print_renderer_base {
     public function review($currentcourses) {
-        $this->output->heading(get_string('pluginname', 'progressreview_intentions'));
+        $this->output->heading(get_string('pluginname', 'progressreview_intentions'), 4);
         $table = new html_table();
         $strcurrentcourse = get_string('currentcourse', 'progressreview_intentions');
         $strprogressioncourse = get_string('progressioncourse', 'progressreview_intentions');
@@ -58,6 +58,11 @@ class progressreview_intentions_print_renderer extends plugin_print_renderer_bas
             }
             $table->data[] = $row;
         }
-        return pdf_writer::table($table);
+        $table->size = array(100, 100, 100, 100);
+        pdf_writer::change_font((object)array('size' => 8));
+        pdf_writer::table($table);
+        pdf_writer::$pdf->Ln(30);
+
+        return pdf_writer::$pdf;
     }
 }

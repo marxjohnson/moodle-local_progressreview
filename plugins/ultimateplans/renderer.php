@@ -11,10 +11,11 @@ class progressreview_ultimateplans_renderer extends plugin_renderer_base {
 }
 
 class progressreview_ultimateplans_print_renderer extends plugin_print_renderer_base {
-    public function review($ultimateplans) {
+    public function review($ultimateplan) {
         if ($ultimateplan) {
             $this->output->heading(get_string('pluginname', 'progressreview_ultimateplans'), 4);
-            pdf_writer::div($ultimateplan->plan);
+            $options = array('font' => (object)array('size' => 12));
+            pdf_writer::div($ultimateplan->plan, $options);
             pdf_writer::div($ultimateplan->comments);
             return pdf_writer::$pdf;
         }
