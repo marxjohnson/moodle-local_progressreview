@@ -26,13 +26,13 @@
 
 class local_progressreview_renderer extends plugin_renderer_base {
 
-    function editicon($url) {
+    public function editicon($url) {
         $icon = $this->output->pix_icon('t/edit', get_string('edit'));
         $link = html_writer::link($url, $icon);
         return $link;
     }
 
-    function sessions_table($sessions) {
+    public function sessions_table($sessions) {
         $table = new html_table();
         $table->head = array(
             get_string('name', 'local_progressreview'),
@@ -69,7 +69,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return $output;
     }
 
-    function department_table($department, $subjectsummaries, $tutorsummaries) {
+    public function department_table($department, $subjectsummaries, $tutorsummaries) {
         $strheading = get_string('reviewsfordept', 'local_progressreview', $department->name);
         $output = $this->output->heading($strheading, 2);
 
@@ -156,7 +156,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return $output;
     }
 
-    function filter_fields() {
+    public function filter_fields() {
         $output = '';
         $strdept = get_string('filterdept', 'local_progressreview');
         $strcourse = get_string('filtercourse', 'local_progressreview');
@@ -173,11 +173,11 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return $this->output->container($output, '', 'filterfields');
     }
 
-    function course_table($course) {
+    public function course_table($course) {
         return 'Whoops! not done yet!';
     }
 
-    function courses_table($courses) {
+    public function courses_table($courses) {
         $strheading = get_string('courseswithreviews', 'local_progressreview');
         $output = $this->output->heading($strheading, 2);
 
@@ -201,16 +201,16 @@ class local_progressreview_renderer extends plugin_renderer_base {
         return $output;
     }
 
-    function session_links($url, $sessions) {
+    public function session_links($url, $sessions) {
         $sessionlinks = array();
-        foreach($sessions as $session) {
+        foreach ($sessions as $session) {
             $url = new moodle_url($url, array('sessionid' => $session->id));
             $sessionlinks[] = html_writer::link($url, $session->name);
         }
         return html_writer::alist($sessionlinks);
     }
 
-    function course_selector_form($potential_selector,
+    public function course_selector_form($potential_selector,
                                   $distributed_selector,
                                   $sessionid,
                                   $type = PROGRESSREVIEW_SUBJECT) {
@@ -257,7 +257,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
     }
 
-    function changescale_button($sessionid, $courseid) {
+    public function changescale_button($sessionid, $courseid) {
         $params = array('sessionid' => $sessionid, 'courseid' => $courseid);
         $url = new moodle_url('/local/progressreview/changescale.php', $params);
         $strchangescale = get_string('changescale', 'local_progressreview');
@@ -422,12 +422,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $strstudent = get_string('student', 'local_progressreview');
         $strcomments = get_string('commentswritten', 'local_progressreview');
         $table->head = array($strstudent, $strcomments);
-        foreach($progressreviews as $progressreview) {
+        foreach ($progressreviews as $progressreview) {
 
             $review = $progressreview->get_plugin('tutor')->get_review();
             $student = $progressreview->get_student();
             $name = fullname($student);
-            if(empty($review->comments)) {
+            if (empty($review->comments)) {
                 $completed = get_string('no');
             } else {
                 $completed = get_string('yes');
@@ -483,7 +483,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $tabs[] = new tabobject(2,
                 new moodle_url('/local/progressreview/print.php'),
                 get_string('print', 'local_progressreview'));
-        $admin = has_capability('moodle/local_progressreview:manage', get_context_instance(CONTEXT_SYSTEM));
+        $admin = has_capability('moodle/local_progressreview:manage', 
+                                get_context_instance(CONTEXT_SYSTEM));
         $plugins = progressreview_controller::get_plugins_with_config();
         if ($admin && !empty($plugins)) {
             $tabs[] = new tabobject(3,
@@ -495,7 +496,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
     public function plugin_config_links($plugins) {
         $links = array();
-        foreach($plugins as $plugin) {
+        foreach ($plugins as $plugin) {
             $params = array('plugin' => $plugin);
             $url = new moodle_url('/local/progressreview/plugins/index.php', $params);
             $name = get_string('pluginname', 'progressreview_'.$plugin);
@@ -511,19 +512,23 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $fields = '';
         $rows = array(
             'session' => array(
-                'label' => $hw::label(get_string('sessions', 'local_progressreview'), 'sessionselect'),
+                'label' => $hw::label(get_string('sessions', 'local_progressreview'), 
+                                      'sessionselect'),
                 'selector' => $session
             ),
             'student' => array(
-                'label' => $hw::label(get_string('students', 'local_progressreview'), 'studentselect'),
+                'label' => $hw::label(get_string('students', 'local_progressreview'),
+                                      'studentselect'),
                 'selector' => $student
             ),
             'course' => array(
-                'label' => $hw::label(get_string('courses', 'local_progressreview'), 'courseselect'),
+                'label' => $hw::label(get_string('courses', 'local_progressreview'), 
+                                      'courseselect'),
                 'selector' => $course
             ),
             'teacher' => array(
-                'label' => $hw::label(get_string('teachers', 'local_progressreview'), 'teacherselect'),
+                'label' => $hw::label(get_string('teachers', 'local_progressreview'), 
+                                      'teacherselect'),
                 'selector' => $teacher
             )
         );
@@ -542,7 +547,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $label = get_string('groupby', 'local_progressreview');
         $radios = '';
         foreach ($options as $value => $option) {
-            $radio = $hw::tag('input', $option, array('type' => 'radio', 'name' => 'groupby', 'value' => $value));
+            $attrs = array('type' => 'radio', 'name' => 'groupby', 'value' => $value);
+            $radio = $hw::tag('input', $option, $attrs);
             $radios .= $this->output->container($radio);
         }
 
@@ -706,7 +712,7 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
 
     }
 
-    public static function heading($text, $level = 1, $options = array()) {
+    static public function heading($text, $level = 1, $options = array()) {
         $sizes = array(null, 18, 16, 14, 12, 10);
         $size = $sizes[$level];
         if (!array_key_exists('font', $options)) {

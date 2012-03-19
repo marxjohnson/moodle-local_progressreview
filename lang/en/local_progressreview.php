@@ -90,6 +90,7 @@ $string['punctuality_help'] = 'Punctuality is calculated from the start of the a
 $string['previousfigures'] = 'Figures in (brackets) are from {$a}';
 $string['print'] = 'Print';
 $string['printheading'] = 'Printing and PDF Generation';
+$string['rednotsaved'] = 'Values in red have not been saved';
 $string['regenerate'] = 'Generate Missing Reviews';
 $string['reference'] = 'Reference';
 $string['returntolist'] = 'Return to List';

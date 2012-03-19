@@ -76,7 +76,8 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
             $post = $_POST['review'][$reviews[$student->id]->id];
             try {
                 foreach ($plugins as $plugin) {
-                    // Clean data as a seperate call rather than as part of process_form_fields() to enforce its use
+                    // Clean data as a seperate call rather than as part of process_form_fields()
+                    // to enforce its use
                     $plugin->process_form_fields($plugin->clean_params($post));
                 }
                 add_to_log($course->id,

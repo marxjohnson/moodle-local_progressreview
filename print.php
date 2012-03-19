@@ -150,11 +150,13 @@ if ($generate) {
                 $reviewdata = array();
                 $pluginrenderers = array();
                 foreach ($tutorplugins as $plugin) {
-                    require_once($CFG->dirroot.'/local/progressreview/plugins/'.$plugin->get_name().'/renderer.php');
+                    $name = $plugin->get_name();
+                    require_once($CFG->dirroot.'/local/progressreview/plugins/'.$name.'/renderer.php');
                     $reviewdata[] = $plugin->get_review();
-                    if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name().'_print')) {
-                        throw new coding_exception('The progressreview_'.$plugin->get_name().' has no print renderer.
-                            It must have a print renderer with at least the review() method defined');
+                    if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$name.'_print')) {
+                        throw new coding_exception('The progressreview_'.$name.' has no print
+                            renderer. It must have a print renderer with at least the review()
+                            method defined');
                     }
                 }
 
@@ -166,14 +168,14 @@ if ($generate) {
                 foreach ($pluginrenderers as $key => $pluginrenderer) {
                     $pluginrenderer->review($reviewdata[$key]);
                 }
-            pdf_writer::page_break();
+                pdf_writer::page_break();
             }
         }
     } else {
         ksort($sortedsubjectreviews);
         foreach ($sortedsubjectreviews as $sessionreviews) {
             ksort($sessionreviews);
-            foreach($sessionreviews as $shortname => $coursereviews) {
+            foreach ($sessionreviews as $shortname => $coursereviews) {
                 ksort($coursereviews);
                 $firstreview = current($coursereviews);
                 $session = $firstreview->get_session();

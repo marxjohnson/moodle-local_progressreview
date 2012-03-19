@@ -766,6 +766,7 @@ class progressreview_controller {
         if ($e instanceof dml_write_exception) {
             $response->message .= ' '.$e->error;
         }
+        $response->message .= ' '.get_string('rednotsaved', 'local_progressreview');
         die(json_encode($response));
     }
 } // end of progressreview_controller

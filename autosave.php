@@ -42,8 +42,8 @@ try {
     $teacherid = required_param('teacherid', PARAM_INT);
     $type = required_param('reviewtype', PARAM_INT);
     $plugin = required_param('plugin', PARAM_TEXT);
-    $field = required_param('field', PARAM_TEXT);
-    $value = required_param('value', PARAM_TEXT);
+    $field = urldecode(required_param('field', PARAM_TEXT));
+    $value = urldecode(required_param('value', PARAM_TEXT));
 
     progressreview_controller::validate_session($sessionid);
     progressreview_controller::validate_student($studentid);

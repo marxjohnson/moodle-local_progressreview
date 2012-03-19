@@ -113,7 +113,7 @@ class progressreview_tutor_form extends moodleform {
         $next = null;
         $found = false;
         reset($tutorgroup);
-        foreach($tutorgroup as $review) {
+        foreach ($tutorgroup as $review) {
             if ($found) {
                 $next = $review;
                 break;

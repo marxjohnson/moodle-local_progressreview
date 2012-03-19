@@ -20,8 +20,8 @@
  *
  * If no session is specified, a form is displayed to create a new one.
  * If a session is specified for editing, the form is displayed to allow it to be edited.
- * If a session is specified for configuration, a form is displayed to allow reviews to be generated
- * for the session.
+ * If a session is specified for configuration, a form is displayed to allow reviews to be 
+ * generated for the session.
  *
  * @package   local_progressreview
  * @copyright 2011 Taunton's College, UK
@@ -65,7 +65,8 @@ if (!$id) {
     if ($editid) {
         $session = $DB->get_record('progressreview_session', array('id' => $editid));
         $session->editid = $session->id;
-        $activeplugins = $DB->get_records('progressreview_activeplugins', array('sessionid' => $session->id));
+        $params = array('sessionid' => $session->id);
+        $activeplugins = $DB->get_records('progressreview_activeplugins', $params);
         $session->plugins = array();
         foreach ($activeplugins as $activeplugin) {
             $session->plugins[$activeplugin->plugin] = 1;
@@ -79,7 +80,8 @@ if (!$id) {
     $session = $DB->get_record('progressreview_session', array('id' => $id));
 
     $potential_subject_selector = new progressreview_potential_course_selector('potential_subjects');
-    $distributed_subject_selector = new progressreview_distributed_course_selector('distributed_subjects', $session->id);
+    $distributed_subject_selector = new progressreview_distributed_course_selector('distributed_subjects',
+                                                                                   $session->id);
 
     $excludes = $distributed_subject_selector->find_users();
     foreach ($excludes as $exclude) {
