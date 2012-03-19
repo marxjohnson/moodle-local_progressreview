@@ -112,13 +112,13 @@ class progressreview_session_form extends moodleform {
             $record->id = $data->editid;
             unset($record->editid);
             foreach ($data->plugins as $pluginname => $active) {
-                $activeparams = array(
+                $aparams = array(
                     'plugin' => $DB->sql_compare_text($pluginname),
                     'sessionid' => $record->id
                 );
-                $activewhere = 'plugin = :plugin AND sessionid = :sessionid';
+                $awhere = 'plugin = :plugin AND sessionid = :sessionid';
                 if ($active) {
-                    if (!$DB->record_exists_select('progressreview_activeplugins', $activewhere, $activeparams)) {
+                    if (!$DB->record_exists_select('progressreview_activeplugins', $awhere, $aparams)) {
                         require_once($CFG->dirroot.'/local/progressreview/plugins/'.$pluginname.'/lib.php');
                         $class = 'progressreview_'.$pluginname;
                         $activeplugin = (object)$activeparams;
@@ -128,8 +128,9 @@ class progressreview_session_form extends moodleform {
                         }
                     }
                 } else {
-                    if ($activerecord = $DB->get_record_select('progressreview_activeplugins', $activewhere, $activeparams)) {
-                        if (!$DB->delete_records('progressreview_activeplugins', array('id' => $activerecord->id))) {
+                    if ($activerecord = $DB->get_record_select('progressreview_activeplugins', $where, $aparams)) {
+                        $params = array('id' => $activerecord->id);
+                        if (!$DB->delete_records('progressreview_activeplugins', $params)) {
                             return false;
                         }
                     }

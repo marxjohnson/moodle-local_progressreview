@@ -57,19 +57,7 @@ class progressreview_tutor_form extends moodleform {
 
         $output = $PAGE->get_renderer('local_progressreview');
         $reviews = progressreview_controller::get_reviews($session->id, $student->id);
-        $previousdata = array();
-        foreach($reviews as $key => &$review) {
-            if ($session->previoussession) {
-                if($previousreview = $review->get_previous()) {
-                    $previousdata[$key] = $previousreview->get_plugin('subject')->get_review();
-                }
-            }
-            $review = $review->get_plugin('subject')->get_review();
-        }
-        $table = $output->subject_review_table($reviews,
-                                               false,
-                                               $previousdata,
-                                               PROGRESSREVIEW_TEACHER);
+        $table = $output->subject_review_table($reviews, false, PROGRESSREVIEW_SUBJECT);
         $mform->addElement('html', $table);
 
         $progressreview->get_plugin('tutor')->add_form_fields($mform);
@@ -97,7 +85,7 @@ class progressreview_tutor_form extends moodleform {
             $pluginname = $plugin->get_name();
             $legend = get_string('pluginname', 'progressreview_'.$pluginname);
             if ($pluginname != 'tutor') {
-                $mform->addElement('header', $pluginname, $legend);
+                $mform->addElement('header', $pluginname.'_header', $legend);
                 $plugin->add_form_fields($mform);
             }
             $plugin->require_js();
@@ -125,7 +113,7 @@ class progressreview_tutor_form extends moodleform {
         $next = null;
         $found = false;
         reset($tutorgroup);
-        foreach($tutorgroup as $review) {
+        foreach ($tutorgroup as $review) {
             if ($found) {
                 $next = $review;
                 break;
@@ -178,6 +166,7 @@ class progressreview_tutor_form extends moodleform {
         $mform->addGroup($buttongroup, 'buttons');
 
         $mform->addElement('html', $output->progress_indicator());
+        $mform->addElement('html', $output->error_indicator());
 
     }
 

@@ -33,7 +33,7 @@ $sessionid = optional_param('sessionid', false, PARAM_INT);
 $userid = required_param('userid', PARAM_INT);
 
 $user = progressreview_controller::validate_student($userid);
-if($sessions = progressreview_controller::get_sessions_for_student($user)) {
+if ($sessions = progressreview_controller::get_sessions_for_student($user)) {
     if (!$sessionid) {
         $sessionid = current($sessions)->id;
     }
@@ -47,10 +47,12 @@ $PAGE->set_context(get_context_instance(CONTEXT_USER, $user->id));
 $params = array('userid' => $userid);
 $PAGE->set_url('/local/progressreview/user.php', $params);
 
-$viewown = $userid == $USER->id && has_capability('moodle/local_intranet:viewownattendance', $PAGE->context);
+$hasviewown = has_capability('moodle/local_intranet:viewownattendance', $PAGE->context);
+$viewown = $userid == $USER->id && $hasviewown;
 $viewany = has_capability('moodle/local_intranet:viewattendance', $PAGE->context);
 if (!$viewown && !$viewany) {
-    // Course managers can be browsed at site level. If not forceloginforprofiles, allow access (bug #4366)
+    // Course managers can be browsed at site level. If not forceloginforprofiles,
+    // allow access (bug #4366)
     $struser = get_string('user');
     $PAGE->set_title("$SITE->shortname: $struser");  // Do not leak the name
     $PAGE->set_heading("$SITE->shortname: $struser");
@@ -85,7 +87,7 @@ if ($tutorreview = @current($tutorreviews)) {
     foreach ($tutorplugins as $plugin) {
         $reviewdata[] = $plugin->get_review();
         if (!$pluginrenderers[] = $PAGE->get_renderer('progressreview_'.$plugin->get_name())) {
-            throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer. 
+            throw new coding_exception('The progressreview_'.$plugin->get_name().' has no renderer.
                 It must have a renderer with at least the review() method defined');
         }
     }
@@ -98,7 +100,7 @@ $content .= $output->user_session_links($user, $sessions, $sessionid);
 
 $content .= $output->subject_review_table($subjectreviews,
                                           false,
-                                          PROGRESSREVIEW_TEACHER);
+                                          PROGRESSREVIEW_SUBJECT);
 
 if ($tutorreview) {
     $strtutor = get_string('tutor', 'local_progressreview');

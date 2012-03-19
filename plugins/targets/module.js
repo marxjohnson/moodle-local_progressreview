@@ -9,7 +9,7 @@ M.progressreview_targets = {
             this.autosave(e.target);
         }, this);
 
-        Y.one('#targets').delegate('focus', function(e) {
+        Y.one('#targets_header').delegate('focus', function(e) {
             if (this.calendar_watch == null) {
                 this.calendar_watch = Y.one('#dateselector-calendar-panel').delegate('click', function(e) {
                     this.autosave(M.form.dateselector.currentowner.dayselect);
@@ -17,7 +17,7 @@ M.progressreview_targets = {
             }
         }, 'select', this);
 
-        Y.one('#targets').delegate('focus', function(e) {
+        Y.one('#targets_header').delegate('focus', function(e) {
             if (this.calendar_watch != null) {
                 Y.one('#dateselector-calendar-panel').addClass('yui3-overlay-hidden').detach('click');
                 this.calendar_watch = null;

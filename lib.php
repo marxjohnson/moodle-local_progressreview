@@ -690,6 +690,27 @@ class progressreview_controller {
         return $criteria;
     }
 
+    public static function get_plugins_with_config() {
+        global $CFG;
+
+        $basedir = $CFG->dirroot.'/local/progressreview/plugins';
+        $files = scandir($basedir);
+        $pluginswithconfig = array();
+
+        foreach ($files as $plugin) {
+            if (substr($plugin, 0, 1) != '' && is_dir($basedir.'/'.$plugin)) {
+                $configlib = $basedir.'/'.$plugin.'/config_form.php';
+                if (is_file($configlib)) {
+                    require_once($configlib);
+                    if (class_exists('progressreview_'.$plugin.'_config_form')) {
+                        $pluginswithconfig[] = $plugin;
+                    }
+                }
+            }
+        }
+        return $pluginswithconfig;
+    }
+
     public static function print_error_handler($strerror, $strlabel) {
         global $OUTPUT;
         $isError = false;
@@ -714,6 +735,7 @@ class progressreview_controller {
                     'students' => $_POST['students'],
                     'courses' => $_POST['courses'],
                     'teachers' => $_POST['teachers'],
+                    'groupby' => $_POST['groupby'],
                     'generate' => true,
                     'disablememlimit' => true,
                     'sesskey' => sesskey()
@@ -721,7 +743,7 @@ class progressreview_controller {
                 $url = new moodle_url('/local/progressreview/print.php', $params);
                 echo html_writer::link($url, $strlabel);
             } else {
-                echo "Script execution halted ({$error['message']})";
+                echo "Script execution halted ({$error['message']} on line {$error['line']} of {$error['file']})";
             }
         }
     }
@@ -737,11 +759,15 @@ class progressreview_controller {
     }
 
     public static function xhr_response($e) {
-        $response = json_encode((object)array(
+        $response = (object)array(
             'errortype' => get_class($e),
-            'message' => $e->getMessage())
+            'message' => $e->getMessage()
         );
-        die($response);
+        if ($e instanceof dml_write_exception) {
+            $response->message .= ' '.$e->error;
+        }
+        $response->message .= ' '.get_string('rednotsaved', 'local_progressreview');
+        die(json_encode($response));
     }
 } // end of progressreview_controller
 
@@ -766,7 +792,7 @@ abstract class progressreview_plugin {
      * The type of progressreview plugin this is
      * either PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
      */
-    static protected $type;
+    static public $type;
 
     /**
      * The progressreview object for the review this instance
@@ -794,11 +820,8 @@ abstract class progressreview_plugin {
         return true;
     }
 
-    /**
-     * Updates the object's properties and the record for this plugin instance with the given data
-     */
-    public function update($data) {
-        global $DB;
+
+    protected function filter_properties($data) {
         if (is_object($data)) {
             $data = (array)$data;
         }
@@ -814,6 +837,23 @@ abstract class progressreview_plugin {
         $data = (object)array_filter($data, function($datum) {
             return $datum !== false;
         });
+        return $data;
+    }
+
+    protected function update_timestamp() {
+        global $DB;
+        if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+            throw new progressreview_autosave_exception('Timestamp Update Failed');
+        }
+    }
+
+    /**
+     * Updates the object's properties and the record for this plugin instance with the given data
+     */
+    public function update($data) {
+        global $DB;
+
+        $data = $this->filter_properties($data);
 
         if (empty($data)) {
             throw new progressreview_invalidfield_exception('Invalid Field Name');
@@ -822,10 +862,10 @@ abstract class progressreview_plugin {
         $params = array('id' => $this->progressreview->id);
         if (!empty($this->id)) {
             $data->id = $this->id;
-            $DB->set_field('progressreview', 'datecreated', time(), $params);
+            $this->update_timestamp();
             return $DB->update_record('progressreview_'.$this->name, $data);
         } else {
-            $DB->set_field('progressreview', 'datemodified', time(), $params);
+            $this->update_timestamp();
             $this->id = $DB->insert_record('progressreview_'.$this->name, $data);
             return $this->id;
         }
@@ -911,7 +951,7 @@ abstract class progressreview_plugin_subject extends progressreview_plugin {
     /**
      * Returns an array of html_table_rows to be added to report tables
      */
-    abstract function add_table_rows();
+    abstract function add_table_rows($groupby, $showincomplete = true);
 
 }
 
@@ -1446,9 +1486,13 @@ class pdf_writer {
                     $newrow = new html_table_row();
 
                     foreach ($row as $item) {
-                        $cell = new html_table_cell();
-                        $cell->text = $item;
-                        $newrow->cells[] = $cell;
+                        if (!($item instanceof html_table_cell)) {
+                            $cell = new html_table_cell();
+                            $cell->text = $item;
+                            $newrow->cells[] = $cell;
+                        } else {
+                            $newrow->cells[] = $item;
+                        }
                     }
                     $row = $newrow;
                 }
@@ -1486,6 +1530,7 @@ class pdf_writer {
                     $cells[$key]['TEXT'] = $cell->text;
 
                 }
+
                 self::$pdf->tbSetDataType($cells);
                 self::$pdf->tbDrawData($cells);
                 $fill = !$fill;

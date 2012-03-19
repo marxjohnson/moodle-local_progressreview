@@ -27,6 +27,10 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// Uncommenting the following line will force autosave to fail, which is useful for testing
+// the manual fallback.
+// header('HTTP/1.1 400 Bad Request');die('{"errortype":"progressreview_autosave_exception","message":"epic fail"}');
+
 define('AJAX_SCRIPT', true);
 require_once '../../config.php';
 require_once $CFG->dirroot.'/local/progressreview/lib.php';
@@ -38,8 +42,8 @@ try {
     $teacherid = required_param('teacherid', PARAM_INT);
     $type = required_param('reviewtype', PARAM_INT);
     $plugin = required_param('plugin', PARAM_TEXT);
-    $field = required_param('field', PARAM_TEXT);
-    $value = required_param('value', PARAM_TEXT);
+    $field = urldecode(required_param('field', PARAM_TEXT));
+    $value = urldecode(required_param('value', PARAM_TEXT));
 
     progressreview_controller::validate_session($sessionid);
     progressreview_controller::validate_student($studentid);
