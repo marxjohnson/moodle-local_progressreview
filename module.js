@@ -65,7 +65,7 @@ M.local_progressreview = {
             var courseid = escape(Y.one('#id_courseid').get('value'));
             var teacherid = escape(Y.one('#id_teacherid').get('value'));
             var reviewtype = escape(Y.one('#id_reviewtype').get('value'));
-            value = escape(value);
+            value = escape(value.replace(/£/g, '&pound;'));
             field = escape(field);
 
             var url = M.cfg.wwwroot+'/local/progressreview/autosave.php';
