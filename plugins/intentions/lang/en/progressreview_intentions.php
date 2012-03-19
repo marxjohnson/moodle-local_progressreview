@@ -1,4 +1,29 @@
 <?php
+// this file is part of moodle - http://moodle.org/
+//
+// moodle is free software: you can redistribute it and/or modify
+// it under the terms of the gnu general public license as published by
+// the free software foundation, either version 3 of the license, or
+// (at your option) any later version.
+//
+// moodle is distributed in the hope that it will be useful,
+// but without any warranty; without even the implied warranty of
+// merchantability or fitness for a particular purpose.  see the
+// gnu general public license for more details.
+//
+// you should have received a copy of the gnu general public license
+// along with moodle.  if not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * defines strings for intentions plugin
+ *
+ * @package   local_progressreview
+ * @subpackage progressreview_intentions
+ * @copyright 2012 taunton's college, uk
+ * @author    mark johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html gnu gpl v3 or later
+ */
 
 $string['currentcode'] = 'Current Code';
 $string['currentcourse'] = 'Current Course';

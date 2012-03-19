@@ -1,4 +1,3 @@
-
 M.progressreview_ultimateplans = {
   Y: null,
   init_autosave: function(Y) {

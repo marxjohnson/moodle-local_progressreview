@@ -1,4 +1,29 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Defines plugin class for Ultimate Plans plugin
+ *
+ * @package   local_progressreview
+ * @subpackage progressreview_ultimateplans
+ * @copyright 2012 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 class progressreview_ultimateplans extends progressreview_plugin_tutor {
 
@@ -68,7 +93,8 @@ class progressreview_ultimateplans extends progressreview_plugin_tutor {
     public function add_form_fields($mform) {
         global $DB;
         $tutormask = get_config('progressreview_intentions', 'tutormask');
-        if (empty($tutormask) || preg_match($tutormask, $this->progressreview->get_course()->shortname) > 0) {
+        $shortname = $this->progressreview->get_course()->shortname;
+        if (empty($tutormask) || preg_match($tutormask, $shortname) > 0) {
             $options = $DB->get_records_menu('progressreview_ultplan', array(), 'description');
             $options = array(get_string('choosedots')) + $options;
             $attrs = array('class' => 'ultimateplan');
@@ -80,12 +106,17 @@ class progressreview_ultimateplans extends progressreview_plugin_tutor {
             $attrs['rows'] = 4;
             $attrs['cols'] = 50;
             $mform->addElement('textarea', 'ultimateplan_comments', $strcomments, $attrs);
-            $mform->addHelpButton('ultimateplan_comments', 'comments', 'progressreview_ultimateplans');
+            $mform->addHelpButton('ultimateplan_comments', 
+                                  'comments',
+                                  'progressreview_ultimateplans');
             $mform->setType('ultimateplan', PARAM_INT);
             $mform->setType('ultimateplan_comments', PARAM_TEXT);
             $mform->disabledIf('ultimateplan_comments', 'ultimateplan', 'eq', 0);
         } else {
-            $mform->addElement('static', 'notrequired', '', get_string('notrequired', 'progressreview_intentions'));
+            $mform->addElement('static',
+                               'notrequired',
+                               '',
+                               get_string('notrequired', 'progressreview_intentions'));
         }
     }
 
