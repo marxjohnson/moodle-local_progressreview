@@ -44,4 +44,6 @@ $string['message_help'] = 'Please enter full details of the non-standard program
 
  Please Note that this message will not be saved and sent to the LAM until you click one of the
     buttons as the bottom of the form.';
+$string['musthavemessage'] = 'If you wish to refer this student to their LAM you must include
+    a message';
 $string['notuserforreferral'] = 'This referral is not for you!';

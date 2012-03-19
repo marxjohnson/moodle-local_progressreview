@@ -61,7 +61,8 @@ class progressreview_referral extends progressreview_plugin_tutor {
     }
 
     public function add_form_fields($mform) {
-        global $DB;
+        global $DB, $PAGE;
+        $PAGE->requires->string_for_js('musthavemessage', 'progressreview_referral');
         if (!empty($this->referral->userid)) {
             $params = array('id' => $this->referral->userid);
             $user = $DB->get_record('user', array('id' => $this->referral->userid));
@@ -80,10 +81,15 @@ class progressreview_referral extends progressreview_plugin_tutor {
             $params = array('lam', CONTEXT_COURSECAT, $courseid);
             $user = $DB->get_record_sql($select.$from.$where, $params);
         }
-
-        $mform->addElement('advcheckbox', 'refer', get_string('refer', 'progressreview_referral'), fullname($user));
+        $attrs = array('class' => 'referral', 'group' => null);
+        $mform->addElement('advcheckbox',
+                           'refer',
+                           get_string('refer', 'progressreview_referral'),
+                           fullname($user),
+                           $attrs);
         $mform->addElement('hidden', 'refer_userid', $user->id);
-        $attrs = array('cols' => 50, 'rows' => 4);
+        $attrs['cols'] = 50;
+        $attrs['rows'] = 4;
         $mform->addElement('textarea', 'refer_message', get_string('message', 'progressreview_referral'), $attrs);
         $mform->disabledIf('refer_message', 'refer', 'neq', 1);
         $mform->addHelpButton('refer_message', 'message', 'progressreview_referral');
