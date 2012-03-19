@@ -137,7 +137,8 @@ class progressreview_intentions extends progressreview_plugin_tutor {
 
             $guidancestudent = $OUTPUT->help_icon('guidancestudent', 'progressreview_intentions');
             $mform->addElement('static', 'guidencestudent', $strguidancestudent, $guidancestudent);
-            $guidancetutor = $OUTPUT->help_icon('guidancetutor', 'progressreview_intentions');
+            $guidancetutor = format_text(get_string('guidancetutor_help', 'progressreview_intentions'),
+                                           FORMAT_MARKDOWN);
             $mform->addElement('static', 'guidencetutor', $strguidancetutor, $guidancetutor);
 
             $hw = 'html_writer';
