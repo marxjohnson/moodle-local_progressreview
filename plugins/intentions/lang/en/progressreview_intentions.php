@@ -36,9 +36,9 @@ $string['csvfile'] = 'Select CSV File';
 $string['csvfile_help'] = 'CSV File must contain 3 columns: "currentcode", "newcode", "newname"';
 $string['id'] = 'ID';
 $string['istop'] = 'Timetable Priorities';
-$string['istop_help'] = 'Please ask the student to name the three courses they most want to
+$string['istop_help'] = 'Please ask the student to name the **three** courses they most want to
     ensure the timetable caters for next year. (Please refer to the general student notes at the
-    top).
+    top).  If you choose more than three courses, the last ones you choose will **not** be saved.
 
  *Note: This information will only be used if there is a timetabling conflict, to help us assess
  how important it is to resolve the conflict. We will always aim to devise a year 2 timetable

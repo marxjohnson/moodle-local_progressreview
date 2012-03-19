@@ -1,6 +1,10 @@
 M.progressreview_intentions =
     Y: null
 
+    istops: null
+
+    disabled: null
+
     init_autosave: (Y) ->
         @Y = Y
         Y.all('.intentions.cont').on 'click', (e) ->
@@ -13,18 +17,40 @@ M.progressreview_intentions =
                 istop.set('checked', false)
                 @autosave istop
         , @
-        Y.all('.intentions.istop').on 'click', (e) ->
+
+        @istops = Y.all('.intentions.istop')
+
+        @istops.on 'click', (e) ->
             @autosave e.target
 
-            haserror = Y.all('.intentions.istop').getStyle('color').indexOf('red') > -1
+            haserror = @istops.getStyle('color').indexOf('red') > -1
 
-            if !e.target.get('checked') and haserror
+            @check_istops()
+
+            ischecked = e.target.get 'checked'
+            if !ischecked and haserror
                 Y.all('.intentions.istop').each (el) ->
                     @autosave el
                 , @
+
+        , @
+
+        Y.all('.intentions.cont').on 'click', (e) ->
+            @check_istops()
         , @
 
     autosave: (target) ->
         field = target.get 'id'
         value = target.get 'checked'
         M.local_progressreview.autosave 'intentions', field, value, target
+
+    check_istops: ->
+        checked = @istops.get('checked').filter (x) ->
+            x
+        if checked.length == 3
+            if unchecked = @istops.filter ':not(:checked):enabled'
+                unchecked.set 'disabled', true
+                @disabled = unchecked
+        else
+            if @disabled
+                @disabled.set 'disabled', false
