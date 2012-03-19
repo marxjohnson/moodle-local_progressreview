@@ -129,6 +129,17 @@ class progressreview_intentions extends progressreview_plugin_tutor {
             $stristop = get_string('istop', 'progressreview_intentions');
             $istophelp = $OUTPUT->help_icon('istop', 'progressreview_intentions');
             $strnone = get_string('none', 'progressreview_intentions');
+            $strguidancestudent = get_string('guidancestudent', 'progressreview_intentions');
+            $strguidancestudent = html_writer::tag('strong', $strguidancestudent);
+            $strguidancetutor = get_string('guidancetutor', 'progressreview_intentions');
+            $strguidancetutor = html_writer::tag('strong', $strguidancetutor);
+
+
+            $guidancestudent = $OUTPUT->help_icon('guidancestudent', 'progressreview_intentions');
+            $mform->addElement('static', 'guidencestudent', $strguidancestudent, $guidancestudent);
+            $guidancetutor = $OUTPUT->help_icon('guidancetutor', 'progressreview_intentions');
+            $mform->addElement('static', 'guidencetutor', $strguidancetutor, $guidancetutor);
+
             $hw = 'html_writer';
             $table = $hw::start_tag('table');
             $headings = $hw::tag('th', $strcurrentcourse.$currentcoursehelp)

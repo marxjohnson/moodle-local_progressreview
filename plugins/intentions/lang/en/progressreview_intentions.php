@@ -34,6 +34,35 @@ $string['continue_help'] = 'Check the box if the student wished to continue the 
     undecided.  Leave unchecked only if the student is sure they will not continue the course.';
 $string['csvfile'] = 'Select CSV File';
 $string['csvfile_help'] = 'CSV File must contain 3 columns: "currentcode", "newcode", "newname"';
+$string['guidancestudent'] = 'Notes for Students';
+$string['guidancestudent_help'] = 'When producing the timetable for next year we can usually safely
+    accommodate three of your choices for continued study.
+
+We will do our best to cater for any further subjects you wish to continue, and any new subjects
+    you choose to take up, but we cannot guarantee that you will be able to do them.
+
+Please remember that you have to list all your AS’s on your UCAS application so they all matter,
+    even the ones you choose not to continue next year !';
+$string['guidancetutor'] = 'Guidance for Tutors';
+$string['guidancetutor_help'] = '
+This process is designed to record the intentions for year 2 courses that follow the normal
+pattern of progression.
+
+If you are dealing with a student who wants to do an unusual programme for next year (e.g. 2 A2s
+and 2 ASs or a repeat of year 1) please fill in what you can on the table, and write the full
+details in the LAMs referral box in section four.
+
+A normal year 2 programme is :  
+Non-academy students : 3 A levels or Extended Diploma year 2  
+Academy students : 3 A levels plus the Extended Project
+
+Bigger programmes can still be requested at your discretion but please remind the student about
+timetabling limitations (see above).
+
+Where a student is undecided between two subjects, record both for now.
+
+Please inject realism into the conversation if you feel that the student’s choices are unrealistic
+given their current performance and target grades.';
 $string['id'] = 'ID';
 $string['istop'] = 'Timetable Priorities';
 $string['istop_help'] = 'Please ask the student to name the **three** courses they most want to
