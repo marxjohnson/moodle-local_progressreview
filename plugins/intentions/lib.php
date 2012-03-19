@@ -141,7 +141,7 @@ class progressreview_intentions extends progressreview_plugin_tutor {
             $mform->addElement('static', 'guidencetutor', $strguidancetutor, $guidancetutor);
 
             $hw = 'html_writer';
-            $table = $hw::start_tag('table');
+            $table = $hw::start_tag('table', array('class' => 'generaltable'));
             $headings = $hw::tag('th', $strcurrentcourse.$currentcoursehelp)
                 .$hw::tag('th', $strprogressioncourse.$progressioncoursehelp)
                 .$hw::tag('th', $strcontinue.$continuehelp)
