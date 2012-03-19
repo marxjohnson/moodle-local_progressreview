@@ -121,14 +121,14 @@ class progressreview_session_form extends moodleform {
                     if (!$DB->record_exists_select('progressreview_activeplugins', $awhere, $aparams)) {
                         require_once($CFG->dirroot.'/local/progressreview/plugins/'.$pluginname.'/lib.php');
                         $class = 'progressreview_'.$pluginname;
-                        $activeplugin = (object)$activeparams;
+                        $activeplugin = (object)$aparams;
                         $activeplugin->reviewtype = $class::$type;
                         if (!$DB->insert_record('progressreview_activeplugins', $activeplugin)) {
                             return false;
                         }
                     }
                 } else {
-                    if ($activerecord = $DB->get_record_select('progressreview_activeplugins', $where, $aparams)) {
+                    if ($activerecord = $DB->get_record_select('progressreview_activeplugins', $awhere, $aparams)) {
                         $params = array('id' => $activerecord->id);
                         if (!$DB->delete_records('progressreview_activeplugins', $params)) {
                             return false;
