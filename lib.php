@@ -1339,7 +1339,7 @@ class pdf_writer {
             'T_ALIGN' => 'C', //horizontal alignment, possible values: LRC (left, right, center)
             'V_ALIGN' => 'M', //vertical alignment, possible values: TMB(top, middle, bottom)
             'T_TYPE' => 'B', //font type
-            'LN_SIZE' => 8, //line size for one row
+            'LN_SIZE' => 10, //line size for one row
             'BG_COLOR' => array(255, 255, 255), //background color
             'BRD_COLOR' => array(0,0,0), //border color
             'BRD_SIZE' => 0.2, //border size
@@ -1349,12 +1349,12 @@ class pdf_writer {
 
         $default_data_type = array(
             'T_COLOR' => array(0,0,0), //text color
-            'T_SIZE' => 6, //font size
+            'T_SIZE' => 8, //font size
             'T_FONT' => 'Arial', //font family
             'T_ALIGN' => 'L', //horizontal alignment, possible values: LRC (left, right, center)
             'V_ALIGN' => 'M', //vertical alignment, possible values: TMB(top, middle, bottom)
             'T_TYPE' => '', //font type
-            'LN_SIZE' => 8, //line size for one row
+            'LN_SIZE' => 10, //line size for one row
             'BG_COLOR' => array(255,255,255), //background color
             'BRD_COLOR' => array(0,0,0), //border color
             'BRD_SIZE' => 0.1, //border size
