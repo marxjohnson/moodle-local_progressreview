@@ -686,7 +686,7 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
             $session = $review->get_session();
             $plugins = $review->get_plugins();
             foreach ($plugins as $pluginname => $plugin) {
-                $newrows = $plugin->add_table_rows($displayby);
+                $newrows = $plugin->add_table_rows($displayby, true, false);
                 foreach ($newrows as $newrow) {
                     if (get_class($newrow) != 'html_table_row') {
                         throw new coding_exception('add_table_rows must return an
@@ -706,8 +706,8 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
 
         $table->data = $rows;
 
-        $table->size = array(70, 70, 70, 70, 70, 70, 70, 70, 70);
-        pdf_writer::change_font((object)array('size' => 8));
+        $table->size = array(70, 90, 70, 70, 70, 70, 70, 70, 85);
+        pdf_writer::change_font((object)array('size' => 10));
 
         pdf_writer::table($table);
         pdf_writer::$pdf->Ln(30);

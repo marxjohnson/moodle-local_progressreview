@@ -591,7 +591,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         return $rows;
     }
 
-    public function add_table_rows($displayby, $showincomplete = true) {
+    public function add_table_rows($displayby, $showincomplete = true, $html = true) {
         global $OUTPUT;
         $rows = array();
         $row = new html_table_row();
@@ -630,7 +630,10 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $rows[] = $row;
 
         if (!$inductionreview) {
-            $commentscell = new html_table_cell(str_replace("\n", "<br />", $this->comments));
+            if ($html) {
+                $this->comments = str_replace("\n", "<br />", $this->comments);
+            }
+            $commentscell = new html_table_cell($this->comments);
             $strcomments = get_string('commentstargets', 'local_progressreview');
             $headercell = new html_table_cell($strcomments.':');
             $headercell->header = true;
