@@ -698,7 +698,7 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
 
         $table->data = $rows;
 
-        $table->size = array(70, 90, 70, 70, 70, 70, 70, 70, 85);
+        $table->size = array(80, 100, 75, 75, 75, 75, 75, 75, 90);
         pdf_writer::change_font((object)array('size' => 10));
 
         pdf_writer::table($table);
