@@ -151,9 +151,10 @@ if ($generate) {
                 $output->heading('Subject Review(s)', 3);
                 pdf_writer::$pdf->Ln(10);
                 $subjectdata = array();
-                if (isset($sortedsubjectreviews[$session->id][$student])) {
-                    $subjectreviews = $sortedsubjectreviews[$session->id][$student];
-                    $output->subject_review_table($subjectreviews, PROGRESSREVIEW_STUDENT);
+                $studentname = $student->lastname.$student->firstname.$student->id;
+                if (isset($sortedsubjectreviews[$session->id][$studentname])) {
+                    $subjectreviews = $sortedsubjectreviews[$session->id][$studentname];
+                    $output->subject_review_table($subjectreviews, PROGRESSREVIEW_SUBJECT);
                 }
 
                 $tutorplugins = $tutorreview->get_plugins();
