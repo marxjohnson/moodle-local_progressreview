@@ -172,6 +172,8 @@ if ($generate) {
                     }
                 }
 
+                pdf_writer::page_break();
+
                 $strtutor = get_string('tutor', 'local_progressreview');
                 $fullname = fullname($tutorreview->get_teacher());
                 $output->heading('Tutor Review    '.$strtutor.': '.$fullname, 3);
@@ -181,6 +183,9 @@ if ($generate) {
                 foreach ($pluginrenderers as $key => $pluginrenderer) {
                     $pluginrenderer->review($reviewdata[$key]);
                 }
+
+                pdf_writer::$pdf->Ln(20);
+                pdf_writer::change_font((object)array('size' => 10));
                 pdf_writer::div('End of '.$heading);
                 pdf_writer::div(date('d/m/Y'));
                 pdf_writer::page_break();
