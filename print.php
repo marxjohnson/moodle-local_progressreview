@@ -137,12 +137,19 @@ if ($generate) {
             ksort($sessionreviews);
             foreach ($sessionreviews as $student => $tutorreview) {
                 $session = $tutorreview->get_session();
-                $heading = fullname($tutorreview->get_student()).' - '.$session->name;
+                $student = $tutorreview->get_student();
+                $shortid = substr($student->idnumber, -6);
                 $logo = $CFG->dirroot.'/local/progressreview/pix/logo.png';
                 if (file_exists($logo)) {
                     pdf_writer::image($logo, 450, 30);
                 }
+                $heading = fullname($student).' ('.$shortid.')';
+                $output->heading($session->name, 1);
+                pdf_writer::$pdf->Ln(10);
                 $output->heading($heading, 1);
+                pdf_writer::$pdf->Ln(10);
+                $output->heading('Subject Review(s)', 3);
+                pdf_writer::$pdf->Ln(10);
                 $subjectdata = array();
                 if (isset($sortedsubjectreviews[$session->id][$student])) {
                     $subjectreviews = $sortedsubjectreviews[$session->id][$student];
@@ -166,7 +173,8 @@ if ($generate) {
 
                 $strtutor = get_string('tutor', 'local_progressreview');
                 $fullname = fullname($tutorreview->get_teacher());
-                $output->heading($strtutor.': '.$fullname, 3);
+                $output->heading('Tutor Review    '.$strtutor.': '.$fullname, 3);
+                pdf_writer::$pdf->Ln(10);
 
                 $tutorreviews = '';
                 foreach ($pluginrenderers as $key => $pluginrenderer) {
