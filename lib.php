@@ -1465,7 +1465,7 @@ class pdf_writer {
             self::$pdf->tbDrawHeader();
         }
 
-        $fill = false;
+        $fill = true;
 
         if (!empty($table->data)) {
             $oddeven    = 1;
