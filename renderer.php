@@ -678,7 +678,7 @@ class local_progressreview_print_renderer extends plugin_renderer_base {
             $session = $review->get_session();
             $plugins = $review->get_plugins();
             foreach ($plugins as $pluginname => $plugin) {
-                $newrows = $plugin->add_table_rows($displayby);
+                $newrows = $plugin->add_table_rows($displayby, true, false);
                 foreach ($newrows as $newrow) {
                     if (get_class($newrow) != 'html_table_row') {
                         throw new coding_exception('add_table_rows must return an
