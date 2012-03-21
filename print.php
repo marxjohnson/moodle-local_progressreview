@@ -181,6 +181,8 @@ if ($generate) {
                 foreach ($pluginrenderers as $key => $pluginrenderer) {
                     $pluginrenderer->review($reviewdata[$key]);
                 }
+                pdf_writer::div('End of '.$heading);
+                pdf_writer::div(date('d/m/Y'));
                 pdf_writer::page_break();
             }
         }
