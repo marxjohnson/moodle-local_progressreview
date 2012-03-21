@@ -175,6 +175,11 @@ class progressreview_intentions extends progressreview_plugin_tutor {
                 $mform->setType('intentions['.$key.'][istop]', PARAM_BOOL);
                 $mform->disabledIf('intentions['.$key.'][istop]', 'intentions['.$key.'][cont]');
             }
+            $strnoistop = get_string('noistop', 'progressreview_intentions');
+            $finalrow = $hw::empty_tag('td').$hw::empty_tag('td').$hw::empty_tag('td');
+            $finalrow .= $hw::tag('td', $strnoistop);
+            $finalrow = $hw::tag('tr', $finalrow);
+            $mform->addElement('html', $finalrow);
             $mform->addElement('html', $hw::end_tag('table'));
         } else {
             $mform->addElement('static', 'notrequired', '', get_string('notrequired', 'progressreview_intentions'));

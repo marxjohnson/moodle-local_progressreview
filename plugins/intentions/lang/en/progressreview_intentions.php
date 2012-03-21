@@ -48,6 +48,8 @@ $string['guidancetutor_help'] = '
 This process is designed to record the intentions for year 2 courses that follow the normal
 pattern of progression.
 
+Please read the help comments for each column.
+
 If you are dealing with a student who wants to do an unusual programme for next year (e.g. 2 A2s
 and 2 ASs or a repeat of year 1) please fill in what you can on the table, and write the full
 details in the LAMs referral box in section four.
@@ -75,6 +77,8 @@ $string['istop_help'] = 'Please ask the student to name the **three** courses th
 $string['musthavefile'] = 'You must select a file';
 $string['newcode'] = 'New Code';
 $string['newname'] = 'New Name';
+$string['noistop'] = 'If you leave timetable priorities blank then we cannot take the student’s
+    preferences into account when timetabling next year.';
 $string['none'] = 'None';
 $string['notrequired'] = 'This section is not required for this student';
 $string['pluginname'] = 'Intentions';

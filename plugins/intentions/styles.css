@@ -1,0 +1,4 @@
+#intentions_header th:last-child,
+#intentions_header td:last-child {
+    width: 16em;
+}
