@@ -1277,10 +1277,10 @@ class pdf_writer {
                                  $height = 0,
                                  $format = null,
                                  $url = '') {
-        if (typeof($url) == 'moodle_url') {
+        if (get_class($url) == 'moodle_url') {
             $url = $url->out();
         }
-        if (typeof($path == 'moodule_url')) {
+        if (get_class($path) == 'moodule_url') {
             $path = $path->out();
         }
         self::$pdf->Image($path, $x, $y, $width, $height, $format, $url);
