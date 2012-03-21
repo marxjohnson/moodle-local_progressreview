@@ -138,6 +138,10 @@ if ($generate) {
             foreach ($sessionreviews as $student => $tutorreview) {
                 $session = $tutorreview->get_session();
                 $heading = fullname($tutorreview->get_student()).' - '.$session->name;
+                $logo = $CFG->dirroot.'/local/progressreview/pix/logo.png';
+                if (file_exists($logo)) {
+                    pdf_writer::image($logo, 450, 30);
+                }
                 $output->heading($heading, 1);
                 $subjectdata = array();
                 if (isset($sortedsubjectreviews[$session->id][$student])) {
