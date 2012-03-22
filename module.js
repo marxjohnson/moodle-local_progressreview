@@ -60,16 +60,16 @@ M.local_progressreview = {
             Y = this.Y;
             this.errorindicator.setStyle('display', 'none');
             this.progress.setStyle('display', 'block');
-            var studentid = escape(Y.one('#id_editid').get('value'));
-            var sessionid = escape(Y.one('#id_sessionid').get('value'));
-            var courseid = escape(Y.one('#id_courseid').get('value'));
-            var teacherid = escape(Y.one('#id_teacherid').get('value'));
-            var reviewtype = escape(Y.one('#id_reviewtype').get('value'));
+            var studentid = encodeURI(Y.one('#id_editid').get('value'));
+            var sessionid = encodeURI(Y.one('#id_sessionid').get('value'));
+            var courseid = encodeURI(Y.one('#id_courseid').get('value'));
+            var teacherid = encodeURI(Y.one('#id_teacherid').get('value'));
+            var reviewtype = encodeURI(Y.one('#id_reviewtype').get('value'));
             if (typeof value == "string") {
                 value = value.replace(/£/g, '&pound');
             }
-            value = escape(value);
-            field = escape(field);
+            value = encodeURI(value);
+            field = encodeURI(field);
 
             var url = M.cfg.wwwroot+'/local/progressreview/autosave.php';
             Y.io.queue(url, {

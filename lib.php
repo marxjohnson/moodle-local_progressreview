@@ -1154,13 +1154,10 @@ class pdf_writer {
     }
 
     /**
-     * Helper function to deal with weird %u encoded characters
+     * Helper function to deal with unicode
      */
     public static function decode_utf8($str) {
-        $pattern = '/%u([0-9a-fA-F]{2})([0-9a-fA-F]{2})/e';
-        $replace = 'mb_convert_encoding("\x$1\x$2", \'UTF-8\', \'UTF-16BE\')';
-        $str = preg_replace($pattern, $replace, $str);
-        $str = str_replace('’', "'", $str);
+        $str = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $str);
         return $str;
     }
     /**
