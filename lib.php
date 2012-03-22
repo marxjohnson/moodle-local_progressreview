@@ -1154,6 +1154,16 @@ class pdf_writer {
     }
 
     /**
+     * Helper function to deal with weird %u encoded characters
+     */
+    public static function decode_utf8($str) {
+        $pattern = '/%u([0-9a-fA-F]{2})([0-9a-fA-F]{2})/e';
+        $replace = 'mb_convert_encoding("\x$1\x$2", \'UTF-8\', \'UTF-16BE\')';
+        $str = preg_replace($pattern, $replace, $str);
+        $str = str_replace('’', "'", $str);
+        return $str;
+    }
+    /**
      * Initialise the PDF, create an inital page and set an inital font
      */
     public static function init($size = 'A4', $orientation = 'P', stdClass $font = null) {
@@ -1238,6 +1248,7 @@ class pdf_writer {
         }
 
         $text = str_replace('<br />', "\n", $text);
+        $text = self::decode_utf8($text);
         if (strpos($text, "\n") === false) {
             return self::$pdf->Cell($width, $height, $text, $borders, $breakafter, $align, $fill);
         } else {
@@ -1311,6 +1322,7 @@ class pdf_writer {
             //Output bullet
             self::$pdf->Cell($blt_width,$h,$bullet . $options['margin'],0,'',$fill);
 
+            $items[$i] = self::decode_utf8($items[$i]);
             //Output text
             self::$pdf->MultiCell($w-$blt_width,$h,$items[$i],$border,$align,$fill);
 
@@ -1438,6 +1450,7 @@ class pdf_writer {
                     $heading->text = $headingtext;
                     $heading->header = true;
                 }
+                $heading->text = self::decode_utf8($heading->text);
 
                 if ($heading->header !== false) {
                     $heading->header = true;
@@ -1488,9 +1501,10 @@ class pdf_writer {
                     foreach ($row as $item) {
                         if (!($item instanceof html_table_cell)) {
                             $cell = new html_table_cell();
-                            $cell->text = $item;
+                            $cell->text = self::decode_utf8($item);
                             $newrow->cells[] = $cell;
                         } else {
+                            $item->text = self::decode_utf8($item->text);
                             $newrow->cells[] = $item;
                         }
                     }
