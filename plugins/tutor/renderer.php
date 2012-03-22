@@ -14,6 +14,6 @@ class progressreview_tutor_print_renderer extends plugin_print_renderer_base {
         $heading = get_string('tutor', 'local_progressreview').' '.get_string('comments', 'local_progressreview');
         $this->output->heading($heading, 4);
         $options = array('font' => (object)array('size' => 12));
-        return pdf_writer::div($reviewdata->comments, $options);
+        return pdf_writer::div($reviewdata->comments."\n", $options);
     }
 }
