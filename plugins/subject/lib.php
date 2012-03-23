@@ -1,4 +1,32 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Defines a template for the plugin's main class
+ *
+ * This class is extended in locallib.php, to allow customisation of things like attendance
+ * calculation
+ *
+ * @package   local_progressreview
+ * @subpackage progressreview_subject
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 /**
  * class progressreview_subject
@@ -125,7 +153,6 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
      * calling retrieve_review()
      *
      * @param progressreview review A reference to the progressreview object that this plugin belongs to.
-
      * @return
      * @access public
      */
@@ -170,7 +197,9 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         }
 
         $studentname = fullname($this->progressreview->get_student());
-        $homeworkerror = get_string('homeworktotallessthandone', 'local_progressreview', $studentname);
+        $homeworkerror = get_string('homeworktotallessthandone',
+                                    'local_progressreview',
+                                    $studentname);
         if (array_key_exists('homeworkdone', $data)) {
             if (array_key_exists('homeworktotal', $data)) {
                 if ($data['homeworktotal'] < $data['homeworkdone']) {
@@ -218,7 +247,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         }
 
         foreach ($data as $field => $datum) {
-            if(in_array($field, $valid_properties)) {
+            if (in_array($field, $valid_properties)) {
                 $this->$field = $datum;
             } else {
                 $data[$field] = false;
@@ -233,10 +262,12 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         if (!empty($this->id)) {
             $data->id = $this->id;
             $result = $DB->update_record('progressreview_subject', $data);
-            $DB->set_field('progressreview', 'datecreated', time(), array('id' => $this->progressreview->id));
+            $params = array('id' => $this->progressreview->id);
+            $DB->set_field('progressreview', 'datecreated', time(), $params);
         } else {
             $result = $this->id = $DB->insert_record('progressreview_subject', $data);
-            $DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id));
+            $params = array('id' => $this->progressreview->id);
+            $DB->set_field('progressreview', 'datemodified', time(), $params);
         }
         return $result;
     } // end of member function update
@@ -259,11 +290,13 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $attendance = $this->retrieve_attendance();
         $skeleton['attendance'] = $attendance->attendance;
         if (100 < $skeleton['attendance'] || $skeleton['attendance'] < 0) {
-            throw new coding_exception('retrieve_attandance implemented incorrectly. It must return a number between 0 and 100 inclusive');
+            throw new coding_exception('retrieve_attandance implemented incorrectly. It must
+                return a number between 0 and 100 inclusive');
         }
         $skeleton['punctuality'] = $attendance->punctuality;
         if (100 < $skeleton['punctuality'] || $skeleton['punctuality'] < 0) {
-            throw new coding_exception('retrieve_punctuality implemented incorrectly. It must return a number between 0 and 100 inclusive');
+            throw new coding_exception('retrieve_punctuality implemented incorrectly. It must
+                return a number between 0 and 100 inclusive');
         }
         $skeleton['scaleid'] = $this->retrieve_scaleid();
         $targetgrades = $this->retrieve_targetgrades(array('min'));
@@ -282,7 +315,8 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
      */
     protected function retrieve_review() {
         global $DB;
-        if ($subjectreview = $DB->get_record('progressreview_subject', array('reviewid' => $this->progressreview->id))) {
+        $params = array('reviewid' => $this->progressreview->id);
+        if ($subjectreview = $DB->get_record('progressreview_subject', $params)) {
             foreach ((array)$subjectreview as $property => $value) {
                 if ($property != 'reviewid') {
                     $this->$property = $value;
@@ -385,15 +419,19 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
     protected function retrieve_targetgrades($items = array('target', 'min', 'cpg')) {
         global $DB;
         $grades = array('target' => null, 'min' => null, 'cpg' => null);
-        if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
+        $params = array('plugin' => 'report_targetgrades', 'name' => 'version');
+        if ($DB->record_exists('config_plugins', $params)) {
             $courseid = $this->progressreview->get_course()->originalid;
             $studentid = $this->progressreview->get_student()->id;
             foreach ($items as $item) {
                 if (!in_array($item, array('target', 'min', 'cpg'))) {
-                    throw new coding_exception('Invalid item specified. Valid names are target, min and cpg.');
+                    throw new coding_exception('Invalid item specified. Valid names are target,
+                        min and cpg.');
                 }
-                if($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$item))) {
-                    if($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
+                $params = array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$item);
+                if ($itemrecord = $DB->get_record('grade_items', $params)) {
+                    $params = array('itemid' => $itemrecord->id, 'userid' => $studentid);
+                    if ($grade = $DB->get_record('grade_grades', $params)) {
                         $grades[$item] = (int)$grade->finalgrade;
                     }
                 } else {
@@ -415,9 +453,11 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
      */
     protected function retrieve_scaleid() {
         global $DB;
-        if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
+        $params = array('plugin' => 'report_targetgrades', 'name' => 'version');
+        if ($DB->record_exists('config_plugins', $params)) {
             $courseid = $this->progressreview->get_course()->originalid;
-            if ($scaleitems = $DB->get_records('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_target'))) {
+            $params = array('courseid' => $courseid, 'idnumber' => 'targetgrades_target');
+            if ($scaleitems = $DB->get_records('grade_items', $params)) {
                 return current($scaleitems)->scaleid;
             }
         }
@@ -442,13 +482,18 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
 
     public function clean_params($post) {
         $cleaned = array(
-            'homeworkdone' => $post['homeworkdone'] == '' ? null : clean_param($post['homeworkdone'], PARAM_INT),
-            'homeworktotal' => $post['homeworktotal'] == '' ? null : clean_param($post['homeworktotal'], PARAM_INT),
-            'behaviour' => $post['behaviour'] == '' ? null : clean_param($post['behaviour'], PARAM_INT),
-            'effort' => $post['effort'] == '' ? null : clean_param($post['effort'], PARAM_INT),
-            'targetgrade' => $post['targetgrade'] == '' ? null : clean_param($post['targetgrade'], PARAM_INT),
-            'performancegrade' => $post['performancegrade'] == '' ? null : clean_param($post['performancegrade'], PARAM_INT)
+            'homeworkdone' => null,
+            'homeworktotal' => null,
+            'behaviour' => null,
+            'effort' => null,
+            'targetgrade' => null,
+            'performancegrade' => null
         );
+        foreach ($cleaned as $field => $data) {
+            if (!empty($post[$field])) {
+                $cleaned[$field] = clean_param($post[$field], PARAM_INT);
+            }
+        }
         if (!$this->progressreview->get_session()->inductionreview) {
             $cleaned['comments'] = $post['comments'] == '' ? null : clean_param($post['comments'], PARAM_TEXT);
         }
@@ -460,12 +505,15 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $this->validate($data);
         if ($this->update($data)) {
             $items = array('target' => 'targetgrade', 'cpg' => 'performancegrade');
-            if ($DB->record_exists('config_plugins', array('plugin' => 'report_targetgrades', 'name' => 'version'))) {
+            $params = array('plugin' => 'report_targetgrades', 'name' => 'version');
+            if ($DB->record_exists('config_plugins', $params)) {
                 $courseid = $this->progressreview->get_course()->originalid;
                 $studentid = $this->progressreview->get_student()->id;
                 foreach ($items as $id => $field) {
-                    if ($itemrecord = $DB->get_record('grade_items', array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$id))) {
-                        if ($grade = $DB->get_record('grade_grades', array('itemid' => $itemrecord->id, 'userid' => $studentid))) {
+                    $params = array('courseid' => $courseid, 'idnumber' => 'targetgrades_'.$id);
+                    if ($itemrecord = $DB->get_record('grade_items', $params)) {
+                        $params = array('itemid' => $itemrecord->id, 'userid' => $studentid);
+                        if ($grade = $DB->get_record('grade_grades', $params)) {
                             $grade->rawgrade = $this->$field;
                             $grade->finalgrade = $this->$field;
                             $grade->timemodified = time();
@@ -537,7 +585,6 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
                                                 $this->performancegrade,
                                                 array('' => get_string('choosedots')),
                                                 array('class' => 'subject'));
-
 
         if ($previousreview = $this->progressreview->get_previous()) {
             $previousdata = $previousreview->get_plugin('subject')->get_review();

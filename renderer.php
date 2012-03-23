@@ -47,8 +47,14 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $params = array('editid' => $session->id);
             $editurl = new moodle_url('/local/progressreview/session.php', $params);
 
-            $subject_deadline = $session->deadline_subject ? date('D d/m/Y', $session->deadline_subject) : '';
-            $tutor_deadline = $session->deadline_tutor ? date('D d/m/Y', $session->deadline_tutor) : '';
+            $subject_deadline = '';
+            if ($session->deadline_subject) {
+                $subject_deadline = date('D d/m/Y', $session->deadline_subject);
+            }
+            $tutor_deadline = '';
+            if ($session->deadline_tutor) {
+                $tutor_deadline = date('D d/m/Y', $session->deadline_tutor);
+            }
             $row = new html_table_row(array(
                 html_writer::link($sessionurl, $session->name),
                 $subject_deadline,
@@ -161,9 +167,6 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $strdept = get_string('filterdept', 'local_progressreview');
         $strcourse = get_string('filtercourse', 'local_progressreview');
         $strteacher = get_string('filterteacher', 'local_progressreview');
-        //$output .= html_writer::label($strdept, 'filterdept');
-        //$attrs = array('id' => 'filterdept', 'name' => 'filterdept');
-        //$output .= html_writer::empty_tag('input', $attrs);
         $output .= html_writer::label($strcourse, 'filtercourse');
         $attrs = array('id' => 'filtercourse', 'name' => 'filtercourse');
         $output .= html_writer::empty_tag('input', $attrs);
@@ -506,7 +509,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $fields = '';
         $rows = array(
             'session' => array(
-                'label' => $hw::label(get_string('sessions', 'local_progressreview'), 
+                'label' => $hw::label(get_string('sessions', 'local_progressreview'),
                                       'sessionselect'),
                 'selector' => $session
             ),
@@ -516,12 +519,12 @@ class local_progressreview_renderer extends plugin_renderer_base {
                 'selector' => $student
             ),
             'course' => array(
-                'label' => $hw::label(get_string('courses', 'local_progressreview'), 
+                'label' => $hw::label(get_string('courses', 'local_progressreview'),
                                       'courseselect'),
                 'selector' => $course
             ),
             'teacher' => array(
-                'label' => $hw::label(get_string('teachers', 'local_progressreview'), 
+                'label' => $hw::label(get_string('teachers', 'local_progressreview'),
                                       'teacherselect'),
                 'selector' => $teacher
             )
@@ -630,13 +633,8 @@ class local_progressreview_renderer extends plugin_renderer_base {
         $confirmparams['download'] = true;
         $downloadurl = new moodle_url($url, $confirmparams);
         $buttons .= $this->output->single_button($backurl, 'Back');
-        $buttons .= $this->output->single_button($viewurl,
-                                                 get_string('generateandview', 'local_progressreview'),
-                                                 'post');
-        $buttons .= $this->output->single_button($downloadurl,
-                                                 get_string('generateanddownload', 'local_progressreview'),
-                                                 'post');
-
+        $generate = get_string('generateanddownload', 'local_progressreview');
+        $buttons .= $this->output->single_button($downloadurl, $generate, 'post');
         $output = html_writer::table($table).$buttons;
         return $output;
 
