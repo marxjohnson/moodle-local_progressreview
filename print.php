@@ -137,12 +137,24 @@ if ($generate) {
             ksort($sessionreviews);
             foreach ($sessionreviews as $student => $tutorreview) {
                 $session = $tutorreview->get_session();
-                $heading = fullname($tutorreview->get_student()).' - '.$session->name;
+                $student = $tutorreview->get_student();
+                $shortid = substr($student->idnumber, -6);
+                $logo = $CFG->dirroot.'/local/progressreview/pix/logo.png';
+                if (file_exists($logo)) {
+                    pdf_writer::image($logo, 450, 30);
+                }
+                $heading = fullname($student).' ('.$shortid.')';
+                $output->heading($session->name, 1);
+                pdf_writer::$pdf->Ln(10);
                 $output->heading($heading, 1);
+                pdf_writer::$pdf->Ln(10);
+                $output->heading('Subject Review(s)', 3);
+                pdf_writer::$pdf->Ln(10);
                 $subjectdata = array();
-                if (isset($sortedsubjectreviews[$session->id][$student])) {
-                    $subjectreviews = $sortedsubjectreviews[$session->id][$student];
-                    $output->subject_review_table($subjectreviews, PROGRESSREVIEW_STUDENT);
+                $studentname = $student->lastname.$student->firstname.$student->id;
+                if (isset($sortedsubjectreviews[$session->id][$studentname])) {
+                    $subjectreviews = $sortedsubjectreviews[$session->id][$studentname];
+                    $output->subject_review_table($subjectreviews, PROGRESSREVIEW_SUBJECT);
                 }
 
                 $tutorplugins = $tutorreview->get_plugins();
@@ -160,14 +172,22 @@ if ($generate) {
                     }
                 }
 
+                pdf_writer::page_break();
+
                 $strtutor = get_string('tutor', 'local_progressreview');
                 $fullname = fullname($tutorreview->get_teacher());
-                $output->heading($strtutor.': '.$fullname, 3);
+                $output->heading('Tutor Review    '.$strtutor.': '.$fullname, 3);
+                pdf_writer::$pdf->Ln(10);
 
                 $tutorreviews = '';
                 foreach ($pluginrenderers as $key => $pluginrenderer) {
                     $pluginrenderer->review($reviewdata[$key]);
                 }
+
+                pdf_writer::$pdf->Ln(20);
+                pdf_writer::change_font((object)array('size' => 10));
+                pdf_writer::div('End of '.$heading);
+                pdf_writer::div(date('d/m/Y'));
                 pdf_writer::page_break();
             }
         }
@@ -186,14 +206,6 @@ if ($generate) {
         }
     }
 
-    /*$pdf->ezText("\n\n".$pdf->messages,10,array('justification'=>'left'));
-    $pdfcode = $pdf->output(1);
-    $end_time = microtime();
-    $pdfcode = str_replace("\n","\n<br>",htmlspecialchars($pdfcode));
-    echo '<html><body>';
-    echo trim($pdfcode);
-    echo '</body></html>';
-     */
     pdf_writer::div(pdf_writer::$debug);
     $pdf->Output();
 

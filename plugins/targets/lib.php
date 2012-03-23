@@ -1,5 +1,29 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+
+/**
+ * Defines the plugin's main class
+ *
+ * @package   local_progressreview
+ * @subpackage progressreview_targets
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 class progressreview_targets extends progressreview_plugin_tutor {
 
@@ -37,7 +61,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
             }
 
             foreach ($target as $field => $datum) {
-                if(!in_array($field, $this->valid_properties)) {
+                if (!in_array($field, $this->valid_properties)) {
                     $target[$field] = false;
                 }
             }
@@ -50,7 +74,8 @@ class progressreview_targets extends progressreview_plugin_tutor {
                 if (!$DB->update_record('ilptarget_posts', $target)) {
                     throw new progressreview_autosave_exception('Target Update Failed');
                 }
-                if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+                $params = array('id' => $this->progressreview->id);
+                if (!$DB->set_field('progressreview', 'datemodified', time(), $params)) {
                     throw new progressreview_autosave_exception('Timestamp Update Failed');
                 }
             } else {
@@ -59,10 +84,14 @@ class progressreview_targets extends progressreview_plugin_tutor {
                 $target->id = $DB->insert_record('ilptarget_posts', $target);
 
                 if ($target->id) {
-                    if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
+                    $params = array('id' => $this->progressreview->id);
+                    if (!$DB->set_field('progressreview', 'datemodified', time(), $params)) {
                         throw new progressreview_autosave_exception('Timestamp Update Failed');
                     }
-                    $insert = (object)array('targetid' => $target->id, 'reviewid' => $this->progressreview->id);
+                    $insert = (object)array(
+                        'targetid' => $target->id,
+                        'reviewid' => $this->progressreview->id
+                    );
                     if (!$DB->insert_record('progressreview_targets', $insert)) {
                         throw new progressreview_autosave_exception('Target Creation Failed');
                     }
@@ -98,7 +127,8 @@ class progressreview_targets extends progressreview_plugin_tutor {
         $from = 'FROM {ilptarget_posts} ip
             JOIN {progressreview_targets} pt ON ip.id = pt.targetid ';
         $where = 'WHERE pt.reviewid = ?';
-        $this->targets = array_merge($DB->get_records_sql($select.$from.$where, array($this->progressreview->id)));
+        $params = array($this->progressreview->id);
+        $this->targets = array_merge($DB->get_records_sql($select.$from.$where, $params));
     }
 
     public function add_form_fields($mform) {
@@ -126,7 +156,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
         $targets = array();
 
         $data->deadlines = array();
-        for ($i=0,$j=3; $i<$j; $i++) {
+        for ($i=0, $j=3; $i<$j; $i++) {
             $fieldname = 'deadlines['.$i.']';
             $data->deadlines[$i] = $data->$fieldname;
             unset($data->$fieldname);
