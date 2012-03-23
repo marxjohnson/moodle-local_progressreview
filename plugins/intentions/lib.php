@@ -41,10 +41,6 @@ class progressreview_intentions extends progressreview_plugin_tutor {
 
     private $intentions;
 
-    public function __construct(&$review) {
-        parent::__construct($review);
-    }
-
     public function update($intentions) {
         global $DB;
         foreach ($intentions as $key => $intention) {
@@ -134,7 +130,6 @@ class progressreview_intentions extends progressreview_plugin_tutor {
             $strguidancetutor = get_string('guidancetutor', 'progressreview_intentions');
             $strguidancetutor = html_writer::tag('strong', $strguidancetutor);
 
-
             $guidancestudent = $OUTPUT->help_icon('guidancestudent', 'progressreview_intentions');
             $mform->addElement('static', 'guidencestudent', $strguidancestudent, $guidancestudent);
             $guidancetutor = format_text(get_string('guidancetutor_help', 'progressreview_intentions'),
@@ -182,7 +177,8 @@ class progressreview_intentions extends progressreview_plugin_tutor {
             $mform->addElement('html', $finalrow);
             $mform->addElement('html', $hw::end_tag('table'));
         } else {
-            $mform->addElement('static', 'notrequired', '', get_string('notrequired', 'progressreview_intentions'));
+            $strnotrequired = get_string('notrequired', 'progressreview_intentions');
+            $mform->addElement('static', 'notrequired', '', $strnotrequired);
         }
     }
 

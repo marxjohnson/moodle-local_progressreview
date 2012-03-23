@@ -90,7 +90,8 @@ class progressreview_referral extends progressreview_plugin_tutor {
         $mform->addElement('hidden', 'refer_userid', $user->id);
         $attrs['cols'] = 50;
         $attrs['rows'] = 4;
-        $mform->addElement('textarea', 'refer_message', get_string('message', 'progressreview_referral'), $attrs);
+        $strmessage = get_string('message', 'progressreview_referral');
+        $mform->addElement('textarea', 'refer_message', $strmessage, $attrs);
         $mform->disabledIf('refer_message', 'refer', 'neq', 1);
         $mform->addHelpButton('refer_message', 'message', 'progressreview_referral');
 
@@ -119,7 +120,8 @@ class progressreview_referral extends progressreview_plugin_tutor {
                 $user = $DB->get_record('user', array('id' => $referral['userid']));
                 $from = 'noreply@moodle.org';
                 $subject = get_string('emailsubject', 'progressreview_referral');
-                $url = new moodle_url('/local/progressreview/plugins/referral/', array('reviewid' => $this->progressreview->id));
+                $params = array('reviewid' => $this->progressreview->id);
+                $url = new moodle_url('/local/progressreview/plugins/referral/', $params);
                 $messageparams = (object)array(
                     'studentname' => fullname($this->progressreview->get_student()),
                     'tutorname' => fullname($this->progressreview->get_teacher()),

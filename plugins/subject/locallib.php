@@ -1,4 +1,33 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+
+/**
+ * Defines the subject's main (local) class
+ *
+ * This file needs to be edited to implemented things like attendance calculation specific to
+ * the institiution
+ *
+ * @package   local_progressreview
+ * @subpackage progressreview_subject
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require_once($CFG->dirroot.'/local/intranet/locallib.php');
 /**
  * Child of progressreview_subject_template, allowing methods to be customised
@@ -72,9 +101,9 @@ class progressreview_subject extends progressreview_subject_template {
             'termstart' => date('d-M-Y', $this->progressreview->get_session()->homeworkstart),
             'studentidnum' => $studentidnum);
 
-        $UDB = unite_connect();
-        $marks = $UDB->get_record_sql($select.$from.$where.$group, $params);
-        $UDB->dispose();
+        $udb = unite_connect();
+        $marks = $udb->get_record_sql($select.$from.$where.$group, $params);
+        $udb->dispose();
 
         $attendance = new stdClass;
         $totalpresent = $marks->present+$marks->late+$marks->workplacement+$marks->exam+$marks->trip;
@@ -91,9 +120,11 @@ class progressreview_subject extends progressreview_subject_template {
         }
 
         $courseid = $this->progressreview->get_course()->originalid;
-        if ($targetitems = $DB->get_records('grade_items', array('idnumber' => 'targetgrades_target', 'courseid' => $courseid))) {
+        $targetparams = array('idnumber' => 'targetgrades_target', 'courseid' => $courseid);
+        $formalparams = array('formal' => 1, 'courseid' => $courseid);
+        if ($targetitems = $DB->get_records('grade_items', $targetparams)) {
             return current($targetitems)->scaleid;
-        } else if ($formalitems = $DB->get_records('grade_items', array('formal' => 1, 'courseid' => $courseid))) {
+        } else if ($formalitems = $DB->get_records('grade_items', $formalparams)) {
             return current($formalitems)->scaleid;
         } else {
             return 41;
@@ -105,7 +136,8 @@ class progressreview_subject extends progressreview_subject_template {
         $grades = (array)parent::retrieve_targetgrades($items);
         $studentid = $this->progressreview->get_student()->id;
         if ($this->progressreview->get_session()->inductionreview) {
-            if($avgcse = $DB->get_record('user_info_data', array('fieldid' => 1, 'userid' => $studentid))) {
+            $params = array('fieldid' => 1, 'userid' => $studentid);
+            if ($avgcse = $DB->get_record('user_info_data', $params)) {
                 $grades['min'] = $avgcse->data;
             }
         }

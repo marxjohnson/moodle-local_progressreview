@@ -106,7 +106,7 @@ class progressreview_ultimateplans extends progressreview_plugin_tutor {
             $attrs['rows'] = 4;
             $attrs['cols'] = 50;
             $mform->addElement('textarea', 'ultimateplan_comments', $strcomments, $attrs);
-            $mform->addHelpButton('ultimateplan_comments', 
+            $mform->addHelpButton('ultimateplan_comments',
                                   'comments',
                                   'progressreview_ultimateplans');
             $mform->setType('ultimateplan', PARAM_INT);

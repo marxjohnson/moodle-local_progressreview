@@ -39,10 +39,6 @@ class progressreview_additionalcourses extends progressreview_plugin_tutor {
 
     private $additions;
 
-    public function __construct(&$review) {
-        parent::__construct($review);
-    }
-
     public function update($additions) {
         global $DB;
 
@@ -113,10 +109,11 @@ class progressreview_additionalcourses extends progressreview_plugin_tutor {
             $options = $DB->get_records_menu('progressreview_addition', array('active' => 1), 'name');
             $options = array(get_string('choosedots')) + $options;
             $stradditional = get_string('additionalcourse', 'progressreview_additionalcourses');
-            for ($i=0,$j=1;$i<$j;$i++) {
-                $mform->addElement('select', 'additionalcourse['.$i.']', $stradditional, $options, $attrs);
-                $mform->addHelpButton('additionalcourse['.$i.']', 'additionalcourse', 'progressreview_additionalcourses');
-                $mform->setType('additionalcourse['.$i.']', PARAM_INT);
+            for ($i=0, $j=1; $i<$j; $i++) {
+                $name = 'additionalcourse['.$i.']';
+                $mform->addElement('select', $name, $stradditional, $options, $attrs);
+                $mform->addHelpButton($name, 'additionalcourse', 'progressreview_additionalcourses');
+                $mform->setType($name, PARAM_INT);
             }
         } else {
             $mform->addElement('static', 'notrequired', '', get_string('notrequired', 'progressreview_intentions'));

@@ -32,7 +32,8 @@ class progressreview_additionalcourses_config_form extends moodleform {
         $mform = $this->_form;
 
         $mform->addElement('hidden', 'plugin', 'additionalcourses');
-        $mform->addElement('header', 'uploadheader', get_string('configheader', 'progressreview_additionalcourses'));
+        $header = get_string('configheader', 'progressreview_additionalcourses');
+        $mform->addElement('header', 'uploadheader', $header);
 
         $mform->addElement('filepicker',
                            'csvfile',

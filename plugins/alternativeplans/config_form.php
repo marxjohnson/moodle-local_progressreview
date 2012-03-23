@@ -83,8 +83,8 @@ class progressreview_alternativeplans_config_form extends moodleform {
                 $DB->update_record('progressreview_altplan', $record);
             }
         }
-
-        return redirect(new moodle_url('/local/progressreview/plugins/index.php', array('plugin' => 'alternativeplans')));
+        $url = new moodle_url('/local/progressreview/plugins/index.php', array('plugin' => 'alternativeplans'));
+        return redirect($url);
     }
 
 }
