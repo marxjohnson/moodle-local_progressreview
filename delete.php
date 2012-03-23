@@ -68,14 +68,14 @@ $progressreviews = $controller::get_reviews($session->id,
                                             $course->originalid,
                                             $teacher->originalid);
 if (empty($progressreviews)) {
-   $progressreviews = $controller::get_reviews($session->id,
+    $progressreviews = $controller::get_reviews($session->id,
                                                null,
                                                $course->originalid,
                                                $teacher->originalid,
                                                PROGRESSREVIEW_TUTOR);
-   if (empty($progressreviews)) {
-       print_error('nodeletereviews', 'local_progressreview');
-   }
+    if (empty($progressreviews)) {
+        print_error('nodeletereviews', 'local_progressreview');
+    }
 }
 
 $content = '';

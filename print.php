@@ -206,14 +206,6 @@ if ($generate) {
         }
     }
 
-    /*$pdf->ezText("\n\n".$pdf->messages,10,array('justification'=>'left'));
-    $pdfcode = $pdf->output(1);
-    $end_time = microtime();
-    $pdfcode = str_replace("\n","\n<br>",htmlspecialchars($pdfcode));
-    echo '<html><body>';
-    echo trim($pdfcode);
-    echo '</body></html>';
-     */
     pdf_writer::div(pdf_writer::$debug);
     $pdf->Output();
 

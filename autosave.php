@@ -32,8 +32,8 @@
 // header('HTTP/1.1 400 Bad Request');die('{"errortype":"progressreview_autosave_exception","message":"epic fail"}');
 
 define('AJAX_SCRIPT', true);
-require_once '../../config.php';
-require_once $CFG->dirroot.'/local/progressreview/lib.php';
+require_once('../../config.php');
+require_once($CFG->dirroot.'/local/progressreview/lib.php');
 
 try {
     $sessionid = required_param('sessionid', PARAM_INT);

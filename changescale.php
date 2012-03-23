@@ -56,7 +56,7 @@ $content = '';
 
 if ($data = $form->get_data()) {
     $newscaleid = $data->scaleid;
-    foreach($reviews as $review) {
+    foreach ($reviews as $review) {
         $review->get_plugin('subject')->update(array('scaleid' => $newscaleid));
     }
     $redirectparams = array('sessionid' => $sessionid, 'courseid' => $courseid);

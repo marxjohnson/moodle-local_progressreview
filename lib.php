@@ -114,13 +114,9 @@ class progressreview {
      * the plugins required for this review session and the review type.
      *
      * @param int studentid
-
      * @param int sessionid
-
      * @param int courseid
-
      * @param int teacherid
-
      * @return true
      * @access public
      */
@@ -154,12 +150,12 @@ class progressreview {
             'sessionid' => $sessionid
         );
         if ($review = $DB->get_record('progressreview', $params)) {
-        	$this->id = $review->id;
-        	$this->type = $review->reviewtype;
+            $this->id = $review->id;
+            $this->type = $review->reviewtype;
         } else {
             $review = (object)$params;
             if ($type) {
-        	$review->reviewtype = $this->type = $type;
+                $review->reviewtype = $this->type = $type;
                 $this->id = $DB->insert_record('progressreview', $review);
             } else {
                 throw new coding_exception('You must specify a type when creating a review');
@@ -216,7 +212,6 @@ class progressreview {
      * Transfers this review to allow a different teacher to write it
      *
      * @param stdClass teacher The new teacher's record from the user table
-
      * @return bool indicating success
      * @access public
      */
@@ -279,7 +274,6 @@ class progressreview {
      * the record if required.
      *
      * @param int id The ID of the teacher's user record in user
-
      * @return object The teacher's record from progressreview_teacher
      * @access private
      */
@@ -308,7 +302,6 @@ class progressreview {
      * from data in course if required.
      *
      * @param int id The id of the course in the course table
-
      * @return object the course's record from progressreview_course
      * @access private
      */
@@ -482,14 +475,16 @@ class progressreview_controller {
         );
 
         $reviews = array();
-        if($review_records = $DB->get_records('progressreview', $params)) {
+        if ($review_records = $DB->get_records('progressreview', $params)) {
             foreach ($review_records as $r) {
                 try {
                     $reviews[$r->id] = new progressreview($r->studentid,
                                                           $r->sessionid,
                                                           $r->courseid,
                                                           $r->teacherid);
-                } catch (progressreview_nouser_exception $e) {}
+                } catch (progressreview_nouser_exception $e) {
+                    // Ignore this exception
+                }
             }
         }
         return $reviews;
@@ -713,19 +708,19 @@ class progressreview_controller {
 
     public static function print_error_handler($strerror, $strlabel) {
         global $OUTPUT;
-        $isError = false;
-        if ($error = error_get_last()){
+        $iserror = false;
+        if ($error = error_get_last()) {
             switch($error['type']){
                 case E_ERROR:
                 case E_CORE_ERROR:
                 case E_COMPILE_ERROR:
                 case E_USER_ERROR:
-                    $isError = true;
+                    $iserror = true;
                     break;
             }
         }
 
-        if ($isError){
+        if ($iserror){
             $memory = strpos($error['message'], 'Allowed memory size') !== false;
             $exectime = strpos($error['message'], 'Maximum execution time') !== false;
             if ($memory || $exectime) {
@@ -827,7 +822,7 @@ abstract class progressreview_plugin {
         }
 
         foreach ($data as $field => $datum) {
-            if(in_array($field, $this->valid_properties)) {
+            if (in_array($field, $this->valid_properties)) {
                 $this->$field = $datum;
             } else {
                 $data[$field] = false;
@@ -871,7 +866,8 @@ abstract class progressreview_plugin {
         }
     } // end of member function update
 
-    public function require_js() {}
+    public function require_js() {
+    }
 
     public function autosave($field, $value) {
         try {
@@ -897,17 +893,17 @@ abstract class progressreview_plugin {
     /**
      * Returns an object containing the data required for rendering this plugin's widgets
      */
-    abstract function get_review();
+    abstract public function get_review();
 
     /**
      * Deletes all data for this plugin associated with the current review.
      */
-    abstract function delete();
+    abstract public function delete();
 
     /**
      * Processes the data for this plugin returned from the form
      */
-    abstract function process_form_fields($data);
+    abstract public function process_form_fields($data);
 
 }
 
@@ -941,17 +937,17 @@ abstract class progressreview_plugin_subject extends progressreview_plugin {
     /**
      * Cleans data posted from the plugin's fields
      */
-    abstract function clean_params($post);
+    abstract public function clean_params($post);
 
     /**
      * Returns an array of html_table_rows containing form fields to be added to the form table
      */
-    abstract function add_form_rows();
+    abstract public function add_form_rows();
 
     /**
      * Returns an array of html_table_rows to be added to report tables
      */
-    abstract function add_table_rows($groupby, $showincomplete = true);
+    abstract public function add_table_rows($groupby, $showincomplete = true);
 
 }
 
@@ -1140,8 +1136,8 @@ if (class_exists('user_selector_base')) {
 
 class pdf_writer {
 
-    static $pdf;
-    static $debug = '';
+    public static $pdf;
+    public static $debug = '';
 
     private static function parse_colour($color) {
         if (strlen($color) != 6) {
@@ -1296,7 +1292,7 @@ class pdf_writer {
     }
 
     public static function alist(array $items, $options = array(), $ordered = false) {
-       //Save x
+        //Save x
         $bak_x = $pdf->x;
         if ($ordered) {
             $bullet = '•';
@@ -1304,9 +1300,9 @@ class pdf_writer {
             $bullet = 1;
         }
 
-        for ($i=0; $i<sizeof($items); $i++) {
+        for ($i=0; $i<count($items); $i++) {
             //Get bullet width including margin
-            $blt_width = $this->GetStringWidth($bullet . $options['margin'])+$this->cMargin*2;
+            $blt_width = self::$pdf->GetStringWidth($bullet . $options['margin'])+self::$pdf->cMargin*2;
 
             // SetX
             self::$pdf->SetX($bak_x);
@@ -1317,14 +1313,14 @@ class pdf_writer {
             }
 
             //Output bullet
-            self::$pdf->Cell($blt_width,$h,$bullet . $options['margin'],0,'',$fill);
+            self::$pdf->Cell($blt_width, $h, $bullet . $options['margin'], 0, '', $fill);
 
             $items[$i] = self::decode_utf8($items[$i]);
             //Output text
-            self::$pdf->MultiCell($w-$blt_width,$h,$items[$i],$border,$align,$fill);
+            self::$pdf->MultiCell($w-$blt_width, $h, $items[$i], $border, $align, $fill);
 
             //Insert a spacer between items if not the last item
-            if ($i != sizeof($items)-1) {
+            if ($i != count($items)-1) {
                 self::$pdf->Ln($options['spacer']);
             }
 
@@ -1342,7 +1338,7 @@ class pdf_writer {
     public static function table(html_table $table) {
         $default_header_type = array(
             'WIDTH' => 6, //cell width
-            'T_COLOR' => array(0,0,0), //text color
+            'T_COLOR' => array(0, 0, 0), //text color
             'T_SIZE' => 10, //font size
             'T_FONT' => 'Arial', //font family
             'T_ALIGN' => 'C', //horizontal alignment, possible values: LRC (left, right, center)
@@ -1350,22 +1346,22 @@ class pdf_writer {
             'T_TYPE' => 'B', //font type
             'LN_SIZE' => 10, //line size for one row
             'BG_COLOR' => array(255, 255, 255), //background color
-            'BRD_COLOR' => array(0,0,0), //border color
+            'BRD_COLOR' => array(0, 0, 0), //border color
             'BRD_SIZE' => 0.2, //border size
             'BRD_TYPE' => '1', //border type, can be: 0, 1 or a combination of: "LRTB"
             'TEXT' => '', //text
         );
 
         $default_data_type = array(
-            'T_COLOR' => array(0,0,0), //text color
+            'T_COLOR' => array(0, 0, 0), //text color
             'T_SIZE' => 10, //font size
             'T_FONT' => 'Arial', //font family
             'T_ALIGN' => 'L', //horizontal alignment, possible values: LRC (left, right, center)
             'V_ALIGN' => 'M', //vertical alignment, possible values: TMB(top, middle, bottom)
             'T_TYPE' => '', //font type
             'LN_SIZE' => 12, //line size for one row
-            'BG_COLOR' => array(255,255,255), //background color
-            'BRD_COLOR' => array(0,0,0), //border color
+            'BG_COLOR' => array(255, 255, 255), //background color
+            'BRD_COLOR' => array(0, 0, 0), //border color
             'BRD_SIZE' => 0.1, //border size
             'BRD_TYPE' => 'LR', //border type, can be: 0, 1 or a combination of: "LRTB"
         );
@@ -1373,7 +1369,7 @@ class pdf_writer {
         $table_type = array(
             'TB_ALIGN' => 'L', //table align on page
             'L_MARGIN' => 25, //space to the left margin
-            'BRD_COLOR' => array(0,0,0), //border color
+            'BRD_COLOR' => array(0, 0, 0), //border color
             'BRD_SIZE' => '0.3', //border size
         );
 
@@ -1564,7 +1560,11 @@ class pdf_writer {
     }
 }
 
-class progressreview_invalidfield_exception extends Exception {};
-class progressreview_invalidvalue_exception extends Exception {};
-class progressreview_autosave_exception extends Exception {};
-class progressreview_nouser_exception extends Exception {};
+class progressreview_invalidfield_exception extends Exception {
+};
+class progressreview_invalidvalue_exception extends Exception {
+};
+class progressreview_autosave_exception extends Exception {
+};
+class progressreview_nouser_exception extends Exception {
+};
