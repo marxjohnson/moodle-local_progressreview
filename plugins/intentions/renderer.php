@@ -42,8 +42,24 @@ class progressreview_intentions_renderer extends plugin_renderer_base {
             $row = array($currentcourse->fullname);
             if ($currentcourse->progression) {
                 $row[] = $currentcourse->progression->newname;
-                $row[] = $currentcourse->progression->intention->cont ? $stryes : $strno;
-                $row[] = $currentcourse->progression->intention->istop ? $stryes : $strno;
+                if (!empty($currentcourse->progression->intention->cont)) {
+                    if ($currentcourse->progression->intention->cont) {
+                        $row[] = $stryes;
+                    } else {
+                        $row[] = $strno;
+                    }
+                } else {
+                    $row = '';
+                }
+                if (!empty($currentcourse->progression->intention->istop)) {
+                    if ($currentcourse->progression->intention->istop) {
+                        $row[] = $stryes;
+                    } else {
+                        $row[] = $strno;
+                    }
+                } else {
+                    $row = '';
+                }
 
             } else {
                 $row[] = $strnone;
