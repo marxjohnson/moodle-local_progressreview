@@ -24,7 +24,12 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function xmldb_local_progressreview_upgrade($oldversion) {
+/**
+ * Runs any upgrade needed to upgrade from $oldversion to the current version
+ *
+ * @param int $oldversion
+ */
+function xmldb_local_progressreview_upgrade($oldversion = 0) {
     global $DB;
     $dbman = $DB->get_manager();
 

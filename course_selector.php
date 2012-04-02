@@ -31,19 +31,27 @@ require_once('../../config.php');
 require_once($CFG->dirroot.'/local/progressreview/lib.php');
 require_once($CFG->dirroot.'/user/selector/lib.php');
 
+/**
+ * Bastardises the user_selector to allow selection of courses to add reviews to
+ */
 class progressreview_potential_course_selector extends user_selector_base {
 
         /**
          * Add the file name to the $options array to make AJAX searching work
          * @return array
          */
-        ### @export "pcs_get_options"
         protected function get_options() {
             $options = parent::get_options();
             $options['file'] = 'local/progressreview/course_selector.php';
             return $options;
         }
 
+        /**
+         * Returns the courses matching the search term
+         *
+         * @param string $search
+         * @return array 2D array of optgroup => options for select list
+         */
         public function find_users($search = '') {
             global $DB;
             $options = array();
@@ -70,17 +78,45 @@ class progressreview_potential_course_selector extends user_selector_base {
         }
 }
 
+/**
+ * Bastardises the user_selector to allow selection of courses which have had reviews generated
+ */
 class progressreview_distributed_course_selector extends progressreview_potential_course_selector {
 
+        /**
+         * The ID of the session we're looking for reviews in
+         *
+         * @var int
+         */
         private $sessionid;
+
+        /**
+         * The type of review that we're looking for
+         *
+         * @var int
+         */
         private $reviewtype;
 
+        /**
+         * Constructor, does initialisation then defines session ID and review type
+         *
+         * @param string $name
+         * @param int $sessionid
+         * @param string $reviewtype
+         * @param array $extraoptions
+         */
         public function __construct($name, $sessionid, $reviewtype = PROGRESSREVIEW_SUBJECT, $extraoptions = array()) {
             parent::__construct($name, $extraoptions);
             $this->sessionid = $sessionid;
             $this->reviewtype = $reviewtype;
         }
 
+        /**
+         * Returns the courses matching the search term with reviews of the defined type in the defined session
+         *
+         * @param string $search
+         * @return array 2D array of optgroup => options for select list
+         */
         public function find_users($search = '') {
             global $DB;
             $options = array(get_string('courseswithreviews', 'local_progressreview') => array());
