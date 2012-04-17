@@ -28,8 +28,20 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir.'/formslib.php');
 
+/**
+ * Defines the form for creating or editing a session
+ *
+ */
 class progressreview_session_form extends moodleform {
 
+    /**
+     * Defines the form's fields
+     *
+     * Defines a form with fields for entering a name, deadlines, scales (as csv lists),
+     * dates for statistics, and whether the session is an induction review.
+     * Also displays a checkbox for each installed subplugin, so that it can be set as active
+     * for this session.
+     */
     protected function definition() {
         $mform =& $this->_form;
 
@@ -40,6 +52,7 @@ class progressreview_session_form extends moodleform {
         }
         $strdeadlinesubject = get_string('deadline_subject', 'local_progressreview');
         $strdeadlinetutor = get_string('deadline_tutor', 'local_progressreview');
+        $strdeadlineactive = get_string('deadline_active', 'local_progressreview');
         $strlockafterdeadline = get_string('lockafterdeadline', 'local_progressreview');
         $strscalebehaviour = get_string('scale_behaviour', 'local_progressreview');
         $strscaleeffort = get_string('scale_effort', 'local_progressreview');
@@ -54,6 +67,7 @@ class progressreview_session_form extends moodleform {
         $mform->addElement('text', 'name', get_string('name', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_subject', $strdeadlinesubject);
         $mform->addElement('date_time_selector', 'deadline_tutor', $strdeadlinetutor);
+        $mform->addElement('date_time_selector', 'deadline_active', $strdeadlineactive);
         $mform->addElement('advcheckbox', 'lockafterdeadline', $strlockafterdeadline);
         $mform->addElement('text', 'scale_behaviour', $strscalebehaviour);
         $mform->addElement('text', 'scale_effort', $strscaleeffort);
@@ -93,6 +107,11 @@ class progressreview_session_form extends moodleform {
         $this->add_action_buttons();
     }
 
+    /**
+     * Helper function to find the names of all installed subplugins
+     *
+     * @return array of all the plugin component names, minus the progressreview_ prefix
+     */
     private function get_plugin_names() {
         global $DB;
         $where = $DB->sql_like('plugin', '?').' AND name = ?';
@@ -105,6 +124,15 @@ class progressreview_session_form extends moodleform {
         return $names;
     }
 
+    /**
+     * Processes data posted through the form
+     *
+     * Creates or updates a record for the session, and creates or removes
+     * records for the active plugins.
+     *
+     * @param object $data
+     * @return int|bool false on failure, true on a successful update, record ID on a successful insert
+     */
     public function process($data) {
         global $CFG, $DB;
         if ($data->editid) {

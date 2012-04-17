@@ -40,68 +40,104 @@
 defined('MOODLE_INTERNAL') || die;
 
 /**
- * class progressreview
+ * Symbolic constant used for reviewtype to indicate that this is a tutor review
+ */
+const PROGRESSREVIEW_TUTOR = 1;
+/**
+ * Symbolic constant used for reviewtype to indicate this this is a subject review
+ *
+ * Also used as a groupby flag in progressreview_plugin_subject::add_table_row
+ * to indicate that reviews should be grouped by subject (i.e. reviews for all
+ * students taking that subject are being displayed)
+ */
+const PROGRESSREVIEW_SUBJECT = 2;
+
+/**
+ * Symbolic constant used to indicate that a review should be displayed using a teacher's view
+ *
+ * Originally designed to allow the review forms to switch between "teacher" (read/write)
+ * and "student" (read only) mode.  In practice this was never really implemented
+ */
+const PROGRESSREVIEW_TEACHER = 0;
+
+/**
+ * Symbolic constant used to indicate that a review should be displayed using a student's view
+ *
+ * Also used as a groupby flag to indicate that reviews should be grouped by student (i.e. all subject
+ * reviews for a student are being displayed)
+ *
+ * @see PROGRESSREVIEW_TEACHER
+ */
+const PROGRESSREVIEW_STUDENT = 1;
+
+/**
  * Controller for all operations on progressreview data
  *
  * Given a student, session, course and teacher, this will initialise an interface
  * to a progressreview via all associated plugins.
+ *
+ * @copyright 2011 Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-const PROGRESSREVIEW_TUTOR = 1;
-const PROGRESSREVIEW_SUBJECT = 2;
-
-const PROGRESSREVIEW_TEACHER = 0;
-const PROGRESSREVIEW_STUDENT = 1;
-
 class progressreview {
 
      /*** Attributes: ***/
 
     /**
      * The ID of the record for this review in the progressreview table
-     * @access public
+     *
+     * @var int
      */
     public $id;
 
     /**
      * An array containing the object for each plugin active in this review's session
-     * @access public
+     *
+     * @var array
      */
     private $plugins;
 
     /**
      * The type of review this is - PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
-     * @access public
+     *
+     * @var int
      */
     private $type;
 
     /**
      * The record from the progressreview_session table for this review's session
-     * @access private
+     *
+     * @var object
      */
     private $session;
 
     /**
      * The record from progressreview_teacher for the teacher who this review is
      * written by
-     * @access private
+     *
+     * @var object
      */
     private $teacher;
 
     /**
      * The record from mdl_student for the student who this review is being written for
-     * @access private
+     *
+     * @var object
      */
     private $student;
 
     /**
      * The record from progressreview_course for the course this review is for
-     * @access private
+     *
+     * @var object
      */
     private $course;
 
     /**
      * The progress review object for this teacher/student/course in the previous session
-     * @access private
+     *
+     * @var object
      */
     private $previous_review;
 
@@ -113,12 +149,12 @@ class progressreview {
      * attributes with the appropriate records, then calls get_plugins to initialise
      * the plugins required for this review session and the review type.
      *
-     * @param int studentid
-     * @param int sessionid
-     * @param int courseid
-     * @param int teacherid
+     * @param int $studentid
+     * @param int $sessionid
+     * @param int $courseid
+     * @param int $teacherid
+     * @param int $type PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
      * @return true
-     * @access public
      */
     public function __construct($studentid,  $sessionid,  $courseid,  $teacherid, $type = null) {
         global $DB;
@@ -167,34 +203,75 @@ class progressreview {
         return true;
     } // end of member function __construct
 
+    /**
+     * Return the student record
+     *
+     * @return object the student record
+     */
     public function get_student() {
         return $this->student;
     }
 
+    /**
+     * Return the teacher record
+     *
+     * @return object the teacher record
+     */
     public function get_teacher() {
         return $this->teacher;
     }
 
+    /**
+     * Return the review session
+     *
+     * @return object the session record with scales as arrays
+     */
     public function get_session() {
         return $this->session;
     }
 
+    /**
+     * Return the course record
+     *
+     * @return object the course record
+     */
     public function get_course() {
         return $this->course;
     }
 
+    /**
+     * Return the plugin type
+     *
+     * @return int the plugin type
+     */
     public function get_type() {
         return $this->type;
     }
 
+    /**
+     * Returns the plugin object for the given plugin name
+     *
+     * @param string $name the name of the plugin
+     * @return object the plugin object
+     */
     public function get_plugin($name) {
         return $this->plugins[$name];
     }
 
+    /**
+     * Returns an array of all the plugin objects currently active for the review
+     *
+     * @return array the plugin objects
+     */
     public function get_plugins() {
         return $this->plugins;
     }
 
+    /**
+     * Returns (and sets if necessary) the previous review based on the previous session ID
+     *
+     * @return object the progressreview object representing the previous review
+     */
     public function get_previous() {
         if (is_null($this->previous_review)) {
             $this->previous_review = current(progressreview_controller::get_reviews(
@@ -211,9 +288,8 @@ class progressreview {
     /**
      * Transfers this review to allow a different teacher to write it
      *
-     * @param stdClass teacher The new teacher's record from the user table
+     * @param stdClass $teacher The new teacher's record from the user table
      * @return bool indicating success
-     * @access public
      */
     public function transfer_to_teacher($teacher) {
         global $DB;
@@ -233,7 +309,6 @@ class progressreview {
      * in the $plugins
      *
      * @return true
-     * @access private
      */
     private function init_plugins() {
         global $DB, $CFG;
@@ -247,6 +322,12 @@ class progressreview {
         return true;
     } // end of member function get_plugins
 
+    /**
+     * Get the record for the review's session, either from the database or the cache
+     *
+     * @param int $id the ID of the session in the progressreview_session table
+     * @return object the session record
+     */
     private function retrieve_session($id) {
         global $DB;
         if (!array_key_exists($id, progressreview_cache::$sessions)) {
@@ -257,6 +338,12 @@ class progressreview {
         return progressreview_cache::$sessions[$id];
     }
 
+    /**
+     * Get the record for the student's session, either from the database or the cache
+     *
+     * @param int $id the ID of the student in the user table
+     * @return object the session record
+     */
     private function retrieve_student($id) {
         global $DB;
         if (!array_key_exists($id, progressreview_cache::$students)) {
@@ -273,9 +360,8 @@ class progressreview {
      * Returns the record in progressreview_teacher for the given user's id, creating
      * the record if required.
      *
-     * @param int id The ID of the teacher's user record in user
+     * @param int $id The ID of the teacher's user record in user
      * @return object The teacher's record from progressreview_teacher
-     * @access private
      */
     private function retrieve_teacher($id) {
         global $DB;
@@ -301,9 +387,8 @@ class progressreview {
      * Returns the record for the course from progressreview_course, creates the record
      * from data in course if required.
      *
-     * @param int id The id of the course in the course table
+     * @param int $id The id of the course in the course table
      * @return object the course's record from progressreview_course
-     * @access private
      */
     private function retrieve_course($id) {
         global $DB;
@@ -323,6 +408,11 @@ class progressreview {
 
     /**
      * Deletes all data associated with this review
+     *
+     * Runs the delete() method for each of the review's plugins, then deletes the record from
+     * the progressreview table
+     *
+     * @throws progressreview_nodelete_exception if deletion fails for any reason
      */
     public function delete() {
         global $DB;
@@ -345,9 +435,21 @@ class progressreview {
 /**
  * class progressreview_controller
  *
+ * Provides various helper functions for working with progressreview objects
+ *
+ * @copyright 2011 onwards Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class progressreview_controller {
 
+    /**
+     * Validates that a given ID is an ID of a Progressreview session
+     *
+     * @param int $id The session ID
+     * @return object The session's record
+     * @throws moodle_exception if the session doesn't exist
+     */
     public static function validate_session($id) {
         global $DB;
         if (array_key_exists($id, progressreview_cache::$sessions)) {
@@ -360,6 +462,17 @@ class progressreview_controller {
         }
     }
 
+    /**
+     * Validates that a given ID is an ID of a course
+     *
+     * Checks the cache first. If the course isn't cached, progressreview_course is checked.
+     * If the coruse isn't there, course is checked. If found, it's then placed in all preceding
+     * locations.
+     *
+     * @param int $id
+     * @return object The course's record
+     * @throws moodle_exception if the course doesn't exist
+     */
     public static function validate_course($id) {
         global $DB;
         if (array_key_exists($id, progressreview_cache::$courses)) {
@@ -378,6 +491,13 @@ class progressreview_controller {
         }
     }
 
+    /**
+     * Validates that a given ID is an ID of a student
+     *
+     * @param int $id
+     * @return object The course's record
+     * @throws moodle_exception if the course doesn't exist
+     */
     public static function validate_student($id) {
         global $DB;
         if (array_key_exists($id, progressreview_cache::$students)) {
@@ -390,6 +510,17 @@ class progressreview_controller {
         }
     }
 
+    /**
+     * Validates that a given ID is an ID of a teacher
+     *
+     * Checks the cache first. If the teacher isn't cached, progressreview_teachers is checked.
+     * If the teacher isn't there, user is checked. If found, it's then placed in all preceding
+     * locations.
+     *
+     * @param int $id
+     * @return object The teacher's record
+     * @throws moodle_exception if the teacher doesn't exist
+     */
     public static function validate_teacher($id) {
         global $DB;
         if (array_key_exists($id, progressreview_cache::$teachers)) {
@@ -409,10 +540,9 @@ class progressreview_controller {
     }
 
     /**
-     * Returns an array of records for each session in the database
+     * Returns an array of records for sessions in the database
      *
-     * @return
-     * @access public
+     * @return array
      */
     public static function get_sessions() {
         global $DB;
@@ -425,6 +555,9 @@ class progressreview_controller {
 
     /**
      * Get just the sessions where $student has reviews
+     *
+     * @param object $student the user record of the student
+     * @return array The sessions where a student has reviews
      */
     public static function get_sessions_for_student($student) {
         global $DB;
@@ -439,13 +572,12 @@ class progressreview_controller {
     /**
      * Returns an array of all progressreview objects for the given conditions
      *
-     * @param int sessionid
-     * @param int studentid
-     * @param int courseid
-     * @param int teacherid
-     * @param int type
+     * @param int $sessionid
+     * @param int $studentid
+     * @param int $courseid
+     * @param int $teacherid
+     * @param int $type
      * @return
-     * @access public
      */
     public static function get_reviews($sessionid = null,
                                        $studentid = null,
@@ -491,6 +623,16 @@ class progressreview_controller {
 
     } // end of member function get_reviews
 
+    /**
+     * Deletes reviews matching the given parameters
+     *
+     * @param int $sessionid
+     * @param int $studentid
+     * @param int $courseid
+     * @param int $teacherid
+     * @param int $type
+     * @throws progressreview_nodelete_exception if deletion fails
+     */
     public static function delete_reviews($sessionid,
                                           $studentid = null,
                                           $courseid = null,
@@ -507,6 +649,14 @@ class progressreview_controller {
         }
     }
 
+    /**
+     * Gets summary statistics for the given session, review type and course category
+     *
+     * @param object $session
+     * @param int $type PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
+     * @param int $categoryid
+     * @return array of records
+     */
     public static function get_course_summaries($session, $type, $categoryid = null) {
         if (!in_array($type, array(PROGRESSREVIEW_SUBJECT, PROGRESSREVIEW_TUTOR))) {
             $error = '$type must be set to PROGRESSREVEW_SUBJECT or PROGRESSREVIEW_TUTOR';
@@ -562,6 +712,12 @@ class progressreview_controller {
         return $DB->get_records_sql($select.$from.$where.$group.$order, $params);
     }
 
+    /**
+     * Get the courses the user has reviews for in the given session
+     *
+     * @param int $sessionid
+     * @return array of course records
+     */
     public static function get_my_review_courses($sessionid) {
         global $DB, $USER;
         $courses = enrol_get_my_courses();
@@ -578,6 +734,13 @@ class progressreview_controller {
         return $DB->get_records_sql($select.$from.$where.$order, array_merge($params, $in_params));
     }
 
+    /**
+     * Get the active plugin records from the database for the session
+     *
+     * @param int $sessionid
+     * @param int $type PROGRESSREVIEW_TUTOR or PROGRESSREVIEW_SUBJECT
+     * @return array of records
+     */
     public static function get_plugins_for_session($sessionid, $type = null) {
         global $DB;
         $params = array('sessionid' => $sessionid);
@@ -596,6 +759,7 @@ class progressreview_controller {
      *
      * @param int $courseid
      * @param int $sessionid
+     * @param int $reviewtype
      * @return true;
      **/
     public static function generate_reviews_for_course($courseid, $sessionid, $reviewtype = null) {
@@ -635,9 +799,9 @@ class progressreview_controller {
      *
      * This is currently specific to Taunton's College and should be changed
      *
+     * @param int $courseid
      * @return
      * @todo Allow to be easily overridden for specific use cases.
-     * @access private
      */
     private function retrieve_type($courseid) {
         global $DB;
@@ -654,8 +818,8 @@ class progressreview_controller {
      *
      * Designed to be run by the cron job
      *
-     * @param int sessionid
-     * @access public
+     * @param int $sessionid
+     * @param int $courseid
      */
     public static function snapshot_data($sessionid, $courseid = null) {
         $reviews = self::get_reviews($sessionid, null, $courseid, null, PROGRESSREVIEW_SUBJECT);
@@ -664,6 +828,14 @@ class progressreview_controller {
         }
     } // end of member function snapshot_data_for_session
 
+    /**
+     * Adds criteria for each value for the passed field to the passed criteria array and returns the array
+     *
+     * @param array $criteria
+     * @param string $field
+     * @param array $values
+     * @return array
+     */
     public static function build_print_criteria($criteria, $field, $values) {
         if ($values) {
             if (empty($criteria)) {
@@ -685,6 +857,11 @@ class progressreview_controller {
         return $criteria;
     }
 
+    /**
+     * Gets all the plugins that have a config_form defined
+     *
+     * @return array of plugins
+     */
     public static function get_plugins_with_config() {
         global $CFG;
 
@@ -706,6 +883,15 @@ class progressreview_controller {
         return $pluginswithconfig;
     }
 
+    /**
+     * Handles a memory exhaustion
+     *
+     * If the memory limit is hit while a PDF is being generated, this display an error message,
+     * with a link to re-run the script with the memory limit disabled
+     *
+     * @param string $strerror
+     * @param string $strlabel
+     */
     public static function print_error_handler($strerror, $strlabel) {
         global $OUTPUT;
         $iserror = false;
@@ -743,6 +929,9 @@ class progressreview_controller {
         }
     }
 
+    /**
+     * Registers an error handler for catching and handling memory limit exhaustion
+     */
     public static function register_print_error_handler() {
         ini_set('display_errors', 0);
         $limit = ini_get('memory_limit');
@@ -753,6 +942,11 @@ class progressreview_controller {
                                    $strlabel);
     }
 
+    /**
+     * Takes the passed exception, formats it as json, outputs it an exits
+     *
+     * @param object $e
+     */
     public static function xhr_response($e) {
         $response = (object)array(
             'errortype' => get_class($e),
@@ -766,56 +960,123 @@ class progressreview_controller {
     }
 } // end of progressreview_controller
 
+/**
+ * Record caching class
+ *
+ * A static class to store session, course, student and teacher records fetched from the
+ * database, speeding up subsequent queries and improving memory usage
+ */
 class progressreview_cache {
 
+    /**
+     * Session records that have been selected from the database
+     *
+     * @var array
+     */
     public static $sessions = array();
+
+    /**
+     * Students' user records that have been selected from the database
+     *
+     * @var array
+     */
     public static $students = array();
+
+    /**
+     * Course records that have been selected from the database
+     *
+     * @var array
+     */
     public static $courses = array();
+
+    /**
+     * Teachers' user records that have been selected from the database
+     *
+     * @var array
+     */
     public static $teachers = array();
+
+    /**
+     * Grade scales that have been selected from the database
+     *
+     * @var array
+     */
     public static $scales = array();
 
 }
 
+/**
+ * Base class for all progressreview plugins, defining common properties and methods
+ */
 abstract class progressreview_plugin {
 
     /**
      * The name of the plugin, the same as the folder it lives in
+     *
+     * @var string
      */
     protected $name;
 
     /**
      * The type of progressreview plugin this is
      * either PROGRESSREVIEW_SUBJECT or PROGRESSREVIEW_TUTOR
+     *
+     * @var int
      */
     static public $type;
 
     /**
      * The progressreview object for the review this instance
      * belongs to
+     *
+     * @var object
      */
     protected $progressreview;
 
     /**
      * Array of property name that will be handled by the update()
      * method, all others will be ignored.
+     *
+     * @var array
      */
     protected $valid_properties;
 
+    /**
+     * Stores the progressreview object, and retrieves the review data for this plugin
+     *
+     * @param object $review
+     */
     public function __construct(&$review) {
         $this->progressreview = $review;
         $this->retrieve_review();
     }
 
+    /**
+     * Returns the plugin's name
+     *
+     * @return string
+     */
     public function get_name() {
         return $this->name;
     }
 
-
+    /**
+     * Stub function, validates the passed data object
+     *
+     * @param object|array $data
+     * @return true
+     */
     public function validate($data) {
         return true;
     }
 
 
+    /**
+     * Removes anything from the passed object/array which is not in a valid property for this class
+     *
+     * @param object|array $data
+     * @return object
+     */
     protected function filter_properties($data) {
         if (is_object($data)) {
             $data = (array)$data;
@@ -835,6 +1096,11 @@ abstract class progressreview_plugin {
         return $data;
     }
 
+    /**
+     * Updates the datemodified timestamp for the progressreview record
+     *
+     * @throws progressreview_autosave_exception If the update fails
+     */
     protected function update_timestamp() {
         global $DB;
         if (!$DB->set_field('progressreview', 'datemodified', time(), array('id' => $this->progressreview->id))) {
@@ -844,6 +1110,13 @@ abstract class progressreview_plugin {
 
     /**
      * Updates the object's properties and the record for this plugin instance with the given data
+     *
+     * In a lot of cases, this will be overridden. However for simpler plugins the default will
+     * suffice.  $data is filters to remove any propertied not defined in $this->valid_properties.
+     * If $data contains an ID, then the record with that ID is updated, otherwise a new record is
+     * created and the ID stored.
+     *
+     * @param object $data
      */
     public function update($data) {
         global $DB;
@@ -866,9 +1139,21 @@ abstract class progressreview_plugin {
         }
     } // end of member function update
 
+    /**
+     * Stub function, overridden by child classes to require specific JS
+     */
     public function require_js() {
     }
 
+    /**
+     * Takes the field and value, validates the data, and passes it to the plugin's update() method
+     *
+     * @param string $field
+     * @param mixed $value
+     * @throws progressreview_invalidfield_exception When a field is specified that isn't allowed for this plugin
+     * @throws dml_write_exception When the update/insert query fails
+     * @throws progressreview_autosave_exception When the autosave fails for any other reason
+     */
     public function autosave($field, $value) {
         try {
             $data = array($field => $value);
@@ -902,6 +1187,8 @@ abstract class progressreview_plugin {
 
     /**
      * Processes the data for this plugin returned from the form
+     *
+     * @param object $data The data returned from the form's get_data() method
      */
     abstract public function process_form_fields($data);
 
@@ -912,16 +1199,24 @@ abstract class progressreview_plugin {
  *
  * Tutor plugins need a couple of extra functions for adding fields and data
  * to the mform.
+ *
+ * @copyright 2011 onwards Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class progressreview_plugin_tutor extends progressreview_plugin {
 
     /**
      * Adds the fields this plugin needs to the review form
+     *
+     * @param object $mform
      */
     abstract public function add_form_fields($mform);
 
     /**
      * Add data for fields to $data
+     *
+     * @param object $data
      */
     abstract public function add_form_data($data);
 
@@ -931,11 +1226,17 @@ abstract class progressreview_plugin_tutor extends progressreview_plugin {
  * Class to define template for subject review plugins
  *
  * Subject review plugins need a couple of extra functions as they don't use mform
+ *
+ * @copyright 2011 onwards Taunton's College, UK
+ * @author    Mark Johnson <mark.johnson@tauntons.ac.uk>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class progressreview_plugin_subject extends progressreview_plugin {
 
     /**
      * Cleans data posted from the plugin's fields
+     *
+     * @param array $post data sent through $_POST
      */
     abstract public function clean_params($post);
 
@@ -946,18 +1247,66 @@ abstract class progressreview_plugin_subject extends progressreview_plugin {
 
     /**
      * Returns an array of html_table_rows to be added to report tables
+     *
+     * @param int $groupby PROGRESSREVIEW_STUDENT or PROGRESSREVIEW_SUBJECT
+     * @param bool $showincomplete
      */
     abstract public function add_table_rows($groupby, $showincomplete = true);
 
 }
 
+/**
+ * A repsentation of a criterion that a review or set of reviews needs to match to be selected for a print run
+ */
 class print_criterion {
+
+    /**
+     * ID of the session that's been selected
+     *
+     * @var int
+     */
     public $sessionid;
+
+    /**
+     * ID of the student that's been selected
+     *
+     * @var int
+     */
+
+    /**
+     * ID of the student that's been selected
+     *
+     * @var int
+     */
     public $studentid;
+
+    /**
+     * ID of the course that's been selected
+     *
+     * @var int
+     */
     public $courseid;
+
+    /**
+     * ID of the teacher that's been selected
+     *
+     * @var int
+     */
     public $teacherid;
+
+    /**
+     * Type of the reviews that have been selected
+     *
+     * @var int
+     */
     public $type;
 
+    /**
+     * Constructor, initilises properties to null, then sets the passed field to the passed value
+     *
+     * @param string $field
+     * @param string $value
+     */
     public function __construct($field, $value) {
         $this->sessionid = null;
         $this->studentid = null;
@@ -969,10 +1318,30 @@ class print_criterion {
 
 if (class_exists('user_selector_base')) {
 
+    /**
+     * Generic multi select for selecting reviews for print
+     *
+     * This is base class extended from user_selector_base to easily create a searchable
+     * multi-select, allowing selection of criteria for printing reviews.
+     * This needs to be sub-classed for each class of criterion to be selected (session, teacher,
+     * student, course)
+     */
     abstract class progressreview_print_selector extends user_selector_base {
 
+        /**
+         * Array of fields and values to filter by
+         *
+         * @var array
+         */
         protected $filters;
 
+        /**
+         * Instatiates the filters and creates the selector using the parent contstructor
+         *
+         * @param string $name
+         * @param array $options
+         * @param array $filters
+         */
         public function __construct($name, $options = array(), $filters = array()) {
             $this->filters = array(
                 'sessionid' => array(),
@@ -993,12 +1362,23 @@ if (class_exists('user_selector_base')) {
             return parent::__construct($name, $options);
         }
 
+        /**
+         * Defines the library file so that AJAX searching works
+         *
+         * @return array
+         */
         protected function get_options() {
             $options = parent::get_options();
             $options['file'] = 'local/progressreview/lib.php';
             return $options;
         }
 
+        /**
+         * Builds the where clause
+         *
+         * @param array $conditions
+         * @return string
+         */
         protected function where_clause($conditions) {
             if (!empty($conditions)) {
                 $where = 'WHERE 1 ';
@@ -1013,6 +1393,13 @@ if (class_exists('user_selector_base')) {
             return $where;
         }
 
+        /**
+         * Returns SQL to add to the WHERE clause for a fuzzy match of the search term
+         *
+         * @param string $search The search term
+         * @param string $field The field name
+         * @return array the SQL and Parameter, to be parsed by list()
+         */
         protected function add_search($search, $field) {
             global $DB;
             $sql = '';
@@ -1024,6 +1411,12 @@ if (class_exists('user_selector_base')) {
             return array($sql, array($param));
         }
 
+        /**
+         * Returns SQL for filtering results based on filters passed to the constructor
+         *
+         * @param string $exclude
+         * @return array the SQL and paramters, to be parsed by list()
+         */
         protected function add_filters($exclude = '') {
             global $DB;
             $sql = '';
@@ -1040,7 +1433,19 @@ if (class_exists('user_selector_base')) {
 
     }
 
+    /**
+     * Multi select list for selecting progress review sessions for print
+     *
+     * @see progressreview_print_selector
+     */
     class progressreview_session_selector extends progressreview_print_selector {
+
+        /**
+         * Select the sessions according to the specified search term
+         *
+         * @param string $search
+         * @return array of sessions for the selector
+         */
         public function find_users($search = '') {
             global $DB;
             $select = 'SELECT DISTINCT
@@ -1063,7 +1468,20 @@ if (class_exists('user_selector_base')) {
             return array($optgroupname => $options);
         }
     }
+
+    /**
+     * Multi select list for selecting progress review students for print
+     *
+     * @see progressreview_print_selector
+     */
     class progressreview_student_selector extends progressreview_print_selector {
+
+        /**
+         * Select the students according to the specified search term
+         *
+         * @param string $search
+         * @return array of options for the student selector
+         */
         public function find_users($search) {
             global $DB;
             $select = 'SELECT DISTINCT u.id , u.firstname, u.lastname, u.email ';
@@ -1085,7 +1503,19 @@ if (class_exists('user_selector_base')) {
         }
     }
 
+    /**
+     * Multi select list for selecting progress review courses for print
+     *
+     * @see progressreview_print_selector
+     */
     class progressreview_course_selector extends progressreview_print_selector {
+
+        /**
+         * Selects the courses according to the specified search term
+         *
+         * @param string $search
+         * @return array of options for the course selector
+         */
         public function find_users($search) {
             global $DB;
             $select = 'SELECT DISTINCT
@@ -1111,7 +1541,19 @@ if (class_exists('user_selector_base')) {
         }
     }
 
+    /**
+     * Multi select list for selecting progress review students for print
+     *
+     * @see progressreview_print_selector
+     */
     class progressreview_teacher_selector extends progressreview_print_selector {
+
+        /**
+         * Selects the teachers according to the specified search term
+         *
+         * @param string $search
+         * @return array of options for the teacher selector
+         */
         public function find_users($search) {
             global $DB;
             $select = 'SELECT DISTINCT u.id , u.firstname, u.lastname, u.email ';
@@ -1134,11 +1576,38 @@ if (class_exists('user_selector_base')) {
     }
 }
 
+/**
+ * PDF File Generator
+ *
+ * Loosely based on html_writer, provides low-level wrappers around FPDF APIs to make
+ * it easier to write PDFs from data structures similar to those used to generate HTML
+ * with html_writer
+ */
 class pdf_writer {
 
+    /**
+     * Stores the fpdf object once instantiated by init
+     *
+     * @var object
+     */
     public static $pdf;
+
+    /**
+     * Stored debug messages
+     *
+     * @var string
+     */
     public static $debug = '';
 
+    /**
+     * Convert a hex RGB string to an array of colour values
+     *
+     * FPDF uses an array of decimal colour values, but it can be useful to specify
+     * it has hex like in HTML/CSS.
+     *
+     * @param string $color
+     * @return array of colour values
+     */
     private static function parse_colour($color) {
         if (strlen($color) != 6) {
             return false;
@@ -1151,13 +1620,23 @@ class pdf_writer {
 
     /**
      * Helper function to deal with unicode
+     *
+     * Currently just transliterates to ASCII
+     *
+     * @param string $str String to transliterate process
+     * @return string transliterated string
      */
     public static function decode_utf8($str) {
         $str = iconv("UTF-8", "ISO-8859-1//TRANSLIT", $str);
         return $str;
     }
+
     /**
      * Initialise the PDF, create an inital page and set an inital font
+     *
+     * @param string $size The standard size of the page (A4 by default)
+     * @param string $orientation 'P' for portrait (default) or 'L' for landscape
+     * @param stdClass $font Initial font for the document. Defaults to Helvetica 12pt
      */
     public static function init($size = 'A4', $orientation = 'P', stdClass $font = null) {
         global $CFG;
@@ -1173,6 +1652,8 @@ class pdf_writer {
 
     /**
      * Sets font family, size, decoration and colour as specified
+     *
+     * @param stdClass $font Object with option properties family, size, decoration, and colour
      */
     public static function change_font(stdClass $font) {
         $family = isset($font->family) ? $font->family : '';
@@ -1188,6 +1669,13 @@ class pdf_writer {
         return self::$pdf;
     }
 
+    /**
+     * Sets the style of subsequent lines as specificed by $style
+     *
+     * $style is an object with $color and $width properties
+     *
+     * @param stdClass $style
+     */
     public static function change_line_style(stdClass $style) {
         $colour = isset($font->colour) ? self::parse_colour($style->colour) : '';
         $width = isset($font->width) ? $style->width : '';
@@ -1202,8 +1690,8 @@ class pdf_writer {
     /**
      * Arbitrary cells containing text, optionally with borders and backgrounds
      *
-     * @param $text The text to display, can include line breaks with <br /> or \n
-     * @param $options an associative array of options, in the format 'option' => $value
+     * @param string $text The text to display, can include line breaks with <br /> or \n
+     * @param array $options an associative array of options, in the format 'option' => $value
      *  Possible options:
      *  font - object defining any of family, size and decoration, and colour as properties.
      *  fill - HTML-style hex string of RGB for background colour.
@@ -1251,6 +1739,9 @@ class pdf_writer {
 
     /**
      * Adds a cell with no line break following (like an HTML span)
+     *
+     * @param string $text
+     * @param array $options
      */
     public static function span($text, $options = array()) {
         $options['breakafter'] = 0;
@@ -1258,7 +1749,10 @@ class pdf_writer {
     }
 
     /**
-     * Adds a cell with a line break following (line an HTML div)
+     * Adds a cell with a line break following (like an HTML div)
+     *
+     * @param string $text
+     * @param array $options
      */
     public static function div($text, $options = array()) {
         $options['breakafter'] = 1;
@@ -1266,6 +1760,13 @@ class pdf_writer {
     }
 
 
+    /**
+     * Adds a link to the provided URL
+     *
+     * @param string|moodle_url $url
+     * @param string $text
+     * @param int $height
+     */
     public static function link($url, $text, $height = 10) {
         if (typeof($url) == 'moodle_url') {
             $url = $url->out();
@@ -1274,6 +1775,17 @@ class pdf_writer {
         return self::$pdf;
     }
 
+    /**
+     * Adds an image at the specified X and Y co-ordinates
+     *
+     * @param string|moodle_url $path The path to the image file
+     * @param int $x
+     * @param int $y
+     * @param int $width
+     * @param int $height
+     * @param string $format
+     * @param string|moodle_url $url The URL the image should link to
+     */
     public static function image($path,
                                  $x = null,
                                  $y = null,
@@ -1291,6 +1803,13 @@ class pdf_writer {
         return self::$pdf;
     }
 
+    /**
+     * Displays the items in the $items array as a bulleted or ordered list
+     *
+     * @param array $items
+     * @param array $options
+     * @param bool $ordered
+     */
     public static function alist(array $items, $options = array(), $ordered = false) {
         //Save x
         $bak_x = $pdf->x;
@@ -1335,6 +1854,11 @@ class pdf_writer {
         return $pdf;
     }
 
+    /**
+     * Processes an html_table object and writes the resulting table to the pdf
+     *
+     * @param html_table $table
+     */
     public static function table(html_table $table) {
         $default_header_type = array(
             'WIDTH' => 6, //cell width
@@ -1560,11 +2084,23 @@ class pdf_writer {
     }
 }
 
+/**
+ * Thrown if no value is passed to a plug for a valid field in that plugin
+ */
 class progressreview_invalidfield_exception extends Exception {
 };
+/**
+ * Thrown if an invalid value is passed to a plugin
+ */
 class progressreview_invalidvalue_exception extends Exception {
 };
+/**
+ * Thrown if there is a general failure in an autosave function
+ */
 class progressreview_autosave_exception extends Exception {
 };
+/**
+ * Thrown if a user ID is used for a user that doesn't exist
+ */
 class progressreview_nouser_exception extends Exception {
 };

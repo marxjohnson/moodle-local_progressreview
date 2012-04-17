@@ -26,6 +26,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+/**
+ * Finds all installed subplugins and deletes them all
+ *
+ * @return true
+ */
 function xmldb_local_progressreview_uninstall() {
     global $DB, $CFG;
 
