@@ -54,6 +54,7 @@ $string['createsession'] = 'Create Session';
 $string['createreviews'] = 'Generate Reviews';
 $string['deadline_subject'] = 'Subject Review Deadline';
 $string['deadline_tutor'] = 'Tutor Review Deadline';
+$string['deadline_active'] = 'Display Links Until';
 $string['deleted'] = 'Progressreviews Deleted Successfully';
 $string['disablememlimit'] = 'Try again with Memory Limit disabled';
 $string['effort'] = 'Effort';
