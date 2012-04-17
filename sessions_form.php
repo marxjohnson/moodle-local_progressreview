@@ -52,6 +52,7 @@ class progressreview_session_form extends moodleform {
         }
         $strdeadlinesubject = get_string('deadline_subject', 'local_progressreview');
         $strdeadlinetutor = get_string('deadline_tutor', 'local_progressreview');
+        $strdeadlineactive = get_string('deadline_active', 'local_progressreview');
         $strlockafterdeadline = get_string('lockafterdeadline', 'local_progressreview');
         $strscalebehaviour = get_string('scale_behaviour', 'local_progressreview');
         $strscaleeffort = get_string('scale_effort', 'local_progressreview');
@@ -66,6 +67,7 @@ class progressreview_session_form extends moodleform {
         $mform->addElement('text', 'name', get_string('name', 'local_progressreview'));
         $mform->addElement('date_time_selector', 'deadline_subject', $strdeadlinesubject);
         $mform->addElement('date_time_selector', 'deadline_tutor', $strdeadlinetutor);
+        $mform->addElement('date_time_selector', 'deadline_active', $strdeadlineactive);
         $mform->addElement('advcheckbox', 'lockafterdeadline', $strlockafterdeadline);
         $mform->addElement('text', 'scale_behaviour', $strscalebehaviour);
         $mform->addElement('text', 'scale_effort', $strscaleeffort);

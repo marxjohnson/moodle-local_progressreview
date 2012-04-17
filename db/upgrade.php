@@ -48,4 +48,19 @@ function xmldb_local_progressreview_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2012012700, 'local', 'progressreview');
     }
 
+    if ($oldversion < 2012041700) {
+
+        // Define field deadline_active to be added to progressreview_session
+        $table = new xmldb_table('progressreview_session');
+        $field = new xmldb_field('deadline_active', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, null, null, null, 'deadline_tutor');
+
+        // Conditionally launch add field deadline_active
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // progressreview savepoint reached
+        upgrade_plugin_savepoint(true, 2012041700, 'local', 'progressreview');
+    }
+
 }
