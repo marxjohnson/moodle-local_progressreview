@@ -261,7 +261,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
         if (is_object($data)) {
             $data = (array)$data;
         }
-
+        /*
         if (array_key_exists('deadlines', $data)) {
             foreach ($data['deadlines'] as $number => $deadline) {
                 if ($deadline < time()) {
@@ -269,7 +269,7 @@ class progressreview_targets extends progressreview_plugin_tutor {
                     throw new progressreview_invalidvalue_exception($error);
                 }
             }
-        }
+        }*/
     }
 
 
