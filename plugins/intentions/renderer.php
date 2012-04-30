@@ -49,7 +49,7 @@ class progressreview_intentions_renderer extends plugin_renderer_base {
                         $row[] = $strno;
                     }
                 } else {
-                    $row = '';
+                    $row[] = '';
                 }
                 if (!empty($currentcourse->progression->intention->istop)) {
                     if ($currentcourse->progression->intention->istop) {
@@ -58,7 +58,7 @@ class progressreview_intentions_renderer extends plugin_renderer_base {
                         $row[] = $strno;
                     }
                 } else {
-                    $row = '';
+                    $row[] = '';
                 }
 
             } else {
