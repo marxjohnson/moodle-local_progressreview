@@ -29,6 +29,8 @@ M.local_progressreview = {
 
     progress: '',
 
+    progresstimeout: null,
+
     errorindicator: '',
 
     errorcontainer: '',
@@ -44,14 +46,14 @@ M.local_progressreview = {
         this.progress = Y.one('#progressindicator');
         this.errorindicator = Y.one('#errorindicator');
         this.errorcontainer = this.errorindicator.one('#errormessage');
-        strautosave = M.util.get_string('autosaving', 'local_progressreview');
-        this.progress.one('#autosavelabel').setContent(strautosave);
-        this.progress.setStyle('display', 'none');
         this.savebutton = Y.one('#id_save');
         strsaveactive = M.util.get_string('autosaveactive', 'local_progressreview');
         this.savebutton.set('disabled', true);
         this.savebutton.set('value', strsaveactive);
         this.savestring = savestring;
+        strautosave = M.util.get_string('autosaving', 'local_progressreview');
+        this.progress.one('#autosavelabel').setContent(strautosave);
+        this.progress.setStyle('display', 'none');
     },
 
     autosave: function(plugin, field, value, element) {
@@ -60,6 +62,7 @@ M.local_progressreview = {
             Y = this.Y;
             this.errorindicator.setStyle('display', 'none');
             this.progress.setStyle('display', 'block');
+            window.clearTimeout(this.progresstimeout);
             var studentid = encodeURI(Y.one('#id_editid').get('value'));
             var sessionid = encodeURI(Y.one('#id_sessionid').get('value'));
             var courseid = encodeURI(Y.one('#id_courseid').get('value'));
@@ -81,10 +84,12 @@ M.local_progressreview = {
                 method: 'post',
                 on: {
                     success: function(id, o) {
-                        this.progress.setStyle('display', 'none');
                         if (element.getStyle('color') == 'red') {
                             element.setStyle('color', null);
                         }
+                        this.progresstimeout = window.setTimeout(function() {
+                            M.local_progressreview.progress.setStyle('display', 'none')
+                        }, 1000);
                     },
 
                     failure: function(id, o) {
