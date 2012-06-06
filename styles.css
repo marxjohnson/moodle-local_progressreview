@@ -61,16 +61,15 @@
 }
 
 .path-local-progressreview #progressindicator {
-    width:9em;
-    height: 2em;
     position:fixed;
     right: 1em;
     bottom: 1em;
     background-color: #FFFFD7 !important;
     border: 2px solid #FFE920;
-    padding-left: 1em;
+    padding: 1em;
+ /*   padding-left: 1em;
     padding-top: .8em;
-    padding-bottom: .8em;
+    padding-bottom: .8em;*/
 }
 
 .path-local-progressreview #errorindicator {

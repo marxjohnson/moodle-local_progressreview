@@ -568,7 +568,7 @@ class local_progressreview_renderer extends plugin_renderer_base {
      */
     public function progress_indicator() {
         $loader = $this->output->pix_icon('i/loading_small', '');
-        $strautosave = get_string('autosaveactive', 'local_progressreview');
+        $strautosave = get_string('autosaveinit', 'local_progressreview');
         $label = html_writer::tag('span', $strautosave, array('id' => 'autosavelabel'));
 
         return $this->output->container($loader.$label, '', 'progressindicator');

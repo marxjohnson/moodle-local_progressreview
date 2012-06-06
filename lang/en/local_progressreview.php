@@ -30,6 +30,7 @@ $string['attendance_help'] = 'Attendance is calculated since the start of the ac
     the formula published on the Registry Page';
 $string['autosaving'] = 'Autosaving';
 $string['autosaveactive'] = 'Autosave Active';
+$string['autosaveinit'] = 'Autosave Initialising';
 $string['autosavefailed'] = 'Autosave Failed. Autosaving will now be disabled. Please ensure that
 you manually save using the button at the bottom of the page. The server returned the following
 message: {$a}';
