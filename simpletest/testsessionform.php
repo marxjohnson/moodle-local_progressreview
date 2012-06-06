@@ -75,6 +75,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
         require_once($CFG->dirroot.'/local/progressreview/lib.php');
         $subjectdeadline = time()+(rand(1,4)*$this->ONEWEEK);
         $tutordeadline = $subjectdeadline+($this->ONEWEEK);
+        $activedeadline = $tutordeadline+($this->ONEWEEK);
         $form = new progressreview_session_form();
 
         // Test creating a new session
@@ -83,6 +84,7 @@ class sessionform_test extends UnitTestCaseUsingDatabase {
             'name' => 'Progress Review 2',
             'deadline_subject' => $subjectdeadline,
             'deadline_tutor' => $tutordeadline,
+            'deadline_active' => $activedeadline,
             'lockafterdeadline' => 0,
             'scale_behaviour' => 'Good,Bad,Ugly',
             'scale_effort' => 'Good,Bad,Ugly',
