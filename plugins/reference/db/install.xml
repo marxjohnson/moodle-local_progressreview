@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/progressreview/plugins/subject/db" VERSION="20120606" COMMENT="Tables for the data stored by the subject progressreview plugin"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="progressreview_reference" COMMENT="Statistics and comments for reference review">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="reviewid"/>
+        <FIELD NAME="reviewid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="reference"/>
+        <FIELD NAME="reference" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="reviewid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary_id" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="mdl_progressreview_plugin_reference_reviewid_index" UNIQUE="false" FIELDS="reviewid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
