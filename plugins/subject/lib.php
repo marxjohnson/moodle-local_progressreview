@@ -547,19 +547,19 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
 
         $fieldarray = 'review['.$this->progressreview->id.']';
         $name = fullname($student);
-        $attendance = number_format($this->attendance, 0).'%';
-        $punctuality = number_format($this->punctuality, 0).'%';
-        $mintarget = @$this->scale[$this->minimumgrade-1];
+        $attendance = number_format($this->get_post_or_default('attendance', $this->attendance), 0).'%';
+        $punctuality = number_format($this->get_post_or_default('punctuality', $this->punctuality), 0).'%';
+        $mintarget = @$this->scale[$this->get_post_or_default('minimumgrade', $this->minimumgrade)-1];
         $homeworkdoneattrs = array(
             'class' => 'subject homework',
             'name' => $fieldarray.'[homeworkdone]',
-            'value' => $this->homeworkdone,
+            'value' => $this->get_post_or_default('homeworkdone', $this->homeworkdone),
             'id' => 'review_'.$this->progressreview->id.'_homeworkdone'
         );
         $homeworktotalattrs = array(
             'class' => 'subject homework',
             'name' => $fieldarray.'[homeworktotal]',
-            'value' => $this->homeworktotal,
+            'value' => $this->get_post_or_default('homeworktotal', $this->homeworktotal),
             'id' => 'review_'.$this->progressreview->id.'_homeworktotal'
         );
         $homework = html_writer::empty_tag('input', $homeworkdoneattrs);
@@ -567,22 +567,22 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
         $homework .= html_writer::empty_tag('input', $homeworktotalattrs);
         $behaviour = html_writer::select($session->scale_behaviour,
                                          $fieldarray.'[behaviour]',
-                                         $this->behaviour,
+                                         $this->get_post_or_default('behaviour', $this->behaviour),
                                          array('' => get_string('choosedots')),
                                          array('class' => 'subject'));
         $effort = html_writer::select($session->scale_effort,
                                       $fieldarray.'[effort]',
-                                      $this->effort,
+                                      $this->get_post_or_default('effort', $this->effort),
                                       array('' => get_string('choosedots')),
                                       array('class' => 'subject'));
         $targetgrade = html_writer::select($this->scale,
                                            $fieldarray.'[targetgrade]',
-                                           $this->targetgrade,
+                                           $this->get_post_or_default('targetgrade', $this->targetgrade),
                                            array('' => get_string('choosedots')),
                                            array('class' => 'subject'));
         $performancegrade = html_writer::select($this->scale,
                                                 $fieldarray.'[performancegrade]',
-                                                $this->performancegrade,
+                                                $this->get_post_or_default('performancegrade', $this->performancegrade),
                                                 array('' => get_string('choosedots')),
                                                 array('class' => 'subject'));
 
@@ -623,7 +623,7 @@ abstract class progressreview_subject_template extends progressreview_plugin_sub
                 'class' => 'subject',
                 'name' => $fieldarray.'[comments]'
             );
-            $commentsfield = html_writer::tag('textarea', $this->comments, $commentsattrs);
+            $commentsfield = html_writer::tag('textarea', $this->get_post_or_default('comments', $this->comments), $commentsattrs);
             $commentscell = new html_table_cell($commentsfield);
             $strcomments = get_string('commentstargets', 'local_progressreview');
             $headercell = new html_table_cell($strcomments.':');
