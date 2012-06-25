@@ -1240,6 +1240,18 @@ abstract class progressreview_plugin_subject extends progressreview_plugin {
      */
     abstract public function clean_params($post);
 
+    protected function get_post_or_default($field, $default) {
+        $id = $this->progressreview->id;
+        if (isset($_POST['review'])
+            && isset($_POST['review'][$id]) 
+            && isset($_POST['review'][$id][$field])
+            && !empty($_POST['review'][$id][$field])) {
+            return $_POST['review'][$id][$field];
+        } else {
+            return $default;
+        }
+    }
+
     /**
      * Returns an array of html_table_rows containing form fields to be added to the form table
      */

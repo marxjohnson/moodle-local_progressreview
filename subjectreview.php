@@ -74,28 +74,31 @@ if ($mode == PROGRESSREVIEW_TEACHER) {
 
         if ($submitted) {
             $post = $_POST['review'][$reviews[$student->id]->id];
-            try {
-                foreach ($plugins as $plugin) {
-                    // Clean data as a seperate call rather than as part of process_form_fields()
-                    // to enforce its use
-                    $plugin->process_form_fields($plugin->clean_params($post));
+            $filteredpost = array_filter($post);
+            if (!empty($filteredpost)) {
+                try {
+                    foreach ($plugins as $plugin) {
+                        // Clean data as a seperate call rather than as part of process_form_fields()
+                        // to enforce its use
+                        $plugin->process_form_fields($plugin->clean_params($post));
+                    }
+                    add_to_log($course->id,
+                               'local_progressreview',
+                               'update',
+                               $PAGE->url->out(),
+                               $student->id);
+                } catch (dml_write_exception $e) {
+                    add_to_log($course->id,
+                               'local_progressreview',
+                               'update',
+                               $PAGE->url->out(),
+                               $student->id.': '.$e->error);
+                    $strnotsaved = get_string('changesnotsaved', 'local_progressreview');
+                    $content .= $OUTPUT->error_text($strnotsaved.' '.$DB->get_last_error());
+                } catch (progressreview_invalidvalue_exception $e) {
+                    $strnotsaved = get_string('changesnotsaved', 'local_progressreview');
+                    $content .= $OUTPUT->error_text($strnotsaved.' '.$e->getMessage());
                 }
-                add_to_log($course->id,
-                           'local_progressreview',
-                           'update',
-                           $PAGE->url->out(),
-                           $student->id);
-            } catch (dml_write_exception $e) {
-                add_to_log($course->id,
-                           'local_progressreview',
-                           'update',
-                           $PAGE->url->out(),
-                           $student->id.': '.$e->error);
-                $strnotsaved = get_string('changesnotsaved', 'local_progressreview');
-                $content .= $OUTPUT->error_text($strnotsaved);
-            } catch (progressreview_invalidvalue_exception $e) {
-                $strnotsaved = get_string('changesnotsaved', 'local_progressreview');
-                $content .= $OUTPUT->error_text($strnotsaved.' '.$e->getMessage());
             }
         }
     }

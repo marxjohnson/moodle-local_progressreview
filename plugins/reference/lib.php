@@ -192,7 +192,7 @@ class progressreview_reference extends progressreview_plugin_subject {
             'class' => 'reference',
             'name' => $fieldarray.'[reference]'
         );
-        $referencefield = html_writer::tag('textarea', $this->reference, $referenceattrs);
+        $referencefield = html_writer::tag('textarea', $this->get_post_or_default('reference', $this->reference), $referenceattrs);
         $referencecell = new html_table_cell($referencefield);
         $strreference = get_string('reference', 'progressreview_reference');
         $helpicon = $OUTPUT->help_icon('reference', 'progressreview_reference');
