@@ -416,11 +416,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
 
         $table->data = $rows;
         $params = array('action' => $this->page->url->out_omit_querystring(), 'method' => 'post');
-        $output .= html_writer::start_tag('form', $params);
-        $output .= html_writer::input_hidden_params($this->page->url);
-        $output .= html_writer::table($table);
 
         if ($form) {
+            $output .= html_writer::start_tag('form', $params);
+            $output .= html_writer::input_hidden_params($this->page->url);
             $hiddens = array(
                 'sessionid' => $review->get_session()->id,
                 'courseid' => $review->get_course()->originalid,
@@ -477,6 +476,10 @@ class local_progressreview_renderer extends plugin_renderer_base {
             $output .= $this->progress_indicator();
             $output .= $this->error_indicator();
 
+        }
+        $output .= html_writer::table($table);
+        if ($form) {
+            html_writer::end_tag('form');
         }
         return $output;
 
