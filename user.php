@@ -114,6 +114,16 @@ if ($tutorreview) {
     $content .= $OUTPUT->container($tutorreviews, null, 'tutorreviews');
 }
 
+$printparams = array(
+    'download' => true,
+    'generate' => true,
+    'groupby' => 1,
+    'sessions' => '['.$sessionid.']',
+    'students' => '['.$userid.']'
+);
+$printurl = new moodle_url('/local/progressreview/print.php', $printparams);
+$content .= $OUTPUT->single_button($printurl, get_string('generate', 'local_progressreview'));
+
 echo $OUTPUT->header();
 
 echo $content;
